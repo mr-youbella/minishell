@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_first_cmd.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/16 20:36:59 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/06/14 22:13:05 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,19 +89,6 @@ static char	*extract_word(const char *str, char c, size_t index)
 			printf(BLUE"minishell%s: syntax %serror%s: unclosed quote.\n", DEF, RED, DEF);
 			return (NULL);
 		}
-	}
-	if (str[index + i] != '"' && str[index + i])
-	{
-		index++;
-		while (str[index + i] && str[index + i] != '"')
-			i++;
-		if (str[index + i] && str[index + i] == '"')
-		{
-			printf(BLUE"minishell%s: syntax %serror%s: unclosed quote.\n", DEF, RED, DEF);
-			return (NULL);
-		}
-		else
-			return (ft_substr(str, index, i));
 	}
 	else if (str[index + i] == 39)
 	{
