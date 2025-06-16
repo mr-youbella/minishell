@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/14 22:47:03 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/16 19:25:46 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ char	*search_cmd(char **cmd)
 int main(int argc, char **argv, char **env)
 {
 	int		i;
+	int 	status; 
 	char	*input;
 	char	*path_cmd;
 	char	**args;
@@ -61,16 +62,21 @@ int main(int argc, char **argv, char **env)
 	{
 		input = readline(this_dir);
 		add_history(input);
-		path_cmd = search_cmd(ft_split(input, ' '));
-		if (!path_cmd)
-			printf(RED "minishell: %s%s%s command not found.\n", BLUE, input, DEF);
 		args = ft_split_first_cmd(input, ' ');
 		if (!args)
-			break ;
+			continue ;
+		path_cmd = search_cmd(ft_split(input, ' '));
+		if (!path_cmd)
+		{
+			printf(RED "minishell: %s%s%s command not found.\n", BLUE, input, DEF);
+			status = 1;
+		}
 		pid = fork();
 		if (pid == 0)
     		execve(path_cmd, args, env);
-		wait(NULL);
+		else
+			wait(&status);
+		printf("%d\n", status);
 		free(input);
 	}
 }
