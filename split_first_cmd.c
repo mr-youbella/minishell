@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/14 22:13:05 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/16 22:59:56 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,20 @@ static char	*extract_word(const char *str, char c, size_t index)
 	size_t	i;
 	
 	i = 0;
-	if (str[index + i] == '"' && str[index + i])
+	if (str[index + i] != '"'  && str[index + i] != 39 && str[index + i])
+	{
+		size_t j = 0;
+		while(str[index + j] != ' ' && str[index + j] != '|' && str[index + j])
+		{
+			if (str[index + j] == '"' || str[index + j] == 39)
+			{
+				printf(BLUE"minishell%s: syntax %serror%s: unclosed quote.\n", DEF, RED, DEF);
+				return (NULL);
+			}
+			j++;
+		}
+	}
+	else if (str[index + i] == '"' && str[index + i])
 	{
 		index++;
 		c = '"';
@@ -90,7 +103,7 @@ static char	*extract_word(const char *str, char c, size_t index)
 			return (NULL);
 		}
 	}
-	else if (str[index + i] == 39)
+	else if (str[index + i] == 39 && str[index + i])
 	{
 		index++;
 		c = 39;
