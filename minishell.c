@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/16 23:30:22 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/17 00:57:01 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,12 @@ int main(int argc, char **argv, char **env)
 		args = ft_split_first_cmd(input, ' ');
 		if (!args)
 			continue ;
+		if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
+		{
+			while (env[j])
+				printf("%s\n", env[j++]);
+			continue ;
+		}
 		if (!ft_strncmp(args[0], "pwd", 3) && ft_strlen(args[0]) == 3)
 		{
 			printf("%s\n", pwd);
