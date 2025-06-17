@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_first_cmd.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/16 22:46:59 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/06/17 15:54:48 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,16 @@ static size_t	count_words(const char *str, char c)
 	i = 0;
 	words = 0;
 	is_word = 0;
+	if (str[i] != c && !is_word)
+	{
+		while (str[i] && str[i] == '"')
+			i++;
+		words++;
+		is_word = 1;
+	}
 	while (str[i] && str[i] != '|')
 	{
-		if (str[i] == '"')
+		if (str[i] == '"' && str[i] != c)
 		{
 			words++;
 			is_word = 1;
@@ -42,7 +49,7 @@ static size_t	count_words(const char *str, char c)
 				}
 			}
 		}
-		else if (str[i] == 39)
+		else if (str[i] == 39 && str[i] != c)
 		{
 			words++;
 			is_word = 1;
@@ -61,11 +68,6 @@ static size_t	count_words(const char *str, char c)
 				}
 			}
 		}
-		if (str[i] != c && !is_word)
-		{
-			words++;
-			is_word = 1;
-		}
 		else if (str[i] == c)
 			is_word = 0;
 		i++;
@@ -76,19 +78,26 @@ static size_t	count_words(const char *str, char c)
 static char	*extract_word(const char *str, char c, size_t index)
 {
 	size_t	i;
-	
+	size_t quotes;
 	i = 0;
 	if (str[index + i] != '"'  && str[index + i] != 39 && str[index + i])
 	{
-		size_t j = 0;
-		while(str[index + j] != ' ' && str[index + j] != '|' && str[index + j])
+		while(str[index + i] != ' ' && str[index + i])
 		{
-			if (str[index + j] == '"' || str[index + j] == 39)
+			if (str[index + i] == '"' || str[index + i] == 39)
 			{
-				printf(BLUE"minishell%s: syntax %serror%s: unclosed quote.\n", DEF, RED, DEF);
-				return (NULL);
+				i++;
+				index++;
+				c = '"';
+				while(str[index + i] && str[index + i] != '"' && str[index + i] != 39)
+					i++;
+				if (!str[index + i])
+				{
+					printf(BLUE"minishell%s: syntax %serror%s: unclosed quote.\n", DEF, RED, DEF);
+					return (NULL);
+				}
 			}
-			j++;
+			i++;
 		}
 	}
 	else if (str[index + i] == '"' && str[index + i])
@@ -96,7 +105,7 @@ static char	*extract_word(const char *str, char c, size_t index)
 		index++;
 		c = '"';
 		while (str[index + i] && str[index + i] != c)
-				i++;
+			i++;
 		if (!str[index + i])
 		{
 			printf(BLUE"minishell%s: syntax %serror%s: unclosed quote.\n", DEF, RED, DEF);
@@ -108,7 +117,7 @@ static char	*extract_word(const char *str, char c, size_t index)
 		index++;
 		c = 39;
 		while (str[index + i] && str[index + i] != c)
-				i++;
+			i++;
 		if (!str[index + i])
 		{
 			printf(BLUE"minishell%s: syntax %serror%s: unclosed quote.\n", DEF, RED, DEF);
@@ -116,7 +125,7 @@ static char	*extract_word(const char *str, char c, size_t index)
 		}
 	}
 	while (str[index + i] && str[index + i] != c && str[index + i] != '|')
-		i++;
+	i++;
 	return (ft_substr(str, index, i));
 }
 
@@ -145,6 +154,7 @@ char	**ft_split_first_cmd(char const *s, char c)
 	p = ft_calloc(count_words(s, c) + 1, 8);
 	if (!p)
 		return (NULL);
+	printf("%zu\n", count_words(s, c));
 	while (s[i] && s[i] != '|')
 	{
 		if (s[i] != c)
@@ -158,8 +168,7 @@ char	**ft_split_first_cmd(char const *s, char c)
 				i += 2;
 			i += ft_strlen(p[j - 1]);
 		}
-		else
-			i++;
+		i++;
 	}
 	return (p);
 }
