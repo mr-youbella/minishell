@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/17 00:57:01 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/17 22:16:18 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ int main(int argc, char **argv, char **env)
 	char	*pwd;
 	char	**path;
 	char	*this_dir;
-	char	*cd_path;
+	char	*var_env;
+	char	**split_var_env;
 
 	while (1)
 	{
@@ -68,13 +69,30 @@ int main(int argc, char **argv, char **env)
 		args = ft_split_first_cmd(input, ' ');
 		if (!args)
 			continue ;
-		if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
+		if (!ft_strncmp(args[0], "exit", 4) && ft_strlen(args[0]) == 4)
+			break ;
+		else if (!ft_strncmp(args[0], "export", 6) && ft_strlen(args[0]) == 6)
+		{
+			var_env = ft_strjoin(var_env, args[1]);
+			var_env = ft_strjoin(var_env, " ");
+			continue ;
+		}
+		else if (!ft_strncmp(args[0], "unset", 5) && ft_strlen(args[0]) == 5)
+		{
+			printf("Not found command now\n");
+			continue ;
+		}
+		else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
 		{
 			while (env[j])
 				printf("%s\n", env[j++]);
+			j = 0;
+			split_var_env = ft_split(var_env, ' ');
+			while (split_var_env && split_var_env[j])
+				printf("%s\n", split_var_env[j++]);
 			continue ;
 		}
-		if (!ft_strncmp(args[0], "pwd", 3) && ft_strlen(args[0]) == 3)
+		else if (!ft_strncmp(args[0], "pwd", 3) && ft_strlen(args[0]) == 3)
 		{
 			printf("%s\n", pwd);
 			continue ;
@@ -95,13 +113,13 @@ int main(int argc, char **argv, char **env)
 				printf("\n");
 			continue ;
 		}
-		path_cmd = search_cmd(ft_split_first_cmd(input, ' '));
-		if (!ft_strncmp(args[0], "cd", 2))
+		else if (!ft_strncmp(args[0], "cd", 2))
 		{
 			if (chdir(args[1]) == -1)
 				printf(BLUE"minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, args[1], DEF);
 			continue ;
 		}
+		path_cmd = search_cmd(ft_split_first_cmd(input, ' '));
 		if (!path_cmd)
 		{
 			printf(RED "minishell: %s%s%s command not found.\n", BLUE, args[0], DEF);
