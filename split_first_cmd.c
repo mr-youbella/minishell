@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_first_cmd.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/18 04:16:00 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 20:50:18 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,30 +72,64 @@ int	is_unclose_quotes(size_t single_quote, size_t double_quotes)
 	return (0);
 }
 
-int search_and_replace(char *str)
+char	*search_and_replace(const char *str, int status)
 {
 	size_t	i;
+	size_t	j;
+	size_t	k;
 	size_t	len;
-	int		status;
+	size_t	n;
+	size_t	new_len;
+	short	exist;
 	char	*int_to_str;
-
+	char	*p;
+	
+	p = NULL;
 	i = 0;
-	status = 137;
-	int_to_str = ft_itoa(status);
+	j = 0;
+	n = 0;
+	k = 0;
+	exist = 0;
 	len = ft_strlen(str);
+	new_len = 0;
+	int_to_str = ft_itoa(status);
 	while(str[i])
 	{
 		if (str[i] == '$' && str[i + 1] == '?')
 		{
-			printf("%s\n", int_to_str);
+			n++;
+			exist = 1;
 		}
 		i++;
 	}
-	return (1);
+	i = 0;
+	if (exist == 1)
+	{
+		new_len = len + n * (ft_strlen(int_to_str) - 2);
+		p = malloc(new_len + 1);
+		if (!p)
+			return (NULL);
+		while (str[i])
+		{
+			if (str[i] == '$' && str[i + 1] == '?')
+			{
+				k = 0;
+				while(int_to_str[k])
+					p[j++] = int_to_str[k++];
+				i += 2;
+			}
+			else
+				p[j++] = str[i++];
+		}
+		p[j] = 0;
+	}
+	
+	else
+		p = ft_strdup(str);
+	return (p);
 }
 
-
-char	**ft_split_first_cmd(char const *s, char c)
+char	**ft_split_first_cmd(char const *s, char c, int status)
 {
 	char	**p;
 	char	*buffer;
@@ -137,7 +171,7 @@ char	**ft_split_first_cmd(char const *s, char c)
 		{
 			if (buffer)
 			{
-				p[j] = buffer;
+				p[j] = search_and_replace(buffer, status);
 				buffer = NULL;
 				j++;
 			}
@@ -147,7 +181,7 @@ char	**ft_split_first_cmd(char const *s, char c)
 		i++;
 	}
 	if (buffer)
-		p[j] = buffer;
+		p[j] = search_and_replace(buffer, status);
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (p);
