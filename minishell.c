@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/18 22:49:12 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 22:54:10 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,5 +178,3 @@ int main(int argc, char **argv, char **env)
 		free(input);
 	}
 }
-
-// is_unset(char *export, char **unset);
