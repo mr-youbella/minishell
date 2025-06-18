@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/17 22:16:18 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 18:24:00 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,26 +35,41 @@ char *search_cmd(char **cmd)
 	return (NULL);
 }
 
+void	handle_signal(int sig)
+{
+	(void)sig;
+	printf("\n");
+	rl_replace_line("", 0);
+	rl_on_new_line();
+	rl_redisplay();
+}
+
 int main(int argc, char **argv, char **env)
 {
-	int		i;
-	int		j;
-	int		status;
-	int		pid;
-	short	is_op_echo;
-	char	*input;
-	char	*path_cmd;
-	char	**args;
-	char	*pwd;
-	char	**path;
-	char	*this_dir;
-	char	*var_env;
-	char	**split_var_env;
+	struct sigaction	signal;
+	int					i;
+	int					j;
+	int					status;
+	int					pid;
+	short				is_op_echo;
+	char				*input;
+	char				*path_cmd;
+	char				**args;
+	char				*pwd;
+	char				**path;
+	char				*this_dir;
+	char				*args_export;
+	char				*args_unset;
+	char				**split_export;
+	char				**split_unset;
 
+	signal.sa_handler = handle_signal;
+	sigemptyset(&signal.sa_mask);
+	signal.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &signal, NULL);
 	while (1)
 	{
 		i = 0;
-		j = 1;
 		is_op_echo = 0;
 		pwd = getcwd(NULL, 0);
 		path = ft_split(pwd, '/');
@@ -73,25 +88,42 @@ int main(int argc, char **argv, char **env)
 			break ;
 		else if (!ft_strncmp(args[0], "export", 6) && ft_strlen(args[0]) == 6)
 		{
-			var_env = ft_strjoin(var_env, args[1]);
-			var_env = ft_strjoin(var_env, " ");
+			j = 1;
+			while (args[j])
+			{
+				args_export = ft_strjoin(args_export, args[j]);
+				args_export = ft_strjoin(args_export, " ");
+				j++;
+			}
 			continue ;
 		}
 		else if (!ft_strncmp(args[0], "unset", 5) && ft_strlen(args[0]) == 5)
 		{
-			printf("Not found command now\n");
+			j = 1;
+			while (args[j])
+			{
+				args_unset = ft_strjoin(args_unset, args[j]);
+				args_unset = ft_strjoin(args_unset, " ");
+				j++;
+			}
 			continue ;
 		}
-		else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
-		{
-			while (env[j])
-				printf("%s\n", env[j++]);
-			j = 0;
-			split_var_env = ft_split(var_env, ' ');
-			while (split_var_env && split_var_env[j])
-				printf("%s\n", split_var_env[j++]);
-			continue ;
-		}
+		// else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
+		// {
+		// 	j = 1;
+		// 	while (env[j])
+		// 		printf("%s\n", env[j++]);
+		// 	j = 0;
+		// 	split_export = ft_split(args_export, ' ');
+		// 	split_unset = ft_split(args_unset, ' ');
+		// 	while (split_export && split_export[j])
+		// 	{
+		// 		if (!is_unset(split_export[j], split_unset))
+		// 			printf("%s\n", split_export[j]);
+		// 		j++;
+		// 	}
+		// 	continue ;
+		// }
 		else if (!ft_strncmp(args[0], "pwd", 3) && ft_strlen(args[0]) == 3)
 		{
 			printf("%s\n", pwd);
@@ -99,7 +131,8 @@ int main(int argc, char **argv, char **env)
 		}
 		else if (!ft_strncmp(args[0], "echo", 4) && ft_strlen(args[0]) == 4)
 		{
-			if (args[1] && !ft_strncmp(args[1], "-n", 2) && ft_strlen(args[1]) == 2)
+			j = 1;
+			if (args[j] && !ft_strncmp(args[j], "-n", 2) && ft_strlen(args[j]) == 2)
 			{
 				is_op_echo = 1;
 				j++;
