@@ -6,13 +6,13 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/18 18:24:00 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 22:37:09 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *search_cmd(char **cmd)
+char *search_cmd(char *cmd)
 {
 	int i;
 	char *env_path;
@@ -20,14 +20,14 @@ char *search_cmd(char **cmd)
 	char *join_cmd_to_path;
 
 	i = 0;
-	if (cmd[0][0] == '.' && cmd[0][1] == '/')
-		return (cmd[0]);
+	if (cmd[0] == '.' && cmd[1] == '/')
+		return (cmd);
 	env_path = getenv("PATH");
 	split_env_path = ft_split(env_path, ':');
 	while (split_env_path[i])
 	{
 		join_cmd_to_path = ft_strjoin(split_env_path[i], "/");
-		join_cmd_to_path = ft_strjoin(join_cmd_to_path, cmd[0]);
+		join_cmd_to_path = ft_strjoin(join_cmd_to_path, cmd);
 		if (!access(join_cmd_to_path, X_OK))
 			return (join_cmd_to_path);
 		i++;
@@ -46,7 +46,8 @@ void	handle_signal(int sig)
 
 int main(int argc, char **argv, char **env)
 {
-	struct sigaction	signal;
+	struct sigaction	sig;
+    struct termios		ctr;
 	int					i;
 	int					j;
 	int					status;
@@ -63,10 +64,14 @@ int main(int argc, char **argv, char **env)
 	char				**split_export;
 	char				**split_unset;
 
-	signal.sa_handler = handle_signal;
-	sigemptyset(&signal.sa_mask);
-	signal.sa_flags = SA_RESTART;
-	sigaction(SIGINT, &signal, NULL);
+	tcgetattr(0, &ctr);
+    ctr.c_lflag &= ~ECHOCTL;
+    tcsetattr(0, 0, &ctr);
+    sig.sa_handler = handle_signal;
+    sigemptyset(&sig.sa_mask);
+    sig.sa_flags = SA_RESTART;
+    sigaction(SIGINT, &sig, NULL);
+    signal(SIGQUIT, SIG_IGN);
 	while (1)
 	{
 		i = 0;
@@ -80,8 +85,12 @@ int main(int argc, char **argv, char **env)
 		this_dir = ft_strjoin("\033[32m➜\033[0m ", this_dir);
 		this_dir = ft_strjoin(this_dir, " ");
 		input = readline(this_dir);
+		if (!input)
+			break ;
+		if (!input[0])
+			continue ;
 		add_history(input);
-		args = ft_split_first_cmd(input, ' ');
+		args = ft_split_first_cmd(input, ' ', WEXITSTATUS(status));
 		if (!args)
 			continue ;
 		if (!ft_strncmp(args[0], "exit", 4) && ft_strlen(args[0]) == 4)
@@ -108,22 +117,22 @@ int main(int argc, char **argv, char **env)
 			}
 			continue ;
 		}
-		// else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
-		// {
-		// 	j = 1;
-		// 	while (env[j])
-		// 		printf("%s\n", env[j++]);
-		// 	j = 0;
-		// 	split_export = ft_split(args_export, ' ');
-		// 	split_unset = ft_split(args_unset, ' ');
-		// 	while (split_export && split_export[j])
-		// 	{
-		// 		if (!is_unset(split_export[j], split_unset))
-		// 			printf("%s\n", split_export[j]);
-		// 		j++;
-		// 	}
-		// 	continue ;
-		// }
+		else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
+		{
+			j = 1;
+			while (env[j])
+				printf("%s\n", env[j++]);
+			j = 0;
+			split_export = ft_split(args_export, ' ');
+			split_unset = ft_split(args_unset, ' ');
+			while (split_export && split_export[j])
+			{
+				if (!is_unset(split_export[j], split_unset))
+					printf("%s\n", split_export[j]);
+				j++;
+			}
+			continue ;
+		}
 		else if (!ft_strncmp(args[0], "pwd", 3) && ft_strlen(args[0]) == 3)
 		{
 			printf("%s\n", pwd);
@@ -152,7 +161,7 @@ int main(int argc, char **argv, char **env)
 				printf(BLUE"minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, args[1], DEF);
 			continue ;
 		}
-		path_cmd = search_cmd(ft_split_first_cmd(input, ' '));
+		path_cmd = search_cmd(args[0]);
 		if (!path_cmd)
 		{
 			printf(RED "minishell: %s%s%s command not found.\n", BLUE, args[0], DEF);
@@ -167,3 +176,5 @@ int main(int argc, char **argv, char **env)
 		free(input);
 	}
 }
+
+// is_unset(char *export, char **unset);

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/18 18:41:00 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 22:26:31 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include "libft/libft.h"
 # include <stdio.h>
 # include <signal.h>
+# include <termios.h>
 # include <readline/readline.h>
 # include <readline/history.h>
 
@@ -27,6 +28,7 @@
 # define PINK "\033[35m"
 # define DEF "\033[0m"
 
-char	**ft_split_first_cmd(char const *s, char c);
+char	**ft_split_first_cmd(char const *s, char c, int status);
+short	is_unset(char *export, char **unset);
 
 #endif
