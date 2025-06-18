@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/18 22:37:09 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 22:49:12 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,8 @@ int main(int argc, char **argv, char **env)
     sig.sa_flags = SA_RESTART;
     sigaction(SIGINT, &sig, NULL);
     signal(SIGQUIT, SIG_IGN);
+	args_export = NULL;
+	args_unset = NULL;
 	while (1)
 	{
 		i = 0;
