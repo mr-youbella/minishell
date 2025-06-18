@@ -6,16 +6,18 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/14 17:01:53 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 18:41:00 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
+# include "libft/libft.h"
+# include <stdio.h>
+# include <signal.h>
 # include <readline/readline.h>
 # include <readline/history.h>
-# include "libft/libft.h"
 
 # define GREEN "\033[32m"
 # define RED "\033[31m"

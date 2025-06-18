@@ -6,12 +6,12 @@
 #    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/06/14 17:02:18 by youbella         ###   ########.fr        #
+#    Updated: 2025/06/18 18:39:26 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
-CFLAGS = -lreadline #-Wall -Wextra -Werror 
+CFLAGS = -I/opt/homebrew/opt/readline/include -L/opt/homebrew/opt/readline/lib -lreadline #-Wall -Wextra -Werror 
 
 SRC = minishell.c split_first_cmd.c
 OBJS = $(SRC:.c=.o)
