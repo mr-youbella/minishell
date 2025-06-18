@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 18:36:29 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/12 01:54:13 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 18:39:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 # include <unistd.h>
 # include <limits.h>
 # include <stdlib.h>
-# include <libc.h>
 
 typedef struct s_list
 {
