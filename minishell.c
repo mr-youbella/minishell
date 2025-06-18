@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/18 17:25:31 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 21:16:29 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *search_cmd(char **cmd)
+char *search_cmd(char *cmd)
 {
 	int i;
 	char *env_path;
@@ -20,14 +20,14 @@ char *search_cmd(char **cmd)
 	char *join_cmd_to_path;
 
 	i = 0;
-	if (cmd[0][0] == '.' && cmd[0][1] == '/')
-		return (cmd[0]);
+	if (cmd[0] == '.' && cmd[1] == '/')
+		return (cmd);
 	env_path = getenv("PATH");
 	split_env_path = ft_split(env_path, ':');
 	while (split_env_path[i])
 	{
 		join_cmd_to_path = ft_strjoin(split_env_path[i], "/");
-		join_cmd_to_path = ft_strjoin(join_cmd_to_path, cmd[0]);
+		join_cmd_to_path = ft_strjoin(join_cmd_to_path, cmd);
 		if (!access(join_cmd_to_path, X_OK))
 			return (join_cmd_to_path);
 		i++;
@@ -51,6 +51,7 @@ int main(int argc, char **argv, char **env)
 	char	*var_env;
 	char	**split_var_env;
 
+	status = 0;
 	while (1)
 	{
 		i = 0;
@@ -64,8 +65,12 @@ int main(int argc, char **argv, char **env)
 		this_dir = ft_strjoin("\033[32m➜\033[0m ", this_dir);
 		this_dir = ft_strjoin(this_dir, " ");
 		input = readline(this_dir);
+		if (!input)
+			break ;
+		if (!input[0])
+			continue ;
 		add_history(input);
-		args = ft_split_first_cmd(input, ' ');
+		args = ft_split_first_cmd(input, ' ', WEXITSTATUS(status));
 		if (!args)
 			continue ;
 		if (!ft_strncmp(args[0], "exit", 4) && ft_strlen(args[0]) == 4)
@@ -125,7 +130,7 @@ int main(int argc, char **argv, char **env)
 				printf(BLUE"minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, args[1], DEF);
 			continue ;
 		}
-		path_cmd = search_cmd(ft_split_first_cmd(input, ' '));
+		path_cmd = search_cmd(args[0]);
 		if (!path_cmd)
 		{
 			printf(RED "minishell: %s%s%s command not found.\n", BLUE, args[0], DEF);

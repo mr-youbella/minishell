@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/14 17:01:53 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 20:46:28 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,6 @@
 # define PINK "\033[35m"
 # define DEF "\033[0m"
 
-char	**ft_split_first_cmd(char const *s, char c);
+char	**ft_split_first_cmd(char const *s, char c, int status);
 
 #endif
