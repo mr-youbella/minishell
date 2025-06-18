@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/17 22:16:18 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 01:05:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,11 @@ int main(int argc, char **argv, char **env)
 			continue ;
 		if (!ft_strncmp(args[0], "exit", 4) && ft_strlen(args[0]) == 4)
 			break ;
+		else if (!ft_strncmp(args[0], "/", 1) && ft_strlen(args[0]) == 1)	
+		{
+			printf(BLUE"minishell%s: %s/%s is a directory.\n", DEF, RED, DEF);
+			continue ;
+		}
 		else if (!ft_strncmp(args[0], "export", 6) && ft_strlen(args[0]) == 6)
 		{
 			var_env = ft_strjoin(var_env, args[1]);
