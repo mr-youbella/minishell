@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/16 20:36:01 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/18 17:25:31 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,19 +37,24 @@ char *search_cmd(char **cmd)
 
 int main(int argc, char **argv, char **env)
 {
-	int i;
-	int status;
-	char *input;
-	char *path_cmd;
-	char **args;
-	char *pwd;
-	char **path;
-	char *this_dir;
-	int pid;
+	int		i;
+	int		j;
+	int		status;
+	int		pid;
+	short	is_op_echo;
+	char	*input;
+	char	*path_cmd;
+	char	**args;
+	char	*pwd;
+	char	**path;
+	char	*this_dir;
+	char	*var_env;
+	char	**split_var_env;
 
 	while (1)
 	{
 		i = 0;
+		is_op_echo = 0;
 		pwd = getcwd(NULL, 0);
 		path = ft_split(pwd, '/');
 		while (path[i])
@@ -63,17 +68,67 @@ int main(int argc, char **argv, char **env)
 		args = ft_split_first_cmd(input, ' ');
 		if (!args)
 			continue ;
-		path_cmd = search_cmd(ft_split(input, ' '));
-		if (!ft_strncmp(args[0], "cd", 2))
+		if (!ft_strncmp(args[0], "exit", 4) && ft_strlen(args[0]) == 4)
+			break ;
+		else if (!ft_strncmp(args[0], "export", 6) && ft_strlen(args[0]) == 6)
 		{
-			if (!args[1])
-				args[1] = getenv("ZDOTDIR");
-			chdir(args[1]);
+			j = 1;
+			while (args[j])
+			{
+				var_env = ft_strjoin(var_env, args[j]);
+				var_env = ft_strjoin(var_env, " ");
+				j++;
+			}
 			continue ;
 		}
+		else if (!ft_strncmp(args[0], "unset", 5) && ft_strlen(args[0]) == 5)
+		{
+			printf("Not found command now\n");
+			continue ;
+		}
+		else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
+		{
+			j = 1;
+			while (env[j])
+				printf("%s\n", env[j++]);
+			j = 0;
+			split_var_env = ft_split(var_env, ' ');
+			while (split_var_env && split_var_env[j])
+				printf("%s\n", split_var_env[j++]);
+			continue ;
+		}
+		else if (!ft_strncmp(args[0], "pwd", 3) && ft_strlen(args[0]) == 3)
+		{
+			printf("%s\n", pwd);
+			continue ;
+		}
+		else if (!ft_strncmp(args[0], "echo", 4) && ft_strlen(args[0]) == 4)
+		{
+			j = 1;
+			if (args[j] && !ft_strncmp(args[j], "-n", 2) && ft_strlen(args[j]) == 2)
+			{
+				is_op_echo = 1;
+				j++;
+			}
+			while (args[j])
+			{
+				printf("%s ", args[j]);
+				j++;
+			}
+			if (!is_op_echo)
+				printf("\n");
+			continue ;
+		}
+		else if (!ft_strncmp(args[0], "cd", 2))
+		{
+			if (chdir(args[1]) == -1)
+				printf(BLUE"minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, args[1], DEF);
+			continue ;
+		}
+		path_cmd = search_cmd(ft_split_first_cmd(input, ' '));
 		if (!path_cmd)
 		{
-			printf(RED "minishell: %s%s%s command not found.\n", BLUE, input, DEF);
+			printf(RED "minishell: %s%s%s command not found.\n", BLUE, args[0], DEF);
 			status = 127;
 			continue ;
 		}
@@ -82,7 +137,6 @@ int main(int argc, char **argv, char **env)
 			execve(path_cmd, args, env);
 		else
 			wait(&status);
-		printf("%d\n", WEXITSTATUS(status));
 		free(input);
 	}
 }
