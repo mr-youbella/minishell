@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/18 22:26:31 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/19 13:56:13 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,6 @@
 # define DEF "\033[0m"
 
 char	**ft_split_first_cmd(char const *s, char c, int status);
-short	is_unset(char *export, char **unset);
+t_list	*search_in_list(char *str, t_list *list);
 
 #endif

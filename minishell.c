@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/18 22:54:10 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/19 16:10:02 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,11 @@ char *search_cmd(char *cmd)
 	return (NULL);
 }
 
+void	del(void *content)
+{
+	free(content);
+}
+
 void	handle_signal(int sig)
 {
 	(void)sig;
@@ -44,10 +49,33 @@ void	handle_signal(int sig)
 	rl_redisplay();
 }
 
+void	remove_node(t_list **list, t_list *remove, void(*del)(void *))
+{
+	t_list *prev;
+	t_list *temp;
+
+	prev = NULL;
+	temp = *list;
+	if (!list || !remove || !del)
+		return ;
+	while (temp != remove)
+	{
+		prev = temp;
+		temp = temp->next;
+	}
+	if (prev)
+		prev->next = temp->next;
+	else
+		*list = temp->next;
+	ft_lstdelone(temp, del);
+}
+
 int main(int argc, char **argv, char **env)
 {
 	struct sigaction	sig;
     struct termios		ctr;
+    t_list				*export_list;
+    t_list				*copy_export_list;
 	int					i;
 	int					j;
 	int					status;
@@ -64,6 +92,7 @@ int main(int argc, char **argv, char **env)
 	char				**split_export;
 	char				**split_unset;
 
+	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
 	tcgetattr(0, &ctr);
     ctr.c_lflag &= ~ECHOCTL;
     tcsetattr(0, 0, &ctr);
@@ -74,6 +103,7 @@ int main(int argc, char **argv, char **env)
     signal(SIGQUIT, SIG_IGN);
 	args_export = NULL;
 	args_unset = NULL;
+	export_list = NULL;
 	while (1)
 	{
 		i = 0;
@@ -84,7 +114,7 @@ int main(int argc, char **argv, char **env)
 			this_dir = path[i++];
 		this_dir = ft_strjoin("\033[1;94m", this_dir);
 		this_dir = ft_strjoin(this_dir, "\033[0m");
-		this_dir = ft_strjoin("\033[32m➜\033[0m ", this_dir);
+		this_dir = ft_strjoin("\033[32m➥\033[0m ", this_dir);
 		this_dir = ft_strjoin(this_dir, " ");
 		input = readline(this_dir);
 		if (!input)
@@ -106,6 +136,15 @@ int main(int argc, char **argv, char **env)
 				args_export = ft_strjoin(args_export, " ");
 				j++;
 			}
+			split_export = ft_split(args_export, ' ');
+			j = 0;
+			while (split_export[j])
+			{
+				ft_lstadd_back(&export_list, ft_lstnew(ft_strdup(split_export[j])));
+				j++;	
+			}
+			args_export = NULL;
+			split_export = NULL;
 			continue ;
 		}
 		else if (!ft_strncmp(args[0], "unset", 5) && ft_strlen(args[0]) == 5)
@@ -117,6 +156,17 @@ int main(int argc, char **argv, char **env)
 				args_unset = ft_strjoin(args_unset, " ");
 				j++;
 			}
+			split_unset = ft_split(args_unset, ' ');
+			j = 0;
+			while (split_unset[j])
+			{
+				t_list *s = search_in_list(split_unset[j], export_list);
+				if (s)
+					remove_node(&export_list, s, del);
+				j++;
+			}
+			args_unset = NULL;
+			split_unset = NULL;
 			continue ;
 		}
 		else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
@@ -124,14 +174,11 @@ int main(int argc, char **argv, char **env)
 			j = 1;
 			while (env[j])
 				printf("%s\n", env[j++]);
-			j = 0;
-			split_export = ft_split(args_export, ' ');
-			split_unset = ft_split(args_unset, ' ');
-			while (split_export && split_export[j])
+			copy_export_list = export_list;
+			while (copy_export_list)
 			{
-				if (!is_unset(split_export[j], split_unset))
-					printf("%s\n", split_export[j]);
-				j++;
+				printf("%s\n", copy_export_list->content);
+				copy_export_list = copy_export_list->next;
 			}
 			continue ;
 		}

@@ -6,24 +6,19 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/18 22:50:37 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/19 13:58:17 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-short	is_unset(char *export, char **unset)
+t_list	*search_in_list(char *str, t_list *list)
 {
-	size_t	i;
-	
-	i = 0;
-	if (!unset)
-		return (0);
-	while (unset[i])
-	{
-		if (!ft_strncmp(export, unset[i], ULONG_MAX))
-			return (1);
-		i++;
-	}
-	return (0);
+    while (list)
+    {
+        if (list->content && strcmp((char *)list->content, str) == 0)
+            return list;
+        list = list->next;
+    }
+    return NULL;
 }
