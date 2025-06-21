@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/18 20:56:58 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/19 22:57:18 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ static size_t	count_words(const char *str, char c)
 static char	*extract_word(const char *str, char c)
 {
 	size_t	len_str;
-	size_t	quotes;
 	char	*p;
 	
 	len_str = 0;
@@ -61,9 +60,6 @@ static char	*extract_word(const char *str, char c)
 
 int	is_unclose_quotes(size_t single_quote, size_t double_quotes)
 {
-	size_t	i;
-	
-	i = 0;
 	if (single_quote % 2 != 0 || double_quotes % 2 != 0)
 	{
 		printf(RED "syntax error:%s unclosed quote.\n", DEF);

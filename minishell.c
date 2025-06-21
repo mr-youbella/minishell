@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/19 16:10:02 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/21 10:28:39 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,10 @@ int main(int argc, char **argv, char **env)
 	char				**split_export;
 	char				**split_unset;
 
+	if (argc != 1)
+		return (printf(RED "Please don't enter any args.\n" DEF), 1);
+	(void)argc;
+	(void)argv;
 	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
 	tcgetattr(0, &ctr);
     ctr.c_lflag &= ~ECHOCTL;
@@ -177,7 +181,7 @@ int main(int argc, char **argv, char **env)
 			copy_export_list = export_list;
 			while (copy_export_list)
 			{
-				printf("%s\n", copy_export_list->content);
+				printf("%s\n", (char *)copy_export_list->content);
 				copy_export_list = copy_export_list->next;
 			}
 			continue ;
@@ -214,7 +218,7 @@ int main(int argc, char **argv, char **env)
 		if (!path_cmd)
 		{
 			printf(RED "minishell: %s%s%s command not found.\n", BLUE, args[0], DEF);
-			status = 127;
+			status = 32512;
 			continue ;
 		}
 		pid = fork();
