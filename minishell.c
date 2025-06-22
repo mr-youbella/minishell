@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/21 10:28:39 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/22 12:18:48 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ int main(int argc, char **argv, char **env)
 	char				**split_unset;
 
 	if (argc != 1)
-		return (printf(RED "Please don't enter any args.\n" DEF), 1);
+		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
 	(void)argc;
 	(void)argv;
 	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
@@ -136,11 +136,16 @@ int main(int argc, char **argv, char **env)
 			j = 1;
 			while (args[j])
 			{
-				args_export = ft_strjoin(args_export, args[j]);
-				args_export = ft_strjoin(args_export, " ");
+				if (check_export_arg(args[j]))
+				{
+					args_export = ft_strjoin(args_export, args[j]);
+					args_export = ft_strjoin(args_export, " ");
+				}
 				j++;
 			}
 			split_export = ft_split(args_export, ' ');
+			if (!split_export)
+				continue ;
 			j = 0;
 			while (split_export[j])
 			{
@@ -156,11 +161,16 @@ int main(int argc, char **argv, char **env)
 			j = 1;
 			while (args[j])
 			{
-				args_unset = ft_strjoin(args_unset, args[j]);
-				args_unset = ft_strjoin(args_unset, " ");
+				if (check_unset_arg(args[j]))
+				{
+					args_unset = ft_strjoin(args_unset, args[j]);
+					args_unset = ft_strjoin(args_unset, " ");
+				}
 				j++;
 			}
 			split_unset = ft_split(args_unset, ' ');
+			if (!split_unset)
+				continue ;
 			j = 0;
 			while (split_unset[j])
 			{
