@@ -6,7 +6,7 @@
 /*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/22 16:44:37 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/06/22 18:28:10 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,14 +27,6 @@
 # define BLUE "\033[34m"
 # define PINK "\033[35m"
 # define DEF "\033[0m"
-
-typedef struct s_redirect
-{
-	char	type_redirection;
-	char	*file_name;
-	struct s_redirect	*next;
-}	t_redirect;
-
 
 char	**ft_split_first_cmd(char const *s, char c, int status);
 t_list	*search_in_list(char *str, t_list *list);

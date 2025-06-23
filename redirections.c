@@ -6,7 +6,7 @@
 /*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/22 19:15:51 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/06/23 21:21:48 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,3 +108,61 @@ t_redirect	*search_directions_name_file(char *str)
 	return (red);
 }
 
+short    is_there_redirect_out(const char *cmd_line)
+{
+	size_t	i;
+
+	i = 0;
+	while(cmd_line[i])
+	{
+		if (cmd_line[i] == '>')
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+char    *join_tokens(char **tokens)
+{
+	size_t	i;
+	char	*p;
+	
+	i = 0;
+	while(tokens[i])
+	{
+		p = ft_strjoin(p, tokens[i]);
+		if (tokens[i + 1])
+			p = ft_strjoin(p, " ");
+		i++;
+	}
+	printf ("%s\n", p);
+	return (p);
+}
+
+size_t    strcpy_until_redirections(char *dst, const char *src, size_t n)
+{
+	size_t	i;
+
+	i = 0;
+	if (!n)
+		return (ft_strlen(src));
+	while (src[i] && i < n - 1 && src[i] != '>')
+	{
+		dst[i] = src[i];
+		i++;
+	}
+	dst[i] = 0;
+	printf ("%s\n", dst);
+	return (ft_strlen(src));
+}
+
+size_t	len_str(char *str)
+{
+	size_t	i;
+
+	if (!str)
+		return (0);
+	while (str[i] && str[i] != '>')
+		i++;
+	return (i);
+}
