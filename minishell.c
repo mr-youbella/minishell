@@ -6,18 +6,18 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/22 12:18:48 by youbella         ###   ########.fr       */
+/*   Updated: 2025/06/23 17:54:33 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *search_cmd(char *cmd)
+char	*search_cmd(char *cmd)
 {
-	int i;
-	char *env_path;
-	char **split_env_path;
-	char *join_cmd_to_path;
+	int		i;
+	char	*env_path;
+	char	**split_env_path;
+	char	*join_cmd_to_path;
 
 	i = 0;
 	if (cmd[0] == '.' && cmd[1] == '/')
@@ -49,10 +49,10 @@ void	handle_signal(int sig)
 	rl_redisplay();
 }
 
-void	remove_node(t_list **list, t_list *remove, void(*del)(void *))
+void	remove_node(t_list **list, t_list *remove, void (*del)(void *))
 {
-	t_list *prev;
-	t_list *temp;
+	t_list	*prev;
+	t_list	*temp;
 
 	prev = NULL;
 	temp = *list;
@@ -70,27 +70,289 @@ void	remove_node(t_list **list, t_list *remove, void(*del)(void *))
 	ft_lstdelone(temp, del);
 }
 
-int main(int argc, char **argv, char **env)
+char	*echo_cmd(char **tokens, short is_return)
+{
+	int		j;
+	short	is_op_echo;
+	char	*str;
+
+	j = 1;
+	is_op_echo = 0;
+	str = NULL;
+	if (tokens[j] && !ft_strncmp(tokens[j], "-n", 2) && ft_strlen(tokens[j]) == 2)
+	{
+		is_op_echo = 1;
+		j++;
+	}
+	while (tokens[j])
+	{
+		if (is_return)
+		{
+			str = ft_strjoin(str, tokens[j]);
+			str = ft_strjoin(str, " ");
+		}
+		else
+			printf("%s ", tokens[j]);
+		j++;
+	}
+	if (!is_op_echo)
+	{
+		if (is_return)
+			str = ft_strjoin(str, "\n");
+		else
+			printf("\n");
+	}
+	return (str);
+}
+
+char	*is_there_cmd(char **tokens, int *status)
+{
+	char	*path_cmd;
+
+	path_cmd = search_cmd(tokens[0]);
+	if (!path_cmd)
+	{
+		printf(RED "minishell: %s%s%s command not found.\n", BLUE, tokens[0], DEF);
+		*status = 32512;
+		return (NULL);
+	}
+	return (path_cmd);
+}
+
+char	*env_cmd(char **env, t_list *export_list, short is_return)
+{
+	t_list	*copy_export_list;
+	char	*environment;
+	int		j;
+
+	j = 1;
+	environment = NULL;
+	while (env[j])
+	{
+		if (is_return)
+		{
+			environment = ft_strjoin(environment, env[j]);
+			environment = ft_strjoin(environment, "\n");
+		}
+		else
+			printf("%s\n", env[j]);
+		j++;
+	}
+	copy_export_list = export_list;
+	while (copy_export_list)
+	{
+		if (is_return)
+		{
+			environment = ft_strjoin(environment, (char *)copy_export_list->content);
+			environment = ft_strjoin(environment, "\n");
+		}
+		else
+			printf("%s\n", (char *)copy_export_list->content);
+		copy_export_list = copy_export_list->next;
+	}
+	return (environment);
+}
+
+short	cd_cmd(char **tokens, char *old_pwd, short is_change_dir)
+{
+	if (!tokens[1])
+	{
+		chdir(getenv("HOME"));
+		return (1);
+	}
+	else if (ft_strlen(tokens[1]) == 1 && !ft_strncmp(tokens[1], "-", 1))
+	{
+		if (!old_pwd)
+		{
+			printf("minishell: OLDPWD not set\n");
+			return (0);
+		}
+		printf("%s\n", old_pwd);
+		chdir(old_pwd);
+		old_pwd = getcwd(NULL, 0);
+	}
+	else if (chdir(tokens[1]) == -1)
+	{
+		printf(BLUE "minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, tokens[1], DEF);
+		if (!is_change_dir)
+			return (0);
+	}
+	return (1);
+}
+
+void	export_cmd(char **tokens, t_list **export_list)
+{
+	int		j;
+	char	*args_export;
+	char	**split_export;
+
+	j = 1;
+	args_export = NULL;
+	split_export = NULL;
+	while (tokens[j])
+	{
+		if (check_export_arg(tokens[j]))
+		{
+			args_export = ft_strjoin(args_export, tokens[j]);
+			args_export = ft_strjoin(args_export, " ");
+		}
+		j++;
+	}
+	split_export = ft_split(args_export, ' ');
+	if (!split_export)
+		return ;
+	j = 0;
+	while (split_export[j])
+	{
+		ft_lstadd_back(export_list, ft_lstnew(ft_strdup(split_export[j])));
+		j++;
+	}
+}
+
+void	unset_cmd(char **tokens, t_list **export_list)
+{
+	t_list	*s;
+	int		j;
+	char	*args_unset;
+	char	**split_unset;
+
+	args_unset = NULL;
+	split_unset = NULL;
+	j = 1;
+	while (tokens[j])
+	{
+		if (check_unset_arg(tokens[j]))
+		{
+			args_unset = ft_strjoin(args_unset, tokens[j]);
+			args_unset = ft_strjoin(args_unset, " ");
+		}
+		j++;
+	}
+	split_unset = ft_split(args_unset, ' ');
+	if (!split_unset)
+		return ;
+	j = 0;
+	while (split_unset[j])
+	{
+		s = search_in_list(split_unset[j], *export_list);
+		if (s)
+			remove_node(export_list, s, del);
+		j++;
+	}
+}
+
+char	*redirect_output(char **tokens, char *pwd, char **env, int *status, t_list **export_list, char *old_pwd, short *is_change_dir)
+{
+	t_redirections_output	*list_redirections_output;
+	pid_t					pid;
+	char					*cmd_line_until_redirections;
+	char					**tokens_until_redirections;
+	char					*cmd_line;
+	int						fd[2];
+	int						fd_file;
+	char					*output_line;
+	char					*all_output;
+	char					*output;
+	char					*path_cmd;
+
+	cmd_line = join_tokens(tokens);
+	pipe(fd);
+	list_redirections_output = add_redirections_out_and_filename_in_list(cmd_line);
+	all_output = NULL;
+	while (list_redirections_output)
+	{
+		if (list_redirections_output->next)
+		{
+			open(list_redirections_output->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+			list_redirections_output = list_redirections_output->next;
+			continue ;
+		}
+		cmd_line_until_redirections = malloc(1000);
+		strcpy_until_redirections(cmd_line_until_redirections, cmd_line, ft_strlen(cmd_line) + 1);
+		tokens_until_redirections = ft_split_first_cmd(cmd_line_until_redirections, ' ', *status);
+		if (!ft_strncmp(list_redirections_output->type_redirection, ">>", 2))
+			fd_file = open(list_redirections_output->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
+		else
+			fd_file = open(list_redirections_output->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+		if (!ft_strncmp(tokens_until_redirections[0], "echo", 4) && ft_strlen(tokens_until_redirections[0]) == 4)
+		{
+			output = echo_cmd(tokens_until_redirections, 1);
+			write(fd_file, output, ft_strlen(output));
+			break ;
+		}
+		else if (!ft_strncmp(tokens_until_redirections[0], "env", 3) && ft_strlen(tokens_until_redirections[0]) == 3)
+		{
+			output = env_cmd(env, *export_list, 1);
+			write(fd_file, output, ft_strlen(output));
+			break ;
+		}
+		else if (ft_strlen(tokens_until_redirections[0]) == 6 && !ft_strncmp(tokens_until_redirections[0], "export", 6))
+		{
+			export_cmd(tokens_until_redirections, export_list);
+			break ;
+		}
+		else if (ft_strlen(tokens_until_redirections[0]) == 5 && !ft_strncmp(tokens_until_redirections[0], "unset", 5))
+		{
+			unset_cmd(tokens_until_redirections, export_list);
+			break ;
+		}
+		else if (!ft_strncmp(tokens_until_redirections[0], "pwd", 3) && ft_strlen(tokens_until_redirections[0]) == 3)
+		{
+			write(fd_file, ft_strjoin(pwd, "\n"), ft_strlen(pwd) + 1);
+			break ;
+		}
+		else if (!ft_strncmp(tokens_until_redirections[0], "cd", 2) && ft_strlen(tokens_until_redirections[0]) == 2)
+		{
+			*is_change_dir = cd_cmd(tokens_until_redirections, old_pwd, *is_change_dir);
+			if (old_pwd)
+				write(fd_file, old_pwd, ft_strlen(old_pwd));
+			if (is_change_dir)
+				old_pwd = pwd;
+			return (old_pwd);
+		}
+		path_cmd = is_there_cmd(tokens, status);
+		if (!path_cmd)
+			break ;
+		pid = fork();
+		if (!pid)
+		{
+			close(fd[0]);
+			dup2(fd[1], 1);
+			execve(path_cmd, tokens_until_redirections, env);
+		}
+		else
+		{
+			wait(status);
+			close(fd[1]);
+			output_line = get_next_line(fd[0]);
+			while (output_line)
+			{
+				all_output = ft_strjoin(output_line, all_output);
+				output_line = get_next_line(fd[0]);
+				write(fd_file, all_output, ft_strlen(all_output));
+			}
+		}
+		list_redirections_output = list_redirections_output->next;
+	}
+	return (old_pwd);
+}
+
+int	main(int argc, char **argv, char **env)
 {
 	struct sigaction	sig;
-    struct termios		ctr;
-    t_list				*export_list;
-    t_list				*copy_export_list;
+	struct termios		ctr;
+	t_list				*export_list;
 	int					i;
-	int					j;
 	int					status;
-	int					pid;
-	short				is_op_echo;
-	char				*input;
-	char				*path_cmd;
-	char				**args;
+	pid_t				pid;
+	char				*cmd_line;
+	char				**tokens;
 	char				*pwd;
+	char				*old_pwd;
 	char				**path;
 	char				*this_dir;
-	char				*args_export;
-	char				*args_unset;
-	char				**split_export;
-	char				**split_unset;
+	char				*path_cmd;
+	short				is_change_dir;
 
 	if (argc != 1)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
@@ -98,20 +360,19 @@ int main(int argc, char **argv, char **env)
 	(void)argv;
 	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
 	tcgetattr(0, &ctr);
-    ctr.c_lflag &= ~ECHOCTL;
-    tcsetattr(0, 0, &ctr);
-    sig.sa_handler = handle_signal;
-    sigemptyset(&sig.sa_mask);
-    sig.sa_flags = SA_RESTART;
-    sigaction(SIGINT, &sig, NULL);
-    signal(SIGQUIT, SIG_IGN);
-	args_export = NULL;
-	args_unset = NULL;
+	ctr.c_lflag &= ~ECHOCTL;
+	tcsetattr(0, 0, &ctr);
+	sig.sa_handler = handle_signal;
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sig, NULL);
+	signal(SIGQUIT, SIG_IGN);
+	old_pwd = NULL;
 	export_list = NULL;
+	is_change_dir = 0;
 	while (1)
 	{
 		i = 0;
-		is_op_echo = 0;
 		pwd = getcwd(NULL, 0);
 		path = ft_split(pwd, '/');
 		while (path[i])
@@ -120,122 +381,62 @@ int main(int argc, char **argv, char **env)
 		this_dir = ft_strjoin(this_dir, "\033[0m");
 		this_dir = ft_strjoin("\033[32m➥\033[0m ", this_dir);
 		this_dir = ft_strjoin(this_dir, " ");
-		input = readline(this_dir);
-		if (!input)
+		cmd_line = readline(this_dir);
+		if (!cmd_line)
 			break ;
-		if (!input[0])
+		if (!cmd_line[0])
 			continue ;
-		add_history(input);
-		args = ft_split_first_cmd(input, ' ', WEXITSTATUS(status));
-		if (!args)
+		add_history(cmd_line);
+		tokens = ft_split_first_cmd(cmd_line, ' ', WEXITSTATUS(status));
+		if (!tokens)
 			continue ;
-		if (!ft_strncmp(args[0], "exit", 4) && ft_strlen(args[0]) == 4)
+		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 			break ;
-		else if (!ft_strncmp(args[0], "export", 6) && ft_strlen(args[0]) == 6)
+		else if (is_there_redirect_out(cmd_line))
 		{
-			j = 1;
-			while (args[j])
-			{
-				if (check_export_arg(args[j]))
-				{
-					args_export = ft_strjoin(args_export, args[j]);
-					args_export = ft_strjoin(args_export, " ");
-				}
-				j++;
-			}
-			split_export = ft_split(args_export, ' ');
-			if (!split_export)
-				continue ;
-			j = 0;
-			while (split_export[j])
-			{
-				ft_lstadd_back(&export_list, ft_lstnew(ft_strdup(split_export[j])));
-				j++;	
-			}
-			args_export = NULL;
-			split_export = NULL;
+			old_pwd = redirect_output(tokens, pwd, env, &status, &export_list, old_pwd, &is_change_dir);
 			continue ;
 		}
-		else if (!ft_strncmp(args[0], "unset", 5) && ft_strlen(args[0]) == 5)
+		else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
 		{
-			j = 1;
-			while (args[j])
-			{
-				if (check_unset_arg(args[j]))
-				{
-					args_unset = ft_strjoin(args_unset, args[j]);
-					args_unset = ft_strjoin(args_unset, " ");
-				}
-				j++;
-			}
-			split_unset = ft_split(args_unset, ' ');
-			if (!split_unset)
-				continue ;
-			j = 0;
-			while (split_unset[j])
-			{
-				t_list *s = search_in_list(split_unset[j], export_list);
-				if (s)
-					remove_node(&export_list, s, del);
-				j++;
-			}
-			args_unset = NULL;
-			split_unset = NULL;
+			export_cmd(tokens, &export_list);
 			continue ;
 		}
-		else if (!ft_strncmp(args[0], "env", 3) && ft_strlen(args[0]) == 3)
+		else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
 		{
-			j = 1;
-			while (env[j])
-				printf("%s\n", env[j++]);
-			copy_export_list = export_list;
-			while (copy_export_list)
-			{
-				printf("%s\n", (char *)copy_export_list->content);
-				copy_export_list = copy_export_list->next;
-			}
+			unset_cmd(tokens, &export_list);
 			continue ;
 		}
-		else if (!ft_strncmp(args[0], "pwd", 3) && ft_strlen(args[0]) == 3)
+		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
+		{
+			env_cmd(env, export_list, 0);
+			continue ;
+		}
+		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3))
 		{
 			printf("%s\n", pwd);
 			continue ;
 		}
-		else if (!ft_strncmp(args[0], "echo", 4) && ft_strlen(args[0]) == 4)
+		else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
 		{
-			j = 1;
-			if (args[j] && !ft_strncmp(args[j], "-n", 2) && ft_strlen(args[j]) == 2)
-			{
-				is_op_echo = 1;
-				j++;
-			}
-			while (args[j])
-			{
-				printf("%s ", args[j]);
-				j++;
-			}
-			if (!is_op_echo)
-				printf("\n");
+			echo_cmd(tokens, 0);
 			continue ;
 		}
-		else if (!ft_strncmp(args[0], "cd", 2))
+		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
 		{
-			if (chdir(args[1]) == -1)
-				printf(BLUE"minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, args[1], DEF);
+			is_change_dir = cd_cmd(tokens, old_pwd, is_change_dir);
+			if (is_change_dir)
+				old_pwd = pwd;
 			continue ;
 		}
-		path_cmd = search_cmd(args[0]);
+		path_cmd = is_there_cmd(tokens, &status);
 		if (!path_cmd)
-		{
-			printf(RED "minishell: %s%s%s command not found.\n", BLUE, args[0], DEF);
-			status = 32512;
 			continue ;
-		}
 		pid = fork();
 		if (pid == 0)
-			execve(path_cmd, args, env);
+			execve(path_cmd, tokens, env);
 		else
 			wait(&status);
-		free(input);
+		free(cmd_line);
 	}
 }

@@ -6,7 +6,7 @@
 #    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/06/21 10:22:01 by youbella         ###   ########.fr        #
+#    Updated: 2025/06/22 20:59:19 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ CFLAGS = -Wall -Wextra -Werror
 READLINE_INCLUDE = -I$(shell brew --prefix readline)/include
 READLINE_LIBRARY = -L$(shell brew --prefix readline)/lib -lreadline
 
-SRC = minishell.c split_first_cmd.c search.c
+SRC = minishell.c split_first_cmd.c search.c redirections.c get_next_line_bonus/get_next_line_bonus.c get_next_line_bonus/get_next_line_utils_bonus.c
 OBJS = $(SRC:.c=.o)
 NAME = minishell
 
