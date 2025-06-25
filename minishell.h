@@ -6,7 +6,7 @@
 /*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/22 18:28:10 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/06/25 18:15:29 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,5 +32,6 @@ char	**ft_split_first_cmd(char const *s, char c, int status);
 t_list	*search_in_list(char *str, t_list *list);
 short	check_export_arg(char *arg);
 short	check_unset_arg(char *arg);
+char	*search_env(char *str);
 
 #endif
