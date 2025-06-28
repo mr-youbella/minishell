@@ -85,3 +85,4 @@ t_redirect	*search_herdoc_end_name_file(char *str)
 	}
 	return (red);
 }
+
