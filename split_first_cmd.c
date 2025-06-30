@@ -6,7 +6,7 @@
 /*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/26 00:11:59 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/06/26 02:28:18 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,6 +135,7 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 	size_t	count_double_quotes;
 	short	is_single_quote;
 	short	is_double_quote;
+	char *tmp;
 	
 	i = 0;
 	j = 0;
@@ -167,8 +168,8 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 		{
 			if (buffer)
 			{
-				p[j] = search_and_replace(buffer, status);
-				p[j] = search_env(buffer);
+				tmp = search_env(buffer);
+				p[j] = search_and_replace(tmp, status);
 				buffer = NULL;
 				j++;
 			}
@@ -179,8 +180,8 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 	}
 	if (buffer)
 	{
-		p[j] = search_and_replace(buffer, status);
-		p[j] = search_env(buffer);
+		tmp = search_env(buffer);
+		p[j] = search_and_replace(tmp, status);
 	}
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
@@ -189,11 +190,9 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 
 int main()
 {
-	int i = 0;
-	char **p;
-	p = ft_split_first_cmd("$USER $USER $HOME $PATH hello WORLD lol join us $USER$USER$hil$USER $lola $? $koko $USER$HOME $lol $USER", ' ', 3);
+	int		i = 0;
+	char	**p;
+	p = ft_split_first_cmd("$USER test $USER", ' ', 3);
 	while(p[i])
-	{
 		printf("%s\n", p[i++]);
-	}
 }
