@@ -156,13 +156,13 @@ size_t    strcpy_until_redirections(char *dst, const char *src, size_t n)
 	return (ft_strlen(src));
 }
 
-size_t	len_str(char *str)
+size_t  strlen_until_redirections(char *str, char redirect_type)
 {
 	size_t	i;
 
 	if (!str)
 		return (0);
-	while (str[i] && str[i] != '>'|| (str[i] && str[i] != 'h'))
+	while (str[i] && str[i] != '>'|| (str[i] && str[i] != '<' && str[i + 1] != '<'))
 		i++;
 	return (i);
 }
