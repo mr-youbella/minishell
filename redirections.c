@@ -162,7 +162,7 @@ size_t	len_str(char *str)
 
 	if (!str)
 		return (0);
-	while (str[i] && str[i] != '>')
+	while (str[i] && str[i] != '>'|| (str[i] && str[i] != 'h'))
 		i++;
 	return (i);
 }
