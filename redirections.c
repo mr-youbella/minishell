@@ -162,7 +162,7 @@ size_t  strlen_until_redirections(char *str)
 
 	if (!str)
 		return (0);
-	while (str[i] && str[i] != '>'|| (str[i] && str[i] != '<' && str[i + 1] != '<'))
+	while (str[i] && str[i] != '>'|| (str[i] != '<' && str[i + 1] != '<'))
 		i++;
 	return (i);
 }
