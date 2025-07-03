@@ -86,3 +86,44 @@ t_redirect	*search_herdoc_end_name_file(char *str)
 	return (red);
 }
 
+short    is_there_herdoc_out(const char *cmd_line)
+{
+	size_t	i;
+
+	i = 0;
+	while(cmd_line[i])
+	{
+		if (cmd_line[i] == '<' && cmd_line[i + 1] == '<')
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+size_t    strcpy_until_herdoc(char *dst, const char *src, size_t n)
+{
+	size_t	i;
+
+	i = 0;
+	if (!n)
+		return (ft_strlen(src));
+	while (src[i] && i < n - 1 && src[i] != '<' && src[i + 1] != '<')
+	{
+		dst[i] = src[i];
+		i++;
+	}
+	dst[i] = 0;
+	printf ("%s\n", dst);
+	return (ft_strlen(src));
+}
+
+size_t	len_str_herdoc(char *str)
+{
+	size_t	i;
+
+	if (!str)
+		return (0);
+	while (str[i] && str[i] != '<' && str[i + 1] != '<')
+		i++;
+	return (i);
+}
