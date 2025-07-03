@@ -156,7 +156,7 @@ size_t    strcpy_until_redirections(char *dst, const char *src, size_t n)
 	return (ft_strlen(src));
 }
 
-size_t  strlen_until_redirections(char *str, char redirect_type)
+size_t  strlen_until_redirections(char *str)
 {
 	size_t	i;
 
