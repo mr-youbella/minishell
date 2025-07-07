@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/22 22:06:12 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/04 17:03:45 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,10 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 42
+# endif
+
 # define GREEN "\033[32m"
 # define RED "\033[31m"
 # define BGRED "\033[41m"
@@ -30,12 +34,12 @@
 # define PINK "\033[35m"
 # define DEF "\033[0m"
 
-typedef struct s_redirections_output
+typedef struct s_redirections
 {
-	char				*type_redirection;
-	char				*file_name;
-	struct s_redirections_output	*next;
-}	t_redirections_output;
+	char					*type_redirection;
+	char					*file_name;
+	struct s_redirections	*next;
+}	t_redirections;
 
 char					**ft_split_first_cmd(char const *s, char c, int status);
 t_list					*search_in_list(char *str, t_list *list);
@@ -45,6 +49,8 @@ char					*get_next_line(int fd);
 short					is_there_redirect_out(char *cmd_line);
 char					*join_tokens(char **tokens);
 size_t					strcpy_until_redirections(char *dst, const char *src, size_t n);
-t_redirections_output	*add_redirections_out_and_filename_in_list(char *str);
+t_redirections			*add_redirections_out_in_list(char *str);
+t_redirections			*add_redirections_herdoc_in_list(char *str);
+size_t					strlen_until_redirections(char *str);
 
 #endif

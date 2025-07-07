@@ -6,11 +6,37 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/12 11:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/06/21 22:13:44 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/04 17:04:09 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line_bonus.h"
+#include "minishell.h"
+
+char	*ft_strjoin_gnl(char *s1, const char *s2)
+{
+	size_t	i;
+	size_t	j;
+	char	*p;
+
+	i = 0;
+	j = 0;
+	if (!s1 && !s2)
+		return (NULL);
+	if (!s1)
+		return (ft_strdup(s2));
+	if (!s2)
+		return (ft_strdup(s1));
+	p = malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
+	if (!p)
+		return (free(s1), NULL);
+	while (s1[i])
+		p[j++] = s1[i++];
+	i = 0;
+	while (s2[i])
+		p[j++] = s2[i++];
+	p[j] = 0;
+	return (free(s1), p);
+}
 
 static char	*ft_line(char *str, int fd)
 {

@@ -6,7 +6,7 @@
 #    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/06/22 20:59:19 by youbella         ###   ########.fr        #
+#    Updated: 2025/07/04 17:05:50 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ CFLAGS = -Wall -Wextra -Werror
 READLINE_INCLUDE = -I$(shell brew --prefix readline)/include
 READLINE_LIBRARY = -L$(shell brew --prefix readline)/lib -lreadline
 
-SRC = minishell.c split_first_cmd.c search.c redirections.c get_next_line_bonus/get_next_line_bonus.c get_next_line_bonus/get_next_line_utils_bonus.c
+SRC = minishell.c split_first_cmd.c search.c redirections.c get_next_line_bonus.c
 OBJS = $(SRC:.c=.o)
 NAME = minishell
 
@@ -27,6 +27,7 @@ CYAN = \033[0;36m
 DEF = \033[0m
 
 all: make_libft print_compiler_minishell $(NAME)
+	@echo "$(GREEN)All files $(BLUE)minishell$(DEF)$(GREEN) have been compiled.$(DEF)"
 
 print_compiler_minishell:
 	@echo "$(CYAN)================================$(DEF)"
@@ -44,7 +45,6 @@ make_libft:
 
 $(NAME): $(OBJS)
 	@$(CC) $(CFLAGS) $(READLINE_LIBRARY) $(OBJS) libft/libft.a -o $@
-	@echo "$(GREEN)✅ Compilation Completed Successfully!$(DEF)"
 
 %.o: %.c minishell.h
 	@echo "$(YELLOW)⚙️  Compiling $<...$(DEF)"

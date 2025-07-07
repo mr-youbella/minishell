@@ -5,7 +5,7 @@ RED = \033[31m
 GREEN = \033[32m
 YELLOW = \033[33m
 BLUE = \033[34m
-RESET = \033[0m
+DEF = \033[0m
 
 SRC = ft_atoi.c ft_bzero.c ft_calloc.c ft_isalnum.c \
 	 ft_isalpha.c ft_isascii.c ft_isdigit.c ft_isprint.c \
@@ -25,15 +25,17 @@ OBNS = $(BNS:.c=.o)
 NAME = libft.a
 
 all: $(NAME)
+	@echo "$(GREEN)All files $(BLUE)libft/mandatory$(DEF)$(GREEN) have been compiled.\n$(DEF)"
 
 $(NAME): $(OSRC)
 	@ar -rc $(NAME) $(OSRC)
 
 bonus: $(OBNS)
 	@ar -rc $(NAME) $(OBNS)
+	@echo "$(GREEN)All files $(BLUE)libft/bonus$(DEF)$(GREEN) have been compiled.$(DEF)"
 
 %.o: %.c libft.h
-	@echo "$(YELLOW)⚙️  Compiling $(BLUE)libft/$(RESET)$(YELLOW)$<...$(RESET)"
+	@echo "$(YELLOW)⚙️  Compiling $(BLUE)libft/$(DEF)$(YELLOW)$<...$(DEF)"
 	@$(CC) $(CFLAGS) -c $<
 
 clean:
