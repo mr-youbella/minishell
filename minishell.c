@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/07/08 19:17:21 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/08 19:25:40 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -474,7 +474,6 @@ int	main(int argc, char **argv, char **env)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
 	(void)argc;
 	(void)argv;
-	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
 	tcgetattr(0, &ctr);
 	ctr.c_lflag &= ~ECHOCTL;
 	tcsetattr(0, 0, &ctr);
@@ -487,6 +486,11 @@ int	main(int argc, char **argv, char **env)
 	export_list = NULL;
 	herdoc_output = NULL;
 	is_change_dir = 0;
+	pid = fork();
+	if (!pid)
+		execve("/usr/bin/clear", (char *[]){"clear", NULL}, env);
+	wait(NULL);
+	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
 	while (1)
 	{
 		i = 0;
