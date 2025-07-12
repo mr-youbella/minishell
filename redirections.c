@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/04 16:21:02 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/12 17:41:28 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,7 +182,7 @@ size_t	strcpy_until_redirections(char *dst, const char *src, size_t n)
 	i = 0;
 	if (!n)
 		return (ft_strlen(src));
-	while (src[i] && i < n - 1 && src[i] != '<')
+	while (src[i] && i < n - 1 && src[i] != '>')
 	{
 		dst[i] = src[i];
 		i++;
@@ -191,7 +191,7 @@ size_t	strcpy_until_redirections(char *dst, const char *src, size_t n)
 	return (ft_strlen(src));
 }
 
-size_t	strlen_until_redirections(char *str)
+size_t	strlen_until_redirections(char *str, char type)
 {
 	size_t	i;
 
