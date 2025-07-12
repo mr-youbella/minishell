@@ -6,11 +6,11 @@
 /*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/26 02:28:18 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/07/12 18:34:07 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 static size_t	count_words(const char *str, char c)
 {
@@ -68,7 +68,7 @@ int	is_unclose_quotes(size_t single_quote, size_t double_quotes)
 	return (0);
 }
 
-char	*search_and_replace(const char *str, int status)
+char	*search_and_replace(char *str, int status)
 {
 	size_t	i;
 	size_t	j;
@@ -76,10 +76,14 @@ char	*search_and_replace(const char *str, int status)
 	size_t	len;
 	size_t	n;
 	size_t	new_len;
+	short exist_dollar;
 	short	exist;
 	char	*int_to_str;
 	char	*p;
+	char *env;
 	
+	env = NULL;
+	exist_dollar = 0;
 	p = NULL;
 	i = 0;
 	j = 0;
@@ -119,7 +123,17 @@ char	*search_and_replace(const char *str, int status)
 		}
 		p[j] = 0;
 	}
-	
+	if (str[i]  == '$' && str[i + 1] != '?')
+	{
+		p = malloc (10000);
+		if (!p)
+			return (NULL);
+		env = search_env(str + i + 1);
+		int e = 0;
+		while (env[e])
+			p[j++] = env[e++];
+		p[j] = 0;
+	}
 	else
 		p = ft_strdup(str);
 	return (p);
@@ -135,7 +149,6 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 	size_t	count_double_quotes;
 	short	is_single_quote;
 	short	is_double_quote;
-	char *tmp;
 	
 	i = 0;
 	j = 0;
@@ -168,8 +181,7 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 		{
 			if (buffer)
 			{
-				tmp = search_env(buffer);
-				p[j] = search_and_replace(tmp, status);
+				p[j] = search_and_replace(buffer, status);
 				buffer = NULL;
 				j++;
 			}
@@ -179,10 +191,7 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 		i++;
 	}
 	if (buffer)
-	{
-		tmp = search_env(buffer);
-		p[j] = search_and_replace(tmp, status);
-	}
+		p[j] = search_and_replace(buffer, status);
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (p);
@@ -192,7 +201,7 @@ int main()
 {
 	int		i = 0;
 	char	**p;
-	p = ft_split_first_cmd("$USER test $USER", ' ', 3);
+	p = ft_split_first_cmd("$USER test $USER $US$?ER$USER", ' ', 3);
 	while(p[i])
 		printf("%s\n", p[i++]);
 }

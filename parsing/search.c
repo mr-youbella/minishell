@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   search.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#`+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/25 22:51:41 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/06/22 11:57:53 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 t_list	*search_in_list(char *str, t_list *list)
 {
@@ -34,18 +34,18 @@ short	check_export_arg(char *arg)
 		return (0);
 	if (!ft_isalpha(arg[i]) && arg[i] != '_')
 	{
-		printf("export: not an identifier: %s\n", split_arg[0]);
+		printf(BLUE "minishell: %sexport: %snot an identifier: %s%s\n" DEF, DEF, RED, CYAN, split_arg[0]);
 		return (0);
 	}
 	while (arg[i])
 	{
 		if (!ft_isalpha(arg[i]) && !ft_isdigit(arg[i]) && arg[i] != '_' && arg[i] != '=')
 		{
-			printf("export: not valid in this context: %s\n", split_arg[0]);
+			printf(BLUE "minishell: %sexport: %snot valid in this context: %s%s\n" DEF, DEF, RED, CYAN, split_arg[0]);
 			return (0);
 		}
 		if (arg[i] == '=' && arg[i + 1] == 0)
-			return (2);
+			return (0);
 		i++;
 	}
 	return (1);
@@ -60,14 +60,14 @@ short	check_unset_arg(char *arg)
 		return (0);
 	if (!ft_isalpha(arg[i]) && arg[i] != '_')
 	{
-		printf("unset: %s: invalid parameter name.\n", arg);
+		printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n" DEF, DEF, CYAN, arg, DEF, RED);
 		return (0);
 	}
 	while (arg[i])
 	{
 		if (!ft_isalpha(arg[i]) && !ft_isdigit(arg[i]) && arg[i] != '_')
 		{
-			printf("unset: %s: invalid parameter name.\n", arg);
+			printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n" DEF, DEF, CYAN, arg, DEF, RED);
 			return (0);
 		}
 		i++;
