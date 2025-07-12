@@ -6,7 +6,7 @@
 /*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/12 18:34:07 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/07/12 20:35:56 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,24 +118,27 @@ char	*search_and_replace(char *str, int status)
 					p[j++] = int_to_str[k++];
 				i += 2;
 			}
-			else
-				p[j++] = str[i++];
+			 else
+			 	p[j++] = str[i++];
 		}
-		p[j] = 0;
-	}
-	if (str[i]  == '$' && str[i + 1] != '?')
-	{
-		p = malloc (10000);
-		if (!p)
-			return (NULL);
-		env = search_env(str + i + 1);
-		int e = 0;
-		while (env[e])
-			p[j++] = env[e++];
 		p[j] = 0;
 	}
 	else
 		p = ft_strdup(str);
+	if ((str[i]  == '$' && str[i + 1] != '?'))
+	{
+		p = malloc (10000);
+		if (!p)
+			return (NULL);
+		env = search_env(str);
+		if (env)
+		{
+			int e = 0;
+			while (env[e])
+				p[j++] = env[e++];
+		}
+		p[j] = 0;
+	}
 	return (p);
 }
 
@@ -201,7 +204,7 @@ int main()
 {
 	int		i = 0;
 	char	**p;
-	p = ft_split_first_cmd("$USER test $USER $US$?ER$USER", ' ', 3);
+	p = ft_split_first_cmd("$USER 'test $USER' $US$?ER$USER $lol$HOME", ' ', 3);
 	while(p[i])
 		printf("%s\n", p[i++]);
 }
