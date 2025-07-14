@@ -1,0 +1,1 @@
+H/mnt/homes/wkannouf/Desktop/minishell0 Hello test 

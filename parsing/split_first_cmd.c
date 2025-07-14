@@ -6,19 +6,19 @@
 /*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/12 20:35:56 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/07/13 19:29:11 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-static size_t	count_words(const char *str, char c)
+static size_t count_words(const char *str, char c)
 {
-	size_t	i;
-	size_t	words;
-	short	is_word;
-	short	is_double_quote;
-	short	is_single_quote;
+	size_t i;
+	size_t words;
+	short is_word;
+	short is_double_quote;
+	short is_single_quote;
 
 	(1) && (words = 0, is_word = 0, i = 0);
 	is_double_quote = 0;
@@ -27,7 +27,7 @@ static size_t	count_words(const char *str, char c)
 	{
 		if (str[i] == 39 && !is_double_quote)
 			is_single_quote = !is_single_quote;
-		else if(str[i] == '"' && !is_single_quote)
+		else if (str[i] == '"' && !is_single_quote)
 			is_double_quote = !is_double_quote;
 		else if (str[i] == c && !is_double_quote && !is_single_quote)
 			is_word = 0;
@@ -41,11 +41,11 @@ static size_t	count_words(const char *str, char c)
 	return (words);
 }
 
-static char	*extract_word(const char *str, char c)
+static char *extract_word(const char *str, char c)
 {
-	size_t	len_str;
-	char	*p;
-	
+	size_t len_str;
+	char *p;
+
 	len_str = 0;
 	if (str)
 		len_str = ft_strlen(str);
@@ -58,7 +58,7 @@ static char	*extract_word(const char *str, char c)
 	return (p);
 }
 
-int	is_unclose_quotes(size_t single_quote, size_t double_quotes)
+int is_unclose_quotes(size_t single_quote, size_t double_quotes)
 {
 	if (single_quote % 2 != 0 || double_quotes % 2 != 0)
 	{
@@ -68,22 +68,18 @@ int	is_unclose_quotes(size_t single_quote, size_t double_quotes)
 	return (0);
 }
 
-char	*search_and_replace(char *str, int status)
+char *search_and_replace(const char *str, int status)
 {
-	size_t	i;
-	size_t	j;
-	size_t	k;
-	size_t	len;
-	size_t	n;
-	size_t	new_len;
-	short exist_dollar;
-	short	exist;
-	char	*int_to_str;
-	char	*p;
-	char *env;
-	
-	env = NULL;
-	exist_dollar = 0;
+	size_t i;
+	size_t j;
+	size_t k;
+	size_t len;
+	size_t n;
+	size_t new_len;
+	short exist;
+	char *int_to_str;
+	char *p;
+
 	p = NULL;
 	i = 0;
 	j = 0;
@@ -93,7 +89,7 @@ char	*search_and_replace(char *str, int status)
 	len = ft_strlen(str);
 	new_len = 0;
 	int_to_str = ft_itoa(status);
-	while(str[i])
+	while (str[i])
 	{
 		if (str[i] == '$' && str[i + 1] == '?')
 		{
@@ -114,45 +110,111 @@ char	*search_and_replace(char *str, int status)
 			if (str[i] == '$' && str[i + 1] == '?')
 			{
 				k = 0;
-				while(int_to_str[k])
+				while (int_to_str[k])
 					p[j++] = int_to_str[k++];
 				i += 2;
 			}
-			 else
-			 	p[j++] = str[i++];
+			else
+				p[j++] = str[i++];
 		}
 		p[j] = 0;
 	}
+
 	else
 		p = ft_strdup(str);
-	if ((str[i]  == '$' && str[i + 1] != '?'))
-	{
-		p = malloc (10000);
-		if (!p)
-			return (NULL);
-		env = search_env(str);
-		if (env)
-		{
-			int e = 0;
-			while (env[e])
-				p[j++] = env[e++];
-		}
-		p[j] = 0;
-	}
 	return (p);
 }
 
-char	**ft_split_first_cmd(char const *s, char c, int status)
+size_t len_str(char *str, int status)
 {
-	char	**p;
-	char	*buffer;
-	size_t	i;
-	size_t	j;
-	size_t	count_single_quote;
-	size_t	count_double_quotes;
-	short	is_single_quote;
-	short	is_double_quote;
-	
+	size_t 	i;
+	size_t 	j;
+	size_t 	s;
+	size_t 	len;
+	char	*env;
+
+	i = 0;
+	s = 0;
+	len = 0;
+	while (str[i])
+	{
+		if (str[i] == '$' && str[i + 1] == '?')
+		{
+			len += ft_strlen(ft_itoa(status));
+			i += 2;
+		}
+		else if (str[i] == '$')
+		{
+			j = 0;
+			i++;
+			s = i;
+			while (str[i] && ft_isalnum(str[i]) || str[i] == '_')
+			{
+				i++;
+				j++;
+			}
+			env = getenv(ft_substr(str, s, j));
+			if (!env)
+				len += 0;
+			else
+				len += ft_strlen(env);
+		}
+		else
+		{
+			len++;
+			i++;
+		}
+	}
+	return (len);
+}
+char *ft_dollar(char *str, int status)
+{
+	size_t i;
+	char *search;
+	char *env;
+	char **p;
+	char *join_args;
+	env = NULL;
+	search = NULL;
+	join_args = NULL;
+	i = 0;
+	size_t j = 0;
+	p = ft_split(str, ' ');
+	while (p[i])
+	{
+		while (p[i][j])
+		{
+			if (p[i][j] == '$' && p[i][j + 1] != '?')
+			{
+				env = search_env(p[i]);
+				if (!env)
+					return (p[i]);
+				return (env);
+			}
+			else if (p[i][j] == '$' && p[i][j + 1] == '?')
+			{
+				search = search_and_replace(p[i], status);
+				return (search);
+			}
+
+			j++;
+		}
+		i++;
+	}
+	return NULL;
+}
+
+char **ft_split_first_cmd(char const *s, char c, int status)
+{
+	char **p;
+	char *buffer;
+	size_t i;
+	size_t j;
+	size_t count_single_quote;
+	size_t count_double_quotes;
+	short is_single_quote;
+	short is_double_quote;
+
 	i = 0;
 	j = 0;
 	is_double_quote = 0;
@@ -160,7 +222,7 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 	count_single_quote = 0;
 	count_double_quotes = 0;
 	buffer = NULL;
-	p =	ft_calloc(count_words(s, c) + 1, sizeof(char *));
+	p = ft_calloc(count_words(s, c) + 1, sizeof(char *));
 	if (!p)
 		return (NULL);
 	while (s[i])
@@ -175,7 +237,7 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 			is_single_quote = !is_single_quote;
 			count_single_quote++;
 		}
-		else if(s[i] == '"' && !is_single_quote)
+		else if (s[i] == '"' && !is_single_quote)
 		{
 			is_double_quote = !is_double_quote;
 			count_double_quotes++;
@@ -184,7 +246,7 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 		{
 			if (buffer)
 			{
-				p[j] = search_and_replace(buffer, status);
+				p[j] = ft_dollar(buffer, status);
 				buffer = NULL;
 				j++;
 			}
@@ -194,17 +256,22 @@ char	**ft_split_first_cmd(char const *s, char c, int status)
 		i++;
 	}
 	if (buffer)
-		p[j] = search_and_replace(buffer, status);
+		p[j] = ft_dollar(buffer, status);
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (p);
 }
 
+// int main()
+// {
+// 	int i = 0;
+// 	char **p;
+// 	p = ft_split_first_cmd("'Hello H$PWD $HOME$USER'", ' ', 3);
+// 	while (p[i])
+// 		printf("%s\n", p[i++]);
+// }
+
 int main()
 {
-	int		i = 0;
-	char	**p;
-	p = ft_split_first_cmd("$USER 'test $USER' $US$?ER$USER $lol$HOME", ' ', 3);
-	while(p[i])
-		printf("%s\n", p[i++]);
+	printf("%zu\n", len_str("H$PWD$? Hello$USERR test ", 2));
 }
