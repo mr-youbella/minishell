@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/04 17:03:45 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/12 18:43:41 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,11 @@ t_list					*search_in_list(char *str, t_list *list);
 short					check_export_arg(char *arg);
 short					check_unset_arg(char *arg);
 char					*get_next_line(int fd);
-short					is_there_redirect_out(char *cmd_line);
+short					is_there_redirect(char *cmd_line, char redirect_type);
 char					*join_tokens(char **tokens);
-size_t					strcpy_until_redirections(char *dst, const char *src, size_t n);
+size_t					strcpy_until_redirections(char *dst, const char *src, size_t n, char redirect_type);
 t_redirections			*add_redirections_out_in_list(char *str);
 t_redirections			*add_redirections_herdoc_in_list(char *str);
-size_t					strlen_until_redirections(char *str);
+size_t					strlen_until_redirections(char *str, char redirect_type);
 
 #endif

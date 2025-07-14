@@ -6,11 +6,11 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/12 17:41:28 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/12 18:41:45 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 
 static t_redirections	*last_node(t_redirections *lst)
 {
@@ -144,20 +144,6 @@ t_redirections	*add_redirections_herdoc_in_list(char *str)
 	return (red);
 }
 
-short	is_there_redirect_out(char *cmd_line)
-{
-	size_t	i;
-
-	i = 0;
-	while(cmd_line[i])
-	{
-		if (cmd_line[i] == '>')
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
 char	*join_tokens(char **tokens)
 {
 	size_t	i;
@@ -175,15 +161,31 @@ char	*join_tokens(char **tokens)
 	return (tokens_in_line);
 }
 
-size_t	strcpy_until_redirections(char *dst, const char *src, size_t n)
+short	is_there_redirect(char *cmd_line, char redirect_type)
+{
+	size_t	i;
+
+	i = 0;
+	while(cmd_line[i])
+	{
+		if ((redirect_type == '>' && cmd_line[i] == '>') || (redirect_type == '<' && cmd_line[i] == '<') || (redirect_type == 'h' && cmd_line[i] == '<' && cmd_line[i + 1] == '<'))
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+size_t	strcpy_until_redirections(char *dst, const char *src, size_t n, char redirect_type)
 {
 	size_t	i;
 
 	i = 0;
 	if (!n)
 		return (ft_strlen(src));
-	while (src[i] && i < n - 1 && src[i] != '>')
+	while (src[i] && i < n - 1)
 	{
+		if ((redirect_type == '>' && src[i] == '>') || (redirect_type == '<' && src[i] == '<') || (redirect_type == 'h' && src[i] == '<' && src[i + 1] == '<'))
+			break ;
 		dst[i] = src[i];
 		i++;
 	}
@@ -191,14 +193,20 @@ size_t	strcpy_until_redirections(char *dst, const char *src, size_t n)
 	return (ft_strlen(src));
 }
 
-size_t	strlen_until_redirections(char *str, char type)
+size_t  strlen_until_redirections(char *str, char redirect_type)
 {
 	size_t	i;
 
 	i = 0;
-	if (!str)
-		return (0);
-	while (str[i] && str[i] != '>')
+	while (str[i])
+	{
+		if (redirect_type == '>' && str[i] == '>')
+			break ;
+		else if (redirect_type == '<' && str[i] == '<')
+			break ;
+		else if (redirect_type == 'h' && str[i] == '<' && str[i + 1] == '<')
+			break ;
 		i++;
+	}
 	return (i);
 }

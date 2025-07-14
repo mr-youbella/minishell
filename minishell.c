@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/07/08 19:25:40 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/12 19:52:37 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ void	remove_node(t_list **list, t_list *remove, void (*del)(void *))
 	ft_lstdelone(temp, del);
 }
 
-char	*echo_cmd(char **tokens, short is_return)
+char	*echo_cmd(char **tokens, short is_return, int *status)
 {
 	int		j;
 	short	is_op_echo;
@@ -102,6 +102,7 @@ char	*echo_cmd(char **tokens, short is_return)
 		else
 			printf("\n");
 	}
+	*status = 0;
 	return (str);
 }
 
@@ -241,7 +242,7 @@ void	unset_cmd(char **tokens, t_list **export_list)
 	}
 }
 
-char	*get_output_herdoc(char **tokens, char **env, int *status, t_list **export_list, char *old_pwd, short *is_change_dir, char *pwd, short is_return)
+char	*herdoc(char **tokens, char **env, int *status, t_list **export_list, char *old_pwd, short *is_change_dir, char *pwd, short is_return)
 {
 	t_redirections	*her;
 	char			*join_herdoc;
@@ -280,12 +281,12 @@ char	*get_output_herdoc(char **tokens, char **env, int *status, t_list **export_
 				join_herdoc = ft_strjoin(join_herdoc, "\n");
 		}
 	}
-	cmd_line_until_redirect = malloc(1000);
-	strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1);
+	cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, 'h'));
+	strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, 'h');
 	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status);
 	if (!ft_strncmp(tokens_until_redirect[0], "echo", 4) && ft_strlen(tokens_until_redirect[0]) == 4)
 	{
-		output = echo_cmd(tokens_until_redirect, 1);
+		output = echo_cmd(tokens_until_redirect, 1, status);
 		if (!is_return)
 			printf("%s", output);
 		else
@@ -323,11 +324,13 @@ char	*get_output_herdoc(char **tokens, char **env, int *status, t_list **export_
 			old_pwd = pwd;
 		return (old_pwd);
 	}
+	path_cmd = is_there_cmd(tokens, status);
+	if (!path_cmd)
+		return (NULL);
 	pipe(fd);
 	pipe(fd_out);
 	write(fd[1], join_herdoc, ft_strlen(join_herdoc));
 	close(fd[1]);
-	path_cmd = is_there_cmd(tokens, status);
 	pid = fork();
 	if (pid == 0)
 	{
@@ -341,12 +344,10 @@ char	*get_output_herdoc(char **tokens, char **env, int *status, t_list **export_
 	}
 	else
 	{
-		waitpid(pid, NULL, 0);
+		waitpid(pid, status, 0);
 		close(fd[0]);
 		close(fd_out[1]);
 	}
-	if (!path_cmd)
-		return (NULL);
 	output = get_next_line(fd_out[0]);
 	while (output)
 	{
@@ -356,7 +357,7 @@ char	*get_output_herdoc(char **tokens, char **env, int *status, t_list **export_
 	return (join_output);
 }
 
-char	*redirect_output(char **tokens, char *pwd, char **env, int *status, t_list **export_list, char *old_pwd, short *is_change_dir)
+char	*redirect_output(char **tokens, char *pwd, char **env, int *status, t_list **export_list, char *old_pwd, short *is_change_dir, char *herdoc_output)
 {
 	t_redirections	*list_redirections_output;
 	pid_t			pid;
@@ -382,16 +383,21 @@ char	*redirect_output(char **tokens, char *pwd, char **env, int *status, t_list 
 			list_redirections_output = list_redirections_output->next;
 			continue ;
 		}
-		cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line));
-		strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1);
+		cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, '>'));
+		strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, '>');
 		tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status);
 		if (!ft_strncmp(list_redirections_output->type_redirection, ">>", 2))
 			fd_file = open(list_redirections_output->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
 		else
 			fd_file = open(list_redirections_output->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+		if (herdoc_output)
+		{
+			write(fd_file, herdoc_output, ft_strlen(herdoc_output));
+			return (old_pwd);	
+		}
 		if (!ft_strncmp(tokens_until_redirect[0], "echo", 4) && ft_strlen(tokens_until_redirect[0]) == 4)
 		{
-			output = echo_cmd(tokens_until_redirect, 1);
+			output = echo_cmd(tokens_until_redirect, 1, status);
 			write(fd_file, output, ft_strlen(output));
 			break ;
 		}
@@ -486,6 +492,7 @@ int	main(int argc, char **argv, char **env)
 	export_list = NULL;
 	herdoc_output = NULL;
 	is_change_dir = 0;
+	status = 0;
 	pid = fork();
 	if (!pid)
 		execve("/usr/bin/clear", (char *[]){"clear", NULL}, env);
@@ -513,17 +520,10 @@ int	main(int argc, char **argv, char **env)
 			continue ;
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 			break ;
-		if (1)
+		else if (is_there_redirect(cmd_line, '>') || is_there_redirect(cmd_line, 'h'))
 		{
-			if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
-				old_pwd = get_output_herdoc(tokens, env, &status, &export_list, old_pwd, &is_change_dir, pwd, 1);
-			else
-				get_output_herdoc(tokens, env, &status, &export_list, old_pwd, &is_change_dir, pwd, 0);
-			continue ;
-		}
-		else if (is_there_redirect_out(cmd_line))
-		{
-			old_pwd = redirect_output(tokens, pwd, env, &status, &export_list, old_pwd, &is_change_dir);
+			herdoc_output = herdoc(tokens, env, &status, &export_list, old_pwd, &is_change_dir, pwd, 1);
+			old_pwd = redirect_output(tokens, pwd, env, &status, &export_list, old_pwd, &is_change_dir, herdoc_output);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
@@ -548,7 +548,7 @@ int	main(int argc, char **argv, char **env)
 		}
 		else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
 		{
-			echo_cmd(tokens, 0);
+			echo_cmd(tokens, 0, &status);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
