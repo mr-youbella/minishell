@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/13 18:33:06 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/07/12 18:43:41 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,5 @@ size_t					strcpy_until_redirections(char *dst, const char *src, size_t n, char 
 t_redirections			*add_redirections_out_in_list(char *str);
 t_redirections			*add_redirections_herdoc_in_list(char *str);
 size_t					strlen_until_redirections(char *str, char redirect_type);
-char					*search_env(char *str);
-size_t 					len_str(char *str, int status);
+
 #endif

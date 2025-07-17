@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_first_cmd.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/13 19:29:11 by wkannouf         ###   ########.fr       */
+/*   Updated: 2025/07/17 15:52:41 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,13 +243,4 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (p);
-}
-
-int main()
-{
-	int i = 0;
-	char **p;
-	p = ft_split_first_cmd("$HI 'hello' $?$? '$hh$USER' '$PWD' youbella", ' ', 137);
-	while (p[i])
-		printf("%s\n", p[i++]);
 }
