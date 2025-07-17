@@ -53,5 +53,5 @@ t_redirections			*add_redirections_out_in_list(char *str);
 t_redirections			*add_redirections_herdoc_in_list(char *str);
 size_t					strlen_until_redirections(char *str, char redirect_type);
 char					*search_env(char *str);
-size_t len_str(char *str, int status);
+size_t 					len_str(char *str, int status);
 #endif

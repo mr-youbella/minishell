@@ -1,1 +1,1 @@
-H/mnt/homes/wkannouf/Desktop/minishell0 Hello test 
+H/Users/wkannouf/Desktop/programming/minishell0 Hello test 

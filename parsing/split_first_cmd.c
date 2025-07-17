@@ -68,70 +68,13 @@ int is_unclose_quotes(size_t single_quote, size_t double_quotes)
 	return (0);
 }
 
-char *search_and_replace(const char *str, int status)
+size_t len_str(char *str, int status)
 {
 	size_t i;
 	size_t j;
-	size_t k;
+	size_t s;
 	size_t len;
-	size_t n;
-	size_t new_len;
-	short exist;
-	char *int_to_str;
-	char *p;
-
-	p = NULL;
-	i = 0;
-	j = 0;
-	n = 0;
-	k = 0;
-	exist = 0;
-	len = ft_strlen(str);
-	new_len = 0;
-	int_to_str = ft_itoa(status);
-	while (str[i])
-	{
-		if (str[i] == '$' && str[i + 1] == '?')
-		{
-			n++;
-			exist = 1;
-		}
-		i++;
-	}
-	i = 0;
-	if (exist == 1)
-	{
-		new_len = len + n * (ft_strlen(int_to_str) - 2);
-		p = malloc(new_len + 1);
-		if (!p)
-			return (NULL);
-		while (str[i])
-		{
-			if (str[i] == '$' && str[i + 1] == '?')
-			{
-				k = 0;
-				while (int_to_str[k])
-					p[j++] = int_to_str[k++];
-				i += 2;
-			}
-			else
-				p[j++] = str[i++];
-		}
-		p[j] = 0;
-	}
-
-	else
-		p = ft_strdup(str);
-	return (p);
-}
-
-size_t len_str(char *str, int status)
-{
-	size_t 	i;
-	size_t 	j;
-	size_t 	s;
-	size_t 	len;
-	char	*env;
+	char *env;
 
 	i = 0;
 	s = 0;
@@ -148,7 +91,7 @@ size_t len_str(char *str, int status)
 			j = 0;
 			i++;
 			s = i;
-			while (str[i] && ft_isalnum(str[i]) || str[i] == '_')
+			while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
 			{
 				i++;
 				j++;
@@ -167,41 +110,67 @@ size_t len_str(char *str, int status)
 	}
 	return (len);
 }
+
 char *ft_dollar(char *str, int status)
 {
-	size_t i;
-	char *search;
 	char *env;
-	char **p;
-	char *join_args;
-	env = NULL;
-	search = NULL;
-	join_args = NULL;
-	i = 0;
-	size_t j = 0;
-	p = ft_split(str, ' ');
-	while (p[i])
-	{
-		while (p[i][j])
-		{
-			if (p[i][j] == '$' && p[i][j + 1] != '?')
-			{
-				env = search_env(p[i]);
-				if (!env)
-					return (p[i]);
-				return (env);
-			}
-			else if (p[i][j] == '$' && p[i][j + 1] == '?')
-			{
-				search = search_and_replace(p[i], status);
-				return (search);
-			}
+	char *alloc;
+	size_t len;
+	size_t i;
+	size_t k;
+	size_t l;
+	size_t s;
+	size_t len_var;
 
-			j++;
+	i = 0;
+	k = 0;
+	l = 0;
+	s = 0;
+	len_var = 0;
+	len = len_str(str, status);
+	alloc = malloc(len + 1);
+	if (!alloc)
+		return (NULL);
+	while (str[i])
+	{
+		l = 0;
+		len_var = 0;
+		if (str[i] == '$' && str[i + 1] == '?')
+		{
+			env = ft_itoa(status);
+			while (env[l])
+			{
+				alloc[k] = env[l];
+				k++;
+				l++;
+			}
+			i += 2;
 		}
-		i++;
+		else if (str[i] == '$')
+		{
+			i++;
+			s = i;
+			while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
+			{
+				len_var++;
+				i++;
+			}
+			env = getenv(ft_substr(str, s, len_var));
+			if (env)
+			{
+				while (env[l])
+				{
+					alloc[k] = env[l];
+					k++;
+					l++;
+				}
+			}
+		}
+		else
+			alloc[k++] = str[i++];
 	}
-	return NULL;
+	alloc[k] = 0;
+	return (alloc);
 }
 
 char **ft_split_first_cmd(char const *s, char c, int status)
@@ -214,6 +183,7 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 	size_t count_double_quotes;
 	short is_single_quote;
 	short is_double_quote;
+	short check_single_quote;
 
 	i = 0;
 	j = 0;
@@ -221,6 +191,7 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 	is_single_quote = 0;
 	count_single_quote = 0;
 	count_double_quotes = 0;
+	check_single_quote = 0;
 	buffer = NULL;
 	p = ft_calloc(count_words(s, c) + 1, sizeof(char *));
 	if (!p)
@@ -235,6 +206,7 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 		if (s[i] == 39 && !is_double_quote)
 		{
 			is_single_quote = !is_single_quote;
+			check_single_quote++;
 			count_single_quote++;
 		}
 		else if (s[i] == '"' && !is_single_quote)
@@ -246,7 +218,13 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 		{
 			if (buffer)
 			{
-				p[j] = ft_dollar(buffer, status);
+				if (check_single_quote == 2)
+				{
+					p[j] = ft_strdup(buffer);
+					check_single_quote = 0;
+				}
+				else
+					p[j] = ft_dollar(buffer, status);
 				buffer = NULL;
 				j++;
 			}
@@ -256,22 +234,22 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 		i++;
 	}
 	if (buffer)
-		p[j] = ft_dollar(buffer, status);
+	{
+		if (check_single_quote == 2)
+			p[j] = ft_strdup(buffer);
+		else
+			p[j] = ft_dollar(buffer, status);
+	}
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (p);
 }
 
-// int main()
-// {
-// 	int i = 0;
-// 	char **p;
-// 	p = ft_split_first_cmd("'Hello H$PWD $HOME$USER'", ' ', 3);
-// 	while (p[i])
-// 		printf("%s\n", p[i++]);
-// }
-
 int main()
 {
-	printf("%zu\n", len_str("H$PWD$? Hello$USERR test ", 2));
+	int i = 0;
+	char **p;
+	p = ft_split_first_cmd("$HI 'hello' $?$? '$hh$USER' '$PWD' youbella", ' ', 137);
+	while (p[i])
+		printf("%s\n", p[i++]);
 }
