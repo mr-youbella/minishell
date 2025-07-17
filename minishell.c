@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/07/12 19:52:37 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/16 20:41:04 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -303,12 +303,12 @@ char	*herdoc(char **tokens, char **env, int *status, t_list **export_list, char 
 	else if (ft_strlen(tokens_until_redirect[0]) == 6 && !ft_strncmp(tokens_until_redirect[0], "export", 6))
 	{
 		export_cmd(tokens_until_redirect, export_list);
-		return (NULL);
+		return ("export");
 	}
 	else if (ft_strlen(tokens_until_redirect[0]) == 5 && !ft_strncmp(tokens_until_redirect[0], "unset", 5))
 	{
 		unset_cmd(tokens_until_redirect, export_list);
-		return (NULL);
+		return ("unset");
 	}
 	else if (!ft_strncmp(tokens_until_redirect[0], "pwd", 3) && ft_strlen(tokens_until_redirect[0]) == 3)
 	{
@@ -329,7 +329,8 @@ char	*herdoc(char **tokens, char **env, int *status, t_list **export_list, char 
 		return (NULL);
 	pipe(fd);
 	pipe(fd_out);
-	write(fd[1], join_herdoc, ft_strlen(join_herdoc));
+	if (join_herdoc)
+		write(fd[1], join_herdoc, ft_strlen(join_herdoc));
 	close(fd[1]);
 	pid = fork();
 	if (pid == 0)
@@ -392,6 +393,11 @@ char	*redirect_output(char **tokens, char *pwd, char **env, int *status, t_list 
 			fd_file = open(list_redirections_output->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 		if (herdoc_output)
 		{
+			if ((ft_strlen(tokens_until_redirect[0]) == 6 && !ft_strncmp(tokens_until_redirect[0], "export", 6) && !ft_strncmp(herdoc_output, "export", 6)) ||
+				(ft_strlen(tokens_until_redirect[0]) == 5 && !ft_strncmp(tokens_until_redirect[0], "unset", 5) && !ft_strncmp(herdoc_output, "unset", 5)))
+				return (old_pwd);
+			if (!ft_strncmp(tokens_until_redirect[0], "cd", 2) && ft_strlen(tokens_until_redirect[0]) == 2)
+				return (herdoc_output);
 			write(fd_file, herdoc_output, ft_strlen(herdoc_output));
 			return (old_pwd);	
 		}
@@ -522,8 +528,13 @@ int	main(int argc, char **argv, char **env)
 			break ;
 		else if (is_there_redirect(cmd_line, '>') || is_there_redirect(cmd_line, 'h'))
 		{
-			herdoc_output = herdoc(tokens, env, &status, &export_list, old_pwd, &is_change_dir, pwd, 1);
-			old_pwd = redirect_output(tokens, pwd, env, &status, &export_list, old_pwd, &is_change_dir, herdoc_output);
+			if (!is_there_redirect(cmd_line, '>'))
+				herdoc_output = herdoc(tokens, env, &status, &export_list, old_pwd, &is_change_dir, pwd, 0);
+			else
+			{
+				herdoc_output = herdoc(tokens, env, &status, &export_list, old_pwd, &is_change_dir, pwd, 1);
+				old_pwd = redirect_output(tokens, pwd, env, &status, &export_list, old_pwd, &is_change_dir, herdoc_output);
+			}
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
