@@ -12,7 +12,7 @@
 
 #include "../minishell.h"
 
-static t_redirections	*last_node(t_redirections *lst)
+static t_redirections *last_node(t_redirections *lst)
 {
 	if (!lst)
 		return (NULL);
@@ -21,21 +21,21 @@ static t_redirections	*last_node(t_redirections *lst)
 	return (lst);
 }
 
-static void	add_node_in_back(t_redirections **lst, t_redirections *new)
+static void add_node_in_back(t_redirections **lst, t_redirections *new)
 {
 	if (!new)
-		return ;
+		return;
 	if (!*lst)
 	{
 		*lst = new;
-		return ;
+		return;
 	}
 	last_node(*lst)->next = new;
 }
 
-static t_redirections	*craete_new_node(char *redirect_type, char *file)
+static t_redirections *craete_new_node(char *redirect_type, char *file)
 {
-	t_redirections	*node;
+	t_redirections *node;
 
 	node = malloc(sizeof(t_redirections));
 	if (!node)
@@ -46,21 +46,21 @@ static t_redirections	*craete_new_node(char *redirect_type, char *file)
 	return (node);
 }
 
-t_redirections	*add_redirections_out_in_list(char *str)
+t_redirections *add_redirections_out_in_list(char *str)
 {
-	size_t			i;
-	size_t			len;
-	size_t			start_namefile;
-	t_redirections	*list;
-	t_redirections	*new_node;
-	char			*redirec_type;
-	char			*file_name;
+	size_t i;
+	size_t len;
+	size_t start_namefile;
+	t_redirections *list;
+	t_redirections *new_node;
+	char *redirec_type;
+	char *file_name;
 
 	start_namefile = 0;
 	len = 0;
 	i = 0;
 	list = NULL;
-	while(str[i])
+	while (str[i])
 	{
 		if (str[i] == '>')
 		{
@@ -94,32 +94,35 @@ t_redirections	*add_redirections_out_in_list(char *str)
 			new_node = craete_new_node(redirec_type, file_name);
 			add_node_in_back(&list, new_node);
 		}
-		else 
+		else
 			i++;
 	}
 	return (list);
 }
 
-t_redirections	*add_redirections_herdoc_in_list(char *str)
+t_redirections *add_redirections_list(char *str, char c)
 {
-	size_t			i;
-	size_t			len;
-	size_t			start;
-	t_redirections	*red;
-	t_redirections	*new_node;
-	char			*re;
-	char			*end_file;
+	size_t i;
+	size_t len;
+	size_t start;
+	t_redirections *red;
+	t_redirections *new_node;
+	char *re;
+	char *end_file;
+	short exist;
 
+	exist = 0;
 	start = 0;
 	len = 0;
 	i = 0;
 	red = NULL;
-	while(str[i])
+	while (str[i])
 	{
 		if (str[i] == '<')
 		{
-			if (str[i + 1] == '<')
+			if (str[i + 1] == '<' && c == 'h')
 			{
+				exist = 1;
 				i += 2;
 				if (str[i] == 0)
 				{
@@ -128,30 +131,47 @@ t_redirections	*add_redirections_herdoc_in_list(char *str)
 				}
 				re = ft_strdup("<<");
 			}
-			while (str[i] == ' ')
+			else if (str[i + 1] != '<' && str[i - 1] != '<' && c == '<')
+			{
+				exist = 1;
 				i++;
-			start = i;
-			while (str[i] && str[i] != '<' && str[i] != ' ')
+				if (str[i] == 0)
+				{
+					printf("minishell: Syntax error.\n");
+					return (NULL);
+				}
+				re = ft_strdup("<");
+			}
+			else
 				i++;
-			len = i - start;
-			end_file = ft_substr(str, start, len);
-			new_node = craete_new_node(re, end_file);
-			add_node_in_back(&red, new_node);
+			if (exist == 1)
+			{
+				exist = 0;
+				while (str[i] == ' ')
+					i++;
+				start = i;
+				while (str[i] && str[i] != '<' && str[i] != ' ')
+					i++;
+				len = i - start;
+				end_file = ft_substr(str, start, len);
+				new_node = craete_new_node(re, end_file);
+				add_node_in_back(&red, new_node);
+			}
 		}
-		else 
+		else
 			i++;
 	}
 	return (red);
 }
 
-char	*join_tokens(char **tokens)
+char *join_tokens(char **tokens)
 {
-	size_t	i;
-	char	*tokens_in_line;
-	
+	size_t i;
+	char *tokens_in_line;
+
 	i = 0;
 	tokens_in_line = NULL;
-	while(tokens[i])
+	while (tokens[i])
 	{
 		tokens_in_line = ft_strjoin(tokens_in_line, tokens[i]);
 		if (tokens[i + 1])
@@ -161,12 +181,12 @@ char	*join_tokens(char **tokens)
 	return (tokens_in_line);
 }
 
-short	is_there_redirect(char *cmd_line, char redirect_type)
+short is_there_redirect(char *cmd_line, char redirect_type)
 {
-	size_t	i;
+	size_t i;
 
 	i = 0;
-	while(cmd_line[i])
+	while (cmd_line[i])
 	{
 		if ((redirect_type == '>' && cmd_line[i] == '>') || (redirect_type == '<' && cmd_line[i] == '<') || (redirect_type == 'h' && cmd_line[i] == '<' && cmd_line[i + 1] == '<'))
 			return (1);
@@ -175,9 +195,9 @@ short	is_there_redirect(char *cmd_line, char redirect_type)
 	return (0);
 }
 
-size_t	strcpy_until_redirections(char *dst, const char *src, size_t n, char redirect_type)
+size_t strcpy_until_redirections(char *dst, const char *src, size_t n, char redirect_type)
 {
-	size_t	i;
+	size_t i;
 
 	i = 0;
 	if (!n)
@@ -185,7 +205,7 @@ size_t	strcpy_until_redirections(char *dst, const char *src, size_t n, char redi
 	while (src[i] && i < n - 1)
 	{
 		if ((redirect_type == '>' && src[i] == '>') || (redirect_type == '<' && src[i] == '<') || (redirect_type == 'h' && src[i] == '<' && src[i + 1] == '<'))
-			break ;
+			break;
 		dst[i] = src[i];
 		i++;
 	}
@@ -193,19 +213,19 @@ size_t	strcpy_until_redirections(char *dst, const char *src, size_t n, char redi
 	return (ft_strlen(src));
 }
 
-size_t  strlen_until_redirections(char *str, char redirect_type)
+size_t strlen_until_redirections(char *str, char redirect_type)
 {
-	size_t	i;
+	size_t i;
 
 	i = 0;
 	while (str[i])
 	{
 		if (redirect_type == '>' && str[i] == '>')
-			break ;
+			break;
 		else if (redirect_type == '<' && str[i] == '<')
-			break ;
+			break;
 		else if (redirect_type == 'h' && str[i] == '<' && str[i + 1] == '<')
-			break ;
+			break;
 		i++;
 	}
 	return (i);
