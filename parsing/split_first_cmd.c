@@ -86,6 +86,11 @@ size_t len_str(char *str, int status)
 			len += ft_strlen(ft_itoa(status));
 			i += 2;
 		}
+		else if (str[i] == '$' && !ft_isalpha(str[i + 1]) && str[i + 1] != '_')
+		{
+			len++;
+			i++;
+		}
 		else if (str[i] == '$')
 		{
 			j = 0;
@@ -146,7 +151,12 @@ char *ft_dollar(char *str, int status)
 			}
 			i += 2;
 		}
-		else if (str[i] == '$')
+		else if (str[i] == '$' && !ft_isalpha(str[i + 1]) && str[i + 1] != '_')
+		{
+			alloc[k++] = str[i];
+			i++;
+		}
+		else if (str[i] == '$' && str[i + 1] != '?')
 		{
 			i++;
 			s = i;
