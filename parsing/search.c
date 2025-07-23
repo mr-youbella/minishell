@@ -65,7 +65,7 @@ short	check_unset_arg(char *arg)
 	}
 	while (arg[i])
 	{
-		if (!ft_isalpha(arg[i]) && !ft_isdigit(arg[i]) && arg[i] != '_')
+		if (!ft_isalnum(arg[i]) && arg[i] != '_')
 		{
 			printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n" DEF, DEF, CYAN, arg, DEF, RED);
 			return (0);

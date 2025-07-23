@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/12 18:41:45 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/22 16:34:48 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ t_redirections *add_redirections_out_in_list(char *str)
 				i += 2;
 				if (str[i] == 0)
 				{
-					printf("minishell: Syntax error.\n");
+					printf(BLUE"minishell:%s %ssyntax error.\n"DEF, DEF, RED);
 					return (NULL);
 				}
 				redirec_type = ft_strdup(">>");
@@ -79,7 +79,7 @@ t_redirections *add_redirections_out_in_list(char *str)
 				i++;
 				if (str[i] == 0)
 				{
-					printf("minishell: Syntax error.\n");
+					printf(BLUE"minishell:%s %ssyntax error.\n"DEF, DEF, RED);
 					return (NULL);
 				}
 				redirec_type = ft_strdup(">");
@@ -150,8 +150,12 @@ t_redirections *add_redirections_list(char *str, char c)
 				while (str[i] == ' ')
 					i++;
 				start = i;
-				while (str[i] && str[i] != '<' && str[i] != ' ')
-					i++;
+				if (c == 'h')
+					while (str[i] && str[i] != '<' && str[i] != ' ')
+						i++;
+				else
+					while (str[i] && str[i] != '<')
+						i++;
 				len = i - start;
 				end_file = ft_substr(str, start, len);
 				new_node = craete_new_node(re, end_file);
@@ -188,7 +192,7 @@ short is_there_redirect(char *cmd_line, char redirect_type)
 	i = 0;
 	while (cmd_line[i])
 	{
-		if ((redirect_type == '>' && cmd_line[i] == '>') || (redirect_type == '<' && cmd_line[i] == '<') || (redirect_type == 'h' && cmd_line[i] == '<' && cmd_line[i + 1] == '<'))
+		if ((redirect_type == '>' && cmd_line[i] == '>') || (redirect_type == '<' && cmd_line[i] == '<' && cmd_line[i + 1] != '<' && cmd_line[i - 1] != '<') || (redirect_type == 'h' && cmd_line[i] == '<' && cmd_line[i + 1] == '<'))
 			return (1);
 		i++;
 	}
@@ -198,35 +202,65 @@ short is_there_redirect(char *cmd_line, char redirect_type)
 size_t strcpy_until_redirections(char *dst, const char *src, size_t n, char redirect_type)
 {
 	size_t i;
+	size_t j;
 
 	i = 0;
+	j = 0;
 	if (!n)
 		return (ft_strlen(src));
 	while (src[i] && i < n - 1)
 	{
-		if ((redirect_type == '>' && src[i] == '>') || (redirect_type == '<' && src[i] == '<') || (redirect_type == 'h' && src[i] == '<' && src[i + 1] == '<'))
-			break;
-		dst[i] = src[i];
+		if ((redirect_type == '>' && src[i] == '>') || (redirect_type == '<' && src[i] == '<' && src[i + 1] != '<' && src[i - 1] != '<') || (redirect_type == 'h' && src[i] == '<' && src[i + 1] == '<'))
+		{
+			if (redirect_type == 'h')
+				i++;
+			i++;
+			while (src[i] == ' ')
+				i++;
+			while (ft_isprint(src[i]) && src[i] != ' ')
+				i++;
+		}
+		if (!src[i])
+			break ;
+		dst[j] = src[i];
 		i++;
+		j++;
 	}
-	dst[i] = 0;
+	dst[j] = 0;
 	return (ft_strlen(src));
 }
 
 size_t strlen_until_redirections(char *str, char redirect_type)
 {
 	size_t i;
+	size_t len;
 
 	i = 0;
+	len = 0;
 	while (str[i])
 	{
-		if (redirect_type == '>' && str[i] == '>')
-			break;
-		else if (redirect_type == '<' && str[i] == '<')
-			break;
-		else if (redirect_type == 'h' && str[i] == '<' && str[i + 1] == '<')
-			break;
+		if ((redirect_type == '>' && str[i] == '>') || (redirect_type == '<' && str[i] == '<' && str[i + 1] != '<' && str[i - 1] != '<') || (redirect_type == 'h' && str[i] == '<' && str[i + 1] == '<'))
+		{
+			if (redirect_type == 'h')
+				i++;
+			i++;
+			while (str[i] == ' ')
+				i++;
+			while (ft_isprint(str[i]) && str[i] != ' ')
+				i++;
+		}
+		if (!str[i])
+			break ;
+		len++;
 		i++;
 	}
-	return (i);
+	return (len);
 }
+
+// int main()
+// {
+// 	char *dst = malloc(100);
+// 	strcpy_until_redirections(dst, "cat << Makefile minishell.c", ft_strlen("cat << Makefile minishell.c") + 1, 'h');
+// 	printf("%s\n", dst);
+// 	printf("%zu\n", strlen_until_redirections("cat << Makefile minishell.c", 'h'));
+// }
