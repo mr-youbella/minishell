@@ -26,28 +26,30 @@ t_list	*search_in_list(char *str, t_list *list)
 short	check_export_arg(char *arg)
 {
 	size_t	i;
-	char	**split_arg;
+	short	is_exist_equal;
 
 	i = 0;
-	split_arg = ft_split(arg, '=');
+	is_exist_equal = 0;
 	if (!arg)
 		return (0);
 	if (!ft_isalpha(arg[i]) && arg[i] != '_')
 	{
-		printf(BLUE "minishell: %sexport: %snot an identifier: %s%s\n" DEF, DEF, RED, CYAN, split_arg[0]);
+		printf(BLUE "minishell: %sexport: %svariable not an identifier.%s\n" DEF, DEF, RED, CYAN);
 		return (0);
 	}
 	while (arg[i])
 	{
-		if (!ft_isalpha(arg[i]) && !ft_isdigit(arg[i]) && arg[i] != '_' && arg[i] != '=')
+		if (arg[i] == '!' || arg[i] == '&' || arg[i] == '(' || arg[i] == ')')
 		{
-			printf(BLUE "minishell: %sexport: %snot valid in this context: %s%s\n" DEF, DEF, RED, CYAN, split_arg[0]);
+			printf(BLUE "minishell: %sexport: %snot valid in this context. %s\n" DEF, DEF, RED, CYAN);
 			return (0);
 		}
-		if (arg[i] == '=' && arg[i + 1] == 0)
-			return (0);
+		if (arg[i] == '=')
+			is_exist_equal = 1;
 		i++;
 	}
+	if (!is_exist_equal)
+		return (0);
 	return (1);
 }
 
@@ -65,7 +67,7 @@ short	check_unset_arg(char *arg)
 	}
 	while (arg[i])
 	{
-		if (!ft_isalnum(arg[i]) && arg[i] != '_')
+		if (!ft_isalpha(arg[i]) && !ft_isdigit(arg[i]) && arg[i] != '_')
 		{
 			printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n" DEF, DEF, CYAN, arg, DEF, RED);
 			return (0);
