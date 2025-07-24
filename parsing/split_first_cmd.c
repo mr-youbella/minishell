@@ -6,11 +6,13 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/17 15:52:41 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/23 17:08:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
+
+char	*ft_getenv(char *var, t_list *export_list);
 
 static size_t count_words(const char *str, char c)
 {
@@ -68,7 +70,7 @@ int is_unclose_quotes(size_t single_quote, size_t double_quotes)
 	return (0);
 }
 
-size_t len_str(char *str, int status)
+size_t len_str(char *str, int status, t_list **export_list)
 {
 	size_t i;
 	size_t j;
@@ -101,7 +103,7 @@ size_t len_str(char *str, int status)
 				i++;
 				j++;
 			}
-			env = getenv(ft_substr(str, s, j));
+			env = ft_getenv(ft_substr(str, s, j), *export_list);
 			if (!env)
 				len += 0;
 			else
@@ -116,7 +118,7 @@ size_t len_str(char *str, int status)
 	return (len);
 }
 
-char *ft_dollar(char *str, int status)
+char *ft_dollar(char *str, int status, t_list **export_list)
 {
 	char *env;
 	char *alloc;
@@ -132,7 +134,7 @@ char *ft_dollar(char *str, int status)
 	l = 0;
 	s = 0;
 	len_var = 0;
-	len = len_str(str, status);
+	len = len_str(str, status, export_list);
 	alloc = malloc(len + 1);
 	if (!alloc)
 		return (NULL);
@@ -165,7 +167,7 @@ char *ft_dollar(char *str, int status)
 				len_var++;
 				i++;
 			}
-			env = getenv(ft_substr(str, s, len_var));
+			env = ft_getenv(ft_substr(str, s, len_var), *export_list);
 			if (env)
 			{
 				while (env[l])
@@ -183,7 +185,7 @@ char *ft_dollar(char *str, int status)
 	return (alloc);
 }
 
-char **ft_split_first_cmd(char const *s, char c, int status)
+char **ft_split_first_cmd(char const *s, char c, int status, t_list **export_list)
 {
 	char **p;
 	char *buffer;
@@ -234,7 +236,7 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 					check_single_quote = 0;
 				}
 				else
-					p[j] = ft_dollar(buffer, status);
+					p[j] = ft_dollar(buffer, status, export_list);
 				buffer = NULL;
 				j++;
 			}
@@ -248,9 +250,27 @@ char **ft_split_first_cmd(char const *s, char c, int status)
 		if (check_single_quote == 2)
 			p[j] = ft_strdup(buffer);
 		else
-			p[j] = ft_dollar(buffer, status);
+			p[j] = ft_dollar(buffer, status, export_list);
 	}
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (p);
+}
+
+void f()
+{
+	system("leaks a.out");
+}
+
+int main()
+{
+	atexit(f);
+	int i = 0;
+	char **p = ft_split_first_cmd("echo Hello World 'hmmmm'", ' ', 137, NULL);
+	while (p[i])
+	{
+		printf("%s\n", p[i++]);
+		free(p[i]);
+	}
+	// free(p);
 }
