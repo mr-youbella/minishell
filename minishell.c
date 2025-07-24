@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/07/23 17:08:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/24 17:38:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,11 @@ void handle_signal(int sig)
 	rl_redisplay();
 }
 
-char	*ft_getenv(char *var, t_list *export_list)
+char *ft_getenv(char *var, t_list *export_list)
 {
-	char	*var_env;
-	char	*env;
-	int		i;
+	char *var_env;
+	char *env;
+	int i;
 
 	env = getenv(var);
 	if (env)
@@ -64,7 +64,7 @@ char	*ft_getenv(char *var, t_list *export_list)
 		while (((char *)export_list->content)[i])
 		{
 			if (((char *)export_list->content)[i] == '=')
-				break ;
+				break;
 			i++;
 		}
 		var_env = ft_substr((char *)export_list->content, 0, i);
@@ -291,7 +291,7 @@ char *herdoc(char **tokens, char **env, int *status, t_list **export_list, char 
 	}
 	cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, 'h') + 1);
 	strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, 'h');
-	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, export_list);
+	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, *export_list);
 	if (!ft_strncmp(tokens_until_redirect[0], "echo", 4) && ft_strlen(tokens_until_redirect[0]) == 4)
 	{
 		output = echo_cmd(tokens_until_redirect, 1, status);
@@ -405,36 +405,36 @@ void redirect_input(char **tokens, int *status, char **env, t_list **export_list
 	}
 	cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, '<') + 1);
 	strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, '<');
-	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, export_list);
+	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, *export_list);
 	if (!ft_strncmp(tokens_until_redirect[0], "echo", 4) && ft_strlen(tokens_until_redirect[0]) == 4)
 	{
 		echo_cmd(tokens_until_redirect, 0, status);
-		return ;
+		return;
 	}
 	else if (!ft_strncmp(tokens_until_redirect[0], "env", 3) && ft_strlen(tokens_until_redirect[0]) == 3)
 	{
 		env_cmd(env, *export_list, 0);
-		return ;
+		return;
 	}
 	else if (ft_strlen(tokens_until_redirect[0]) == 6 && !ft_strncmp(tokens_until_redirect[0], "export", 6))
 	{
 		export_cmd(tokens_until_redirect, export_list);
-		return ;
+		return;
 	}
 	else if (ft_strlen(tokens_until_redirect[0]) == 5 && !ft_strncmp(tokens_until_redirect[0], "unset", 5))
 	{
 		unset_cmd(tokens_until_redirect, export_list);
-		return ;
+		return;
 	}
 	else if (!ft_strncmp(tokens_until_redirect[0], "pwd", 3) && ft_strlen(tokens_until_redirect[0]) == 3)
 	{
 		printf("%s\n", pwd);
-		return ;
+		return;
 	}
 	else if (!ft_strncmp(tokens_until_redirect[0], "cd", 2) && ft_strlen(tokens_until_redirect[0]) == 2)
 	{
 		cd_cmd(tokens_until_redirect[1]);
-		return ;
+		return;
 	}
 	path_cmd = is_there_cmd(tokens_until_redirect, status);
 	if (!path_cmd)
@@ -478,7 +478,7 @@ char *redirect_output(char **tokens, char *pwd, char **env, int *status, t_list 
 		}
 		cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, '>') + 1);
 		strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, '>');
-		tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, export_list);
+		tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, *export_list);
 		if (!ft_strncmp(list_redirections_output->type_redirection, ">>", 2))
 			fd_file = open(list_redirections_output->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
 		else
@@ -557,6 +557,52 @@ char *redirect_output(char **tokens, char *pwd, char **env, int *status, t_list 
 	return (NULL);
 }
 
+void ft_pipe(char *cmd_line, int status, t_list *export_list, char **env, char *pwd)
+{
+	char **split_pipe = ft_split_first_cmd(cmd_line, '|', status, export_list);
+	char *herdoc_output = NULL;
+	char **tokens;
+	int i = 0;
+	int fd[2];
+	int in_fd = 0;
+
+	while (split_pipe[i])
+	{
+		pipe(fd);
+		int pid = fork();
+		if (pid == 0)
+		{
+			dup2(in_fd, 0);
+			if (split_pipe[i + 1])
+				dup2(fd[1], 1);
+			close(fd[0]);
+			tokens = ft_split_first_cmd(split_pipe[i], ' ', status, export_list);
+			if (is_there_redirect(split_pipe[i], '<'))
+				redirect_input(tokens, &status, env, &export_list, pwd);
+			else if (is_there_redirect(split_pipe[i], '>') || is_there_redirect(split_pipe[i], 'h'))
+			{
+				if (!is_there_redirect(split_pipe[i], '>'))
+					herdoc(tokens, env, &status, &export_list, pwd, 0);
+				else
+				{
+					herdoc_output = herdoc(tokens, env, &status, &export_list, pwd, 1);
+					redirect_output(tokens, pwd, env, &status, &export_list, herdoc_output);
+				}
+			}
+			else
+				execve(is_there_cmd(tokens, &i), tokens, env);
+			exit(1);
+		}
+		else
+		{
+			wait(NULL);
+			close(fd[1]);
+			in_fd = fd[0];
+		}
+		i++;
+	}
+}
+
 int main(int argc, char **argv, char **env)
 {
 	struct sigaction sig;
@@ -610,11 +656,16 @@ int main(int argc, char **argv, char **env)
 		if (!cmd_line[0])
 			continue;
 		add_history(cmd_line);
-		tokens = ft_split_first_cmd(cmd_line, ' ', WEXITSTATUS(status), &export_list);
+		tokens = ft_split_first_cmd(cmd_line, ' ', WEXITSTATUS(status), export_list);
 		if (!tokens)
 			continue;
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 			break;
+		else if (1)
+		{
+			ft_pipe(cmd_line, status, export_list, env, pwd);
+			continue;
+		}
 		else if (is_there_redirect(cmd_line, '<'))
 		{
 			redirect_input(tokens, &status, env, &export_list, pwd);

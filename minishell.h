@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/23 17:07:15 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/24 13:56:41 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ typedef struct s_redirections
 	struct s_redirections	*next;
 }	t_redirections;
 
-char			**ft_split_first_cmd(char const *s, char c, int status, t_list **export_list);
+char			**ft_split_first_cmd(char const *s, char c, int status, t_list *export_list);
 t_list			*search_in_list(char *str, t_list *list);
 short			check_export_arg(char *arg);
 short			check_unset_arg(char *arg);
