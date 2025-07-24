@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   search.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
-/*                                                +#+#`+#+#+#+   +#+           */
-/*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/06/22 11:57:53 by youbella         ###   ########.fr       */
+/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/24 13:11:52 by wkannouf          #+#    #+#             */
+/*   Updated: 2025/07/24 13:34:30 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,13 @@
 
 t_list	*search_in_list(char *str, t_list *list)
 {
-   while (list)
-   {
-       if (ft_strlen(str) == ft_strlen((char *)list->content) && !ft_strncmp(str, (char *)list->content, ft_strlen(str)))
-           return (list);
-       list = list->next;
-   }
-   return (NULL);
+	while (list)
+	{
+		if (ft_strlen(str) == ft_strlen((char *)list->content) && !ft_strncmp(str, (char *)list->content, ft_strlen(str)))
+			return (list);
+		list = list->next;
+	}
+	return (NULL);
 }
 
 short	check_export_arg(char *arg)
@@ -74,5 +74,5 @@ short	check_unset_arg(char *arg)
 		}
 		i++;
 	}
-	return (1); 
+	return (1);
 }

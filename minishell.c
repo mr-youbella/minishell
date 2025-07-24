@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/07/23 17:08:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/24 13:23:40 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,11 @@ void handle_signal(int sig)
 	rl_redisplay();
 }
 
-char	*ft_getenv(char *var, t_list *export_list)
+char *ft_getenv(char *var, t_list *export_list)
 {
-	char	*var_env;
-	char	*env;
-	int		i;
+	char *var_env;
+	char *env;
+	int i;
 
 	env = getenv(var);
 	if (env)
@@ -64,13 +64,15 @@ char	*ft_getenv(char *var, t_list *export_list)
 		while (((char *)export_list->content)[i])
 		{
 			if (((char *)export_list->content)[i] == '=')
-				break ;
+				break;
 			i++;
 		}
 		var_env = ft_substr((char *)export_list->content, 0, i);
 		env = ft_substr((char *)export_list->content, i + 1, ft_strlen((char *)export_list->content) - i - 1);
 		if (ft_strlen(var) == ft_strlen(var_env) && !ft_strncmp(var, var_env, ft_strlen(var)))
 			return (env);
+		free(env);
+		free(var_env);
 		export_list = export_list->next;
 	}
 	return (NULL);
@@ -291,12 +293,15 @@ char *herdoc(char **tokens, char **env, int *status, t_list **export_list, char 
 	}
 	cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, 'h') + 1);
 	strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, 'h');
-	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, export_list);
+	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, *export_list);
 	if (!ft_strncmp(tokens_until_redirect[0], "echo", 4) && ft_strlen(tokens_until_redirect[0]) == 4)
 	{
 		output = echo_cmd(tokens_until_redirect, 1, status);
 		if (!is_return)
+		{
 			printf("%s", output);
+			return (NULL);
+		}
 		else
 			return (output);
 	}
@@ -376,7 +381,6 @@ char *herdoc(char **tokens, char **env, int *status, t_list **export_list, char 
 void redirect_input(char **tokens, int *status, char **env, t_list **export_list, char *pwd)
 {
 	t_redirections *list_redirections_input;
-	t_redirections *buffer;
 	char *cmd_line;
 	char *cmd_line_until_redirect;
 	char *path_cmd;
@@ -406,36 +410,36 @@ void redirect_input(char **tokens, int *status, char **env, t_list **export_list
 	}
 	cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, '<') + 1);
 	strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, '<');
-	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, export_list);
+	tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, *export_list);
 	if (!ft_strncmp(tokens_until_redirect[0], "echo", 4) && ft_strlen(tokens_until_redirect[0]) == 4)
 	{
 		echo_cmd(tokens_until_redirect, 0, status);
-		return ;
+		return;
 	}
 	else if (!ft_strncmp(tokens_until_redirect[0], "env", 3) && ft_strlen(tokens_until_redirect[0]) == 3)
 	{
 		env_cmd(env, *export_list, 0);
-		return ;
+		return;
 	}
 	else if (ft_strlen(tokens_until_redirect[0]) == 6 && !ft_strncmp(tokens_until_redirect[0], "export", 6))
 	{
 		export_cmd(tokens_until_redirect, export_list);
-		return ;
+		return;
 	}
 	else if (ft_strlen(tokens_until_redirect[0]) == 5 && !ft_strncmp(tokens_until_redirect[0], "unset", 5))
 	{
 		unset_cmd(tokens_until_redirect, export_list);
-		return ;
+		return;
 	}
 	else if (!ft_strncmp(tokens_until_redirect[0], "pwd", 3) && ft_strlen(tokens_until_redirect[0]) == 3)
 	{
 		printf("%s\n", pwd);
-		return ;
+		return;
 	}
 	else if (!ft_strncmp(tokens_until_redirect[0], "cd", 2) && ft_strlen(tokens_until_redirect[0]) == 2)
 	{
 		cd_cmd(tokens_until_redirect[1]);
-		return ;
+		return;
 	}
 	path_cmd = is_there_cmd(tokens_until_redirect, status);
 	if (!path_cmd)
@@ -479,7 +483,7 @@ char *redirect_output(char **tokens, char *pwd, char **env, int *status, t_list 
 		}
 		cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, '>') + 1);
 		strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, '>');
-		tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, export_list);
+		tokens_until_redirect = ft_split_first_cmd(cmd_line_until_redirect, ' ', *status, *export_list);
 		if (!ft_strncmp(list_redirections_output->type_redirection, ">>", 2))
 			fd_file = open(list_redirections_output->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
 		else
@@ -558,121 +562,121 @@ char *redirect_output(char **tokens, char *pwd, char **env, int *status, t_list 
 	return (NULL);
 }
 
-// int main(int argc, char **argv, char **env)
-// {
-// 	struct sigaction sig;
-// 	struct termios ctr;
-// 	t_list *export_list;
-// 	int i;
-// 	int status;
-// 	pid_t pid;
-// 	char *cmd_line;
-// 	char **tokens;
-// 	char *pwd;
-// 	char **path;
-// 	char *this_dir;
-// 	char *path_cmd;
-// 	char *herdoc_output;
+int main(int argc, char **argv, char **env)
+{
+	struct sigaction sig;
+	struct termios ctr;
+	t_list *export_list;
+	int i;
+	int status;
+	pid_t pid;
+	char *cmd_line;
+	char **tokens;
+	char *pwd;
+	char **path;
+	char *this_dir;
+	char *path_cmd;
+	char *herdoc_output;
 
-// 	if (argc != 1)
-// 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
-// 	(void)argc;
-// 	(void)argv;
-// 	tcgetattr(0, &ctr);
-// 	ctr.c_lflag &= ~ECHOCTL;
-// 	tcsetattr(0, 0, &ctr);
-// 	sig.sa_handler = handle_signal;
-// 	sigemptyset(&sig.sa_mask);
-// 	sig.sa_flags = SA_RESTART;
-// 	sigaction(SIGINT, &sig, NULL);
-// 	signal(SIGQUIT, SIG_IGN);
-// 	export_list = NULL;
-// 	herdoc_output = NULL;
-// 	status = 0;
-// 	pid = fork();
-// 	if (!pid)
-// 		execve("/usr/bin/clear", (char *[]){"clear", NULL}, env);
-// 	wait(NULL);
-// 	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
-// 	while (1)
-// 	{
-// 		i = 0;
-// 		pwd = getcwd(NULL, 0);
-// 		path = ft_split(pwd, '/');
-// 		while (path[i])
-// 			this_dir = path[i++];
-// 		this_dir = ft_strjoin("\033[1;94m", this_dir);
-// 		this_dir = ft_strjoin(this_dir, "\033[0m");
-// 		this_dir = ft_strjoin("\033[32m➥\033[0m ", this_dir);
-// 		this_dir = ft_strjoin(this_dir, " ");
-// 		cmd_line = readline(this_dir);
-// 		if (!cmd_line)
-// 			break;
-// 		if (!cmd_line[0])
-// 			continue;
-// 		add_history(cmd_line);
-// 		tokens = ft_split_first_cmd(cmd_line, ' ', WEXITSTATUS(status), &export_list);
-// 		if (!tokens)
-// 			continue;
-// 		if (!tokens[0])
-// 			continue;
-// 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
-// 			break;
-// 		else if (is_there_redirect(cmd_line, '<'))
-// 		{
-// 			redirect_input(tokens, &status, env, &export_list, pwd);
-// 			continue;
-// 		}
-// 		else if (is_there_redirect(cmd_line, '>') || is_there_redirect(cmd_line, 'h'))
-// 		{
-// 			if (!is_there_redirect(cmd_line, '>'))
-// 				herdoc(tokens, env, &status, &export_list, pwd, 0);
-// 			else
-// 			{
-// 				herdoc_output = herdoc(tokens, env, &status, &export_list, pwd, 1);
-// 				redirect_output(tokens, pwd, env, &status, &export_list, herdoc_output);
-// 			}
-// 			continue;
-// 		}
-// 		else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
-// 		{
-// 			export_cmd(tokens, &export_list);
-// 			continue;
-// 		}
-// 		else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
-// 		{
-// 			unset_cmd(tokens, &export_list);
-// 			continue;
-// 		}
-// 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
-// 		{
-// 			env_cmd(env, export_list, 0);
-// 			continue;
-// 		}
-// 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3))
-// 		{
-// 			printf("%s\n", pwd);
-// 			continue;
-// 		}
-// 		else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
-// 		{
-// 			echo_cmd(tokens, 0, &status);
-// 			continue;
-// 		}
-// 		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
-// 		{
-// 			cd_cmd(tokens[1]);
-// 			continue;
-// 		}
-// 		path_cmd = is_there_cmd(tokens, &status);
-// 		if (!path_cmd)
-// 			continue;
-// 		pid = fork();
-// 		if (pid == 0)
-// 			execve(path_cmd, tokens, env);
-// 		else
-// 			wait(&status);
-// 		free(cmd_line);
-// 	}
-// 	return (0);
-// }
+	if (argc != 1)
+		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
+	(void)argc;
+	(void)argv;
+	tcgetattr(0, &ctr);
+	ctr.c_lflag &= ~ECHOCTL;
+	tcsetattr(0, 0, &ctr);
+	sig.sa_handler = handle_signal;
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sig, NULL);
+	signal(SIGQUIT, SIG_IGN);
+	export_list = NULL;
+	herdoc_output = NULL;
+	status = 0;
+	pid = fork();
+	if (!pid)
+		execve("/usr/bin/clear", (char *[]){"clear", NULL}, env);
+	wait(NULL);
+	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
+	while (1)
+	{
+		i = 0;
+		pwd = getcwd(NULL, 0);
+		path = ft_split(pwd, '/');
+		while (path[i])
+			this_dir = path[i++];
+		this_dir = ft_strjoin("\033[1;94m", this_dir);
+		this_dir = ft_strjoin(this_dir, "\033[0m");
+		this_dir = ft_strjoin("\033[32m➥\033[0m ", this_dir);
+		this_dir = ft_strjoin(this_dir, " ");
+		cmd_line = readline(this_dir);
+		if (!cmd_line)
+			break;
+		if (!cmd_line[0])
+			continue;
+		add_history(cmd_line);
+		tokens = ft_split_first_cmd(cmd_line, ' ', WEXITSTATUS(status), export_list);
+		if (!tokens)
+			continue;
+		if (!tokens[0])
+			continue;
+		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
+			break;
+		else if (is_there_redirect(cmd_line, '<'))
+		{
+			redirect_input(tokens, &status, env, &export_list, pwd);
+			continue;
+		}
+		else if (is_there_redirect(cmd_line, '>') || is_there_redirect(cmd_line, 'h'))
+		{
+			if (!is_there_redirect(cmd_line, '>'))
+				herdoc(tokens, env, &status, &export_list, pwd, 0);
+			else
+			{
+				herdoc_output = herdoc(tokens, env, &status, &export_list, pwd, 1);
+				redirect_output(tokens, pwd, env, &status, &export_list, herdoc_output);
+			}
+			continue;
+		}
+		else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
+		{
+			export_cmd(tokens, &export_list);
+			continue;
+		}
+		else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
+		{
+			unset_cmd(tokens, &export_list);
+			continue;
+		}
+		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
+		{
+			env_cmd(env, export_list, 0);
+			continue;
+		}
+		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3))
+		{
+			printf("%s\n", pwd);
+			continue;
+		}
+		else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
+		{
+			echo_cmd(tokens, 0, &status);
+			continue;
+		}
+		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
+		{
+			cd_cmd(tokens[1]);
+			continue;
+		}
+		path_cmd = is_there_cmd(tokens, &status);
+		if (!path_cmd)
+			continue;
+		pid = fork();
+		if (pid == 0)
+			execve(path_cmd, tokens, env);
+		else
+			wait(&status);
+		free(cmd_line);
+	}
+	return (0);
+}

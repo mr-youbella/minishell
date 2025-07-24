@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: wkannouf <wkannouf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/23 17:07:15 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/24 13:02:00 by wkannouf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,18 +41,21 @@ typedef struct s_redirections
 	struct s_redirections	*next;
 }	t_redirections;
 
-char			**ft_split_first_cmd(char const *s, char c, int status, t_list **export_list);
+char			**ft_split_first_cmd(char const *s, char c, \
+int status, t_list *export_list);
 t_list			*search_in_list(char *str, t_list *list);
 short			check_export_arg(char *arg);
 short			check_unset_arg(char *arg);
 char			*get_next_line(int fd);
 short			is_there_redirect(char *cmd_line, char redirect_type);
 char			*join_tokens(char **tokens);
-size_t			strcpy_until_redirections(char *dst, const char *src, size_t n, char redirect_type);
+size_t			strcpy_until_redirections(char *dst, const char *src, \
+size_t n, char redirect_type);
 t_redirections	*add_redirections_out_in_list(char *str);
 t_redirections	*add_redirections_list(char *str, char c);
 size_t			strlen_until_redirections(char *str, char redirect_type);
 char			*ft_getenv(char *var, t_list *export_list);
 void			free_redirections(t_redirections *redirections);
+void			free_split(char **p);
 
 #endif
