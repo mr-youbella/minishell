@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/22 16:34:48 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/25 13:15:07 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ t_redirections *add_redirections_out_in_list(char *str)
 	return (list);
 }
 
-t_redirections *add_redirections_list(char *str, char c)
+t_redirections *add_redirections_list(char *str)
 {
 	size_t i;
 	size_t len;
@@ -120,7 +120,7 @@ t_redirections *add_redirections_list(char *str, char c)
 	{
 		if (str[i] == '<')
 		{
-			if (str[i + 1] == '<' && c == 'h')
+			if (str[i + 1] == '<')
 			{
 				exist = 1;
 				i += 2;
@@ -131,7 +131,7 @@ t_redirections *add_redirections_list(char *str, char c)
 				}
 				re = ft_strdup("<<");
 			}
-			else if (str[i + 1] != '<' && str[i - 1] != '<' && c == '<')
+			else if (str[i + 1] != '<' && str[i - 1] != '<')
 			{
 				exist = 1;
 				i++;
@@ -150,7 +150,7 @@ t_redirections *add_redirections_list(char *str, char c)
 				while (str[i] == ' ')
 					i++;
 				start = i;
-				if (c == 'h')
+				if (!ft_strncmp(re, "<<", 2))
 					while (str[i] && str[i] != '<' && str[i] != ' ')
 						i++;
 				else
@@ -257,10 +257,12 @@ size_t strlen_until_redirections(char *str, char redirect_type)
 	return (len);
 }
 
-// int main()
-// {
-// 	char *dst = malloc(100);
-// 	strcpy_until_redirections(dst, "cat << Makefile minishell.c", ft_strlen("cat << Makefile minishell.c") + 1, 'h');
-// 	printf("%s\n", dst);
-// 	printf("%zu\n", strlen_until_redirections("cat << Makefile minishell.c", 'h'));
-// }
+int main()
+{
+	t_redirections *r = add_redirections_list("cat << end e < Makefile minishell.c << end1 < minishell.pdf a.out");
+	while (r)
+	{
+		printf("%s | %s\n", r->type_redirection, r->file_name);
+		r = r->next;
+	}
+}

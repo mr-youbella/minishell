@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/07/24 17:38:26 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/25 13:14:09 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,26 +268,33 @@ char *herdoc(char **tokens, char **env, int *status, t_list **export_list, char 
 	join_herdoc = NULL;
 	join_output = NULL;
 	cmd_line = join_tokens(tokens);
-	her = add_redirections_list(cmd_line, 'h');
+	her = add_redirections_list(cmd_line);
 	if (!her)
 		return (NULL);
-	while (1)
+	while (her)
 	{
-		input = readline(CYAN "heredoc > " DEF);
-		add_history(input);
-		if (ft_strlen(her->file_name) == ft_strlen(input) && !ft_strncmp(her->file_name, input, ft_strlen(her->file_name)))
+		if (!ft_strncmp(her->type_redirection, "<<", 2))
 		{
-			her = her->next;
-			input = NULL;
+			while (1)
+			{
+				input = readline(CYAN "heredoc > " DEF);
+				add_history(input);
+				if (ft_strlen(her->file_name) == ft_strlen(input) && !ft_strncmp(her->file_name, input, ft_strlen(her->file_name)))
+				{
+					her = her->next;
+					input = NULL;
+				}
+				if (!her)
+					break;
+				if (!her->next)
+				{
+					join_herdoc = ft_strjoin(join_herdoc, input);
+					if (join_herdoc)
+						join_herdoc = ft_strjoin(join_herdoc, "\n");
+				}
+			}
 		}
-		if (!her)
-			break;
-		if (!her->next)
-		{
-			join_herdoc = ft_strjoin(join_herdoc, input);
-			if (join_herdoc)
-				join_herdoc = ft_strjoin(join_herdoc, "\n");
-		}
+		her = her->next;
 	}
 	cmd_line_until_redirect = malloc(strlen_until_redirections(cmd_line, 'h') + 1);
 	strcpy_until_redirections(cmd_line_until_redirect, cmd_line, ft_strlen(cmd_line) + 1, 'h');
@@ -386,7 +393,7 @@ void redirect_input(char **tokens, int *status, char **env, t_list **export_list
 	int pid;
 
 	cmd_line = join_tokens(tokens);
-	list_redirections_input = add_redirections_list(cmd_line, '<');
+	list_redirections_input = add_redirections_list(cmd_line);
 	while (list_redirections_input)
 	{
 		i = 0;
@@ -568,28 +575,32 @@ void ft_pipe(char *cmd_line, int status, t_list *export_list, char **env, char *
 
 	while (split_pipe[i])
 	{
+		int exits_redirect = 0;
 		pipe(fd);
+		tokens = ft_split_first_cmd(split_pipe[i], ' ', status, export_list);
+		if (is_there_redirect(split_pipe[i], '<'))
+			redirect_input(tokens, &status, env, &export_list, pwd);
+		else if (is_there_redirect(split_pipe[i], '>') || is_there_redirect(split_pipe[i], 'h'))
+		{
+			if (!is_there_redirect(split_pipe[i], '>'))
+				herdoc_output = herdoc(tokens, env, &status, &export_list, pwd, 1);
+			else
+			{
+				herdoc_output = herdoc(tokens, env, &status, &export_list, pwd, 1);
+				redirect_output(tokens, pwd, env, &status, &export_list, herdoc_output);
+			}
+			exits_redirect = 1;
+		}
 		int pid = fork();
 		if (pid == 0)
 		{
 			dup2(in_fd, 0);
 			if (split_pipe[i + 1])
 				dup2(fd[1], 1);
+			if (herdoc_output)
+				write(fd[1], herdoc_output, ft_strlen(herdoc_output));
 			close(fd[0]);
-			tokens = ft_split_first_cmd(split_pipe[i], ' ', status, export_list);
-			if (is_there_redirect(split_pipe[i], '<'))
-				redirect_input(tokens, &status, env, &export_list, pwd);
-			else if (is_there_redirect(split_pipe[i], '>') || is_there_redirect(split_pipe[i], 'h'))
-			{
-				if (!is_there_redirect(split_pipe[i], '>'))
-					herdoc(tokens, env, &status, &export_list, pwd, 0);
-				else
-				{
-					herdoc_output = herdoc(tokens, env, &status, &export_list, pwd, 1);
-					redirect_output(tokens, pwd, env, &status, &export_list, herdoc_output);
-				}
-			}
-			else
+			if (!exits_redirect)
 				execve(is_there_cmd(tokens, &i), tokens, env);
 			exit(1);
 		}
@@ -657,11 +668,11 @@ int main(int argc, char **argv, char **env)
 			continue;
 		add_history(cmd_line);
 		tokens = ft_split_first_cmd(cmd_line, ' ', WEXITSTATUS(status), export_list);
-		if (!tokens)
+		if (!tokens || !tokens[0])
 			continue;
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 			break;
-		else if (1)
+		else if (0)
 		{
 			ft_pipe(cmd_line, status, export_list, env, pwd);
 			continue;
