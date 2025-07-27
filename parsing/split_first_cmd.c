@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/24 13:56:27 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/27 08:50:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,7 +249,6 @@ char	**ft_split_first_cmd(char const *s, char c, int status, t_list *export_list
 				}
 				else
 					p[j] = ft_dollar(buffer, status, export_list);
-				free(buffer);
 				buffer = NULL;
 				j++;
 			}
@@ -265,7 +264,6 @@ char	**ft_split_first_cmd(char const *s, char c, int status, t_list *export_list
 		else
 			p[j] = ft_dollar(buffer, status, export_list);
 	}
-	free(buffer);
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (p);

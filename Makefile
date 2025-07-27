@@ -6,12 +6,12 @@
 #    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/07/24 17:42:12 by youbella         ###   ########.fr        #
+#    Updated: 2025/07/27 08:39:15 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror #-g -fsanitize=address
 READLINE_INCLUDE = -I$(shell brew --prefix readline)/include
 READLINE_LIBRARY = -L$(shell brew --prefix readline)/lib -lreadline
 

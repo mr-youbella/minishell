@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/07/25 13:15:07 by youbella         ###   ########.fr       */
+/*   Updated: 2025/07/26 21:46:57 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,14 @@ t_redirections *add_redirections_out_in_list(char *str)
 	list = NULL;
 	while (str[i])
 	{
+		if (str[i] == '"' || str[i] == 39)
+		{
+			i++;
+			while (str[i] && str[i] != '"' && str[i] != 39)
+				i++;
+			if (str[i] == '"' || str[i] == 39)
+				i++;
+		}
 		if (str[i] == '>')
 		{
 			if (str[i + 1] == '>')
@@ -69,7 +77,7 @@ t_redirections *add_redirections_out_in_list(char *str)
 				i += 2;
 				if (str[i] == 0)
 				{
-					printf(BLUE"minishell:%s %ssyntax error.\n"DEF, DEF, RED);
+					printf(BLUE "minishell:%s %ssyntax error.\n" DEF, DEF, RED);
 					return (NULL);
 				}
 				redirec_type = ft_strdup(">>");
@@ -79,7 +87,7 @@ t_redirections *add_redirections_out_in_list(char *str)
 				i++;
 				if (str[i] == 0)
 				{
-					printf(BLUE"minishell:%s %ssyntax error.\n"DEF, DEF, RED);
+					printf(BLUE "minishell:%s %ssyntax error.\n" DEF, DEF, RED);
 					return (NULL);
 				}
 				redirec_type = ft_strdup(">");
@@ -95,7 +103,10 @@ t_redirections *add_redirections_out_in_list(char *str)
 			add_node_in_back(&list, new_node);
 		}
 		else
-			i++;
+		{
+			if (str[i])
+				i++;
+		}
 	}
 	return (list);
 }
@@ -118,6 +129,14 @@ t_redirections *add_redirections_list(char *str)
 	red = NULL;
 	while (str[i])
 	{
+		if (str[i] == '"' || str[i] == 39)
+		{
+			i++;
+			while (str[i] && str[i] != '"' && str[i] != 39)
+				i++;
+			if (str[i] == '"' || str[i] == 39)
+				i++;
+		}
 		if (str[i] == '<')
 		{
 			if (str[i + 1] == '<')
@@ -151,10 +170,10 @@ t_redirections *add_redirections_list(char *str)
 					i++;
 				start = i;
 				if (!ft_strncmp(re, "<<", 2))
-					while (str[i] && str[i] != '<' && str[i] != ' ')
+					while (str[i] && str[i] != '<' && str[i] != ' ' && str[i] != '>')
 						i++;
 				else
-					while (str[i] && str[i] != '<')
+					while (str[i] && str[i] != '<' && str[i] != '>')
 						i++;
 				len = i - start;
 				end_file = ft_substr(str, start, len);
@@ -163,7 +182,10 @@ t_redirections *add_redirections_list(char *str)
 			}
 		}
 		else
-			i++;
+		{
+			if (str[i])
+				i++;
+		}
 	}
 	return (red);
 }
@@ -192,6 +214,14 @@ short is_there_redirect(char *cmd_line, char redirect_type)
 	i = 0;
 	while (cmd_line[i])
 	{
+		if (cmd_line[i] == '"' || cmd_line[i] == 39)
+		{
+			i++;
+			while (cmd_line[i] && cmd_line[i] != '"' && cmd_line[i] != 39)
+				i++;
+			if (cmd_line[i] == '"' || cmd_line[i] == 39)
+				i++;
+		}
 		if ((redirect_type == '>' && cmd_line[i] == '>') || (redirect_type == '<' && cmd_line[i] == '<' && cmd_line[i + 1] != '<' && cmd_line[i - 1] != '<') || (redirect_type == 'h' && cmd_line[i] == '<' && cmd_line[i + 1] == '<'))
 			return (1);
 		i++;
@@ -199,7 +229,7 @@ short is_there_redirect(char *cmd_line, char redirect_type)
 	return (0);
 }
 
-size_t strcpy_until_redirections(char *dst, const char *src, size_t n, char redirect_type)
+size_t strcpy_until_redirections(char *dst, const char *src, size_t n)
 {
 	size_t i;
 	size_t j;
@@ -210,9 +240,27 @@ size_t strcpy_until_redirections(char *dst, const char *src, size_t n, char redi
 		return (ft_strlen(src));
 	while (src[i] && i < n - 1)
 	{
-		if ((redirect_type == '>' && src[i] == '>') || (redirect_type == '<' && src[i] == '<' && src[i + 1] != '<' && src[i - 1] != '<') || (redirect_type == 'h' && src[i] == '<' && src[i + 1] == '<'))
+		if (src[i] == '"' || src[i] == 39)
 		{
-			if (redirect_type == 'h')
+			dst[j] = src[i];
+			i++;
+			j++;
+			while (src[i] && src[i] != '"' && src[i] != 39)
+			{
+				dst[j] = src[i];
+				i++;
+				j++;
+			}
+			if (src[i] == '"' || src[i] == 39)
+			{
+				dst[j] = src[i];
+				i++;
+				j++;
+			}
+		}
+		if ((src[i] == '>') || (src[i] == '<' && src[i + 1] != '<' && src[i - 1] != '<') || (src[i] == '<' && src[i + 1] == '<'))
+		{
+			if (src[i] == '<' && src[i + 1] == '<')
 				i++;
 			i++;
 			while (src[i] == ' ')
@@ -221,7 +269,7 @@ size_t strcpy_until_redirections(char *dst, const char *src, size_t n, char redi
 				i++;
 		}
 		if (!src[i])
-			break ;
+			break;
 		dst[j] = src[i];
 		i++;
 		j++;
@@ -230,7 +278,7 @@ size_t strcpy_until_redirections(char *dst, const char *src, size_t n, char redi
 	return (ft_strlen(src));
 }
 
-size_t strlen_until_redirections(char *str, char redirect_type)
+size_t strlen_until_redirections(char *str)
 {
 	size_t i;
 	size_t len;
@@ -239,9 +287,9 @@ size_t strlen_until_redirections(char *str, char redirect_type)
 	len = 0;
 	while (str[i])
 	{
-		if ((redirect_type == '>' && str[i] == '>') || (redirect_type == '<' && str[i] == '<' && str[i + 1] != '<' && str[i - 1] != '<') || (redirect_type == 'h' && str[i] == '<' && str[i + 1] == '<'))
+		if ((str[i] == '>') || (str[i] == '<' && str[i + 1] != '<' && str[i - 1] != '<') || (str[i] == '<' && str[i + 1] == '<'))
 		{
-			if (redirect_type == 'h')
+			if (str[i] == '<' && str[i + 1] == '<')
 				i++;
 			i++;
 			while (str[i] == ' ')
@@ -250,19 +298,23 @@ size_t strlen_until_redirections(char *str, char redirect_type)
 				i++;
 		}
 		if (!str[i])
-			break ;
+			break;
 		len++;
 		i++;
 	}
 	return (len);
 }
 
-int main()
-{
-	t_redirections *r = add_redirections_list("cat << end e < Makefile minishell.c << end1 < minishell.pdf a.out");
-	while (r)
-	{
-		printf("%s | %s\n", r->type_redirection, r->file_name);
-		r = r->next;
-	}
-}
+// int main()
+// {
+// 	// t_redirections *p = add_redirections_out_in_list("cat > l \"Makefile main.c\"");
+// 	// while (p)
+// 	// {
+// 	// 	printf("%s | %s\n", p->type_redirection, p->file_name);
+// 	// 	p = p->next;
+// 	// }
+// 	char *dst = malloc(strlen_until_redirections("cat > l \"Makefile main.c\""));
+// 	strcpy_until_redirections(dst, "cat > l \"Makefile main.c\"", ft_strlen("cat > l \"Makefile main.c\"") + 1);
+// 	printf("%s\n", dst);	
+	
+// }
