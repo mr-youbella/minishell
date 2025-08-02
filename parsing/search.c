@@ -88,7 +88,7 @@ t_list *all_env(char *var, char **env, t_list *export_list)
 
 	enviroment = NULL;
 	i = 0;
-	while (var[i] != '=')
+	while (var && var[i] != '=')
 		i++;
 	p = ft_substr(var, 0, i);
 	i = 0;
@@ -97,7 +97,7 @@ t_list *all_env(char *var, char **env, t_list *export_list)
 		j = 0;
 		while (env[i][j] != '=')
 			j++;
-		if (j == ft_strlen(p) && !ft_strncmp(env[i], p, j))
+		if (p && j == ft_strlen(p) && !ft_strncmp(env[i], p, j))
 			env[i] = var;
 		new_node = ft_lstnew(env[i]);
 		ft_lstadd_back(&enviroment, new_node);
@@ -109,7 +109,7 @@ t_list *all_env(char *var, char **env, t_list *export_list)
 		exp = export_list->content;
 		while (exp[j] != '=')
 			j++;
-		if (j == ft_strlen(p) && !ft_strncmp(exp, p, j))
+		if (p && j == ft_strlen(p) && !ft_strncmp(exp, p, j))
 			exp = var;
 		new_node = ft_lstnew(export_list->content);
 		ft_lstadd_back(&enviroment, new_node);
