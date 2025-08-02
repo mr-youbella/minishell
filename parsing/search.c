@@ -118,6 +118,38 @@ t_list *all_env(char *var, char **env, t_list *export_list)
 	return (enviroment);
 }
 
+short is_there_var(char *var, char **env, t_list *export_list)
+{
+	size_t	i;
+	size_t	j;
+	char	*p;
+	char	*exp;
+	i = 0;
+	while (var && var[i] != '=')
+		i++;
+	p = ft_substr(var, 0, i);
+	i = 0;
+	while (env[i])
+	{
+		j = 0;
+		while (env[i][j] != '=')
+			j++;
+		if (p && j == ft_strlen(p) && !ft_strncmp(env[i], p, j))
+			return (1);
+		i++;
+	}
+	while (export_list)
+	{
+		j = 0;
+		exp = export_list->content;
+		while (exp[j] != '=')
+			j++;
+		if (p && j == ft_strlen(p) && !ft_strncmp(exp, p, j))
+			return (1);
+		export_list = export_list->next;
+	}
+	return (0);
+}
 int main(int argc, char **argv, char **env)
 {
 	char p[] = "namee=l3zi";
