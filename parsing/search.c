@@ -76,3 +76,56 @@ short	check_unset_arg(char *arg)
 	}
 	return (1);
 }
+
+t_list *all_env(char *var, char **env, t_list *export_list)
+{
+	t_list	*enviroment;
+	t_list	*new_node;
+	size_t	i;
+	size_t	j;
+	char	*p;
+	char *exp;
+
+	enviroment = NULL;
+	i = 0;
+	while (var[i] != '=')
+		i++;
+	p = ft_substr(var, 0, i);
+	i = 0;
+	while (env[i])
+	{
+		j = 0;
+		while (env[i][j] != '=')
+			j++;
+		if (j == ft_strlen(p) && !ft_strncmp(env[i], p, j))
+			env[i] = var;
+		new_node = ft_lstnew(env[i]);
+		ft_lstadd_back(&enviroment, new_node);
+		i++;
+	}
+	while (export_list)
+	{
+		j = 0;
+		exp = export_list->content;
+		while (exp[j] != '=')
+			j++;
+		if (j == ft_strlen(p) && !ft_strncmp(exp, p, j))
+			exp = var;
+		new_node = ft_lstnew(export_list->content);
+		ft_lstadd_back(&enviroment, new_node);
+		export_list = export_list->next;
+	}
+	return (enviroment);
+}
+
+int main(int argc, char **argv, char **env)
+{
+	char p[] = "namee=l3zi";
+	t_list *e = all_env(p, argv, NULL);
+	t_list *en = all_env(p, env, e);
+	while (en)
+	{
+		printf("%s\n", (char *)en->content);
+		en = en->next;
+	}
+}
