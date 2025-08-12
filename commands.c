@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/09 23:13:51 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/12 17:56:31 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,11 @@ char *search_cmd(char *cmd, t_list *environment)
 	char *join_cmd_to_path;
 
 	i = 0;
+	if (!cmd[0])
+		return (NULL);
 	if ((cmd[0] == '.' && cmd[1] == '/') || (cmd[0] == '.' && cmd[1] == '.' & cmd[2] == '/'))
 		return (cmd);
-	else if (cmd[0] == '/')
+	if (cmd[0] == '/')
 		return (cmd);
 	if (!access(cmd, X_OK))
 		return (cmd);

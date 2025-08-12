@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/09 23:13:17 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/12 17:55:12 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,16 +121,16 @@ char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short i
 	// cmd_redirection = join_cmd_redirections(cmd_line);
 	cmd_args = ft_strdup("ls");
 	cmd_redirection = ft_strdup("ls > $name");
-	tokens = ft_split_first_cmd(cmd_args, ' ', *status, environment, 0);
+	tokens = ft_split_first_cmd(cmd_args, ' ', *status, environment);
 	if (is_exist_redirect_pipe(cmd_redirection, 'o'))
 	{
-		redirections_output = list_redirections(ft_split_first_cmd(cmd_redirection, ' ', 0, environment, 0), 'o');
+		redirections_output = list_redirections(ft_split_first_cmd(cmd_redirection, ' ', 0, environment), 'o');
 		if (!redirections_output)
 			return (NULL);
 	}
 	if (is_exist_redirect_pipe(cmd_redirection, 'i'))
 	{
-		redirections_input = list_redirections(ft_split_first_cmd(cmd_redirection, ' ', 0, environment, 0), 'i');
+		redirections_input = list_redirections(ft_split_first_cmd(cmd_redirection, ' ', 0, environment), 'i');
 		if (!redirections_input)
 			return (NULL);
 	}
@@ -216,7 +216,7 @@ char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short i
 
 void ft_pipe(char *cmd_line, int status, t_list *environment, char **env, char *pwd)
 {
-	char **split_pipe = ft_split_first_cmd(cmd_line, '|', status, environment, 0);
+	char **split_pipe = ft_split_first_cmd(cmd_line, '|', status, environment);
 	char **tokens;
 	char *redirect_output;
 	int i = 0;
@@ -228,7 +228,7 @@ void ft_pipe(char *cmd_line, int status, t_list *environment, char **env, char *
 		redirect_output = NULL;
 		int exits_redirect = 0;
 		pipe(fd);
-		tokens = ft_split_first_cmd(split_pipe[i], ' ', status, environment, 0);
+		tokens = ft_split_first_cmd2(split_pipe[i], ' ', status, environment);
 		if (is_exist_redirect_pipe(split_pipe[i], 'o') || is_exist_redirect_pipe(split_pipe[i], 'i'))
 		{
 			redirect_output = redirections(split_pipe[i], env, &status, in_fd, 1, environment);
@@ -316,8 +316,7 @@ int main(int argc, char **argv, char **env)
 		if (!cmd_line[0])
 			continue;
 		add_history(cmd_line);
-		tokens = ft_split_first_cmd(cmd_line, ' ', WEXITSTATUS(status), environment, 0);
-		i = 0;
+		tokens = ft_split_first_cmd2(cmd_line, ' ', WEXITSTATUS(status), environment);
 		if (!tokens || !tokens[0])
 			continue;
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
