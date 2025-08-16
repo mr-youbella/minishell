@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/16 21:23:38 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/16 21:44:21 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,27 @@ pid_t g_child_pid = 0;
 
 void handle_signal(int sig)
 {
-	(void)sig;
-	printf("\n");
-	rl_replace_line("", 0);
-	rl_on_new_line();
-	rl_redisplay();
+	if (g_child_pid > 0)
+	{
+		if (sig == SIGINT)
+		{
+			kill(g_child_pid, SIGINT);
+			write(1, "\n", 1);
+		}
+		else if (sig == SIGQUIT)
+		{
+			kill(g_child_pid, SIGQUIT);
+			write(1, "Quit: 3\n", 8);
+		}
+		return;
+	}
+	if (sig == SIGINT)
+	{
+		write(1, "\n", 1);
+		rl_replace_line("", 0);
+		rl_on_new_line();
+		rl_redisplay();
+	}
 }
 
 char *join_tokens(char **tokens)
@@ -306,6 +322,7 @@ int main(int argc, char **argv, char **env)
 {
 	struct stat file;
 	struct sigaction sig;
+	struct sigaction sig_quit;
 	struct termios ctr;
 	t_list *export_list;
 	t_list *environment;
@@ -333,7 +350,10 @@ int main(int argc, char **argv, char **env)
 	sigemptyset(&sig.sa_mask);
 	sig.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &sig, NULL);
-	signal(SIGQUIT, SIG_IGN);
+	sig_quit.sa_handler = handle_signal;
+	sigemptyset(&sig_quit.sa_mask);
+	sig_quit.sa_flags = SA_RESTART;
+	sigaction(SIGQUIT, &sig_quit, NULL);
 	export_list = NULL;
 	herdoc_output = NULL;
 	old_pwd = NULL;
@@ -343,7 +363,7 @@ int main(int argc, char **argv, char **env)
 	if (!pid)
 		execve("/usr/bin/clear", (char *[]){"clear", NULL}, env);
 	waitpid(pid, &status, 0);
-	printf(YELLOW "↪ Welcome to our MiniSheel 🤪 ↩\n" DEF);
+	printf(YELLOW "↪ Welcome to our MiniShell 🤪 ↩\n" DEF);
 	while (1)
 	{
 		i = 0;
@@ -427,7 +447,11 @@ int main(int argc, char **argv, char **env)
 			exit(1);
 		}
 		else
+		{
+			g_child_pid = pid;
 			wait(&status);
+			g_child_pid = 0;
+		}
 		free(cmd_line);
 	}
 	return (0);
