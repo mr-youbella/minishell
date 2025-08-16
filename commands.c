@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/16 16:51:12 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/16 23:57:11 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,13 +46,21 @@ char *search_cmd(char *cmd, t_list *environment)
 char *is_there_cmd(char **tokens, t_list *environment, int *status)
 {
 	char *path_cmd;
+	char *join_error;
 
+	join_error = NULL;
 	if ((ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4)) || (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2)) || (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3)) || (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6)) || (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5)) || (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3)) || (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4)))
 		return (ft_strdup(tokens[0]));
 	path_cmd = search_cmd(tokens[0], environment);
 	if (!path_cmd)
 	{
-		printf(RED "minishell: %s%s%s command not found.\n", BLUE, tokens[0], DEF);
+		join_error = ft_strjoin(join_error, RED);
+		join_error = ft_strjoin(join_error, "minishell: ");
+		join_error = ft_strjoin(join_error, BLUE);
+		join_error = ft_strjoin(join_error, tokens[0]);
+		join_error = ft_strjoin(join_error, " command not found.\n");
+		join_error = ft_strjoin(join_error, DEF);
+		write(2, join_error, ft_strlen(join_error));
 		*status = 32512;
 		return (NULL);
 	}

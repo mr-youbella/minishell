@@ -6,37 +6,32 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/16 21:44:21 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/17 00:05:40 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-pid_t g_child_pid = 0;
+short g_signle_flag = 0;
 
-void handle_signal(int sig)
+void ft_handl_quit(int sig_num)
 {
-	if (g_child_pid > 0)
+	if (sig_num == SIGQUIT)
+		write(1, "Quit: 3\n", 9);
+}
+
+void sig_int(int sig_num)
+{
+	(void)sig_num;
+	if (g_signle_flag == 0)
 	{
-		if (sig == SIGINT)
-		{
-			kill(g_child_pid, SIGINT);
-			write(1, "\n", 1);
-		}
-		else if (sig == SIGQUIT)
-		{
-			kill(g_child_pid, SIGQUIT);
-			write(1, "Quit: 3\n", 8);
-		}
-		return;
-	}
-	if (sig == SIGINT)
-	{
-		write(1, "\n", 1);
-		rl_replace_line("", 0);
+		printf("\n");
 		rl_on_new_line();
+		rl_replace_line("", 0);
 		rl_redisplay();
 	}
+	else
+		return;
 }
 
 char *join_tokens(char **tokens)
@@ -207,7 +202,9 @@ char *redirections(char *cmd_line, char **env, int *status, t_list *environment,
 		}
 		redirectionst = redirectionst->next;
 	}
-	if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
+	if ((ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], ">>", 2)) || (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "<<", 2)) || (ft_strlen(tokens[0]) == 1 && !ft_strncmp(tokens[0], ">", 1)) || (ft_strlen(tokens[0]) == 1 && !ft_strncmp(tokens[0], "<", 1)))
+		return (NULL);
+	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 		exit_cmd(*status);
 	else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6) && tokens[1])
 		export_cmd(env, tokens, export_list);
@@ -230,8 +227,7 @@ char *redirections(char *cmd_line, char **env, int *status, t_list *environment,
 			dup2(fd[0], 0);
 		else if (fd_file_input > 0)
 			dup2(fd_file_input, 0);
-		if (is_there_output)
-			dup2(fd_output[1], 1);
+		dup2(fd_output[1], 1);
 		close(fd[0]);
 		close(fd_output[0]);
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
@@ -252,13 +248,10 @@ char *redirections(char *cmd_line, char **env, int *status, t_list *environment,
 		close(fd[0]);
 		close(fd_output[1]);
 	}
-	if (is_there_output)
-	{
-		output_cmd = read_fd(fd_output[0]);
-		close(fd_output[0]);
-		if (fd_file_output > 0 && output_cmd)
-			write(fd_file_output, output_cmd, ft_strlen(output_cmd));
-	}
+	output_cmd = read_fd(fd_output[0]);
+	close(fd_output[0]);
+	if (fd_file_output > 0 && output_cmd)
+		write(fd_file_output, output_cmd, ft_strlen(output_cmd));
 	return (output_cmd);
 }
 
@@ -269,13 +262,19 @@ void ft_pipe(char *cmd_line, int *status, t_list *environment, char **env, char 
 	char *redirect_output;
 	int i = 0;
 	int fd[2];
+	int fd_error[2];
+	char *join_errors;
 	int in_fd = 0;
+	char *ou;
 
+	join_errors = NULL;
 	while (split_pipe[i])
 	{
+		ou = NULL;
 		redirect_output = NULL;
 		int exits_redirect = 0;
 		pipe(fd);
+		pipe(fd_error);
 		tokens = ft_split_first_cmd2(split_pipe[i], ' ', *status, environment);
 		if (is_exist_redirect_pipe(split_pipe[i], 'o') || is_exist_redirect_pipe(split_pipe[i], 'i'))
 			exits_redirect = 1;
@@ -285,15 +284,23 @@ void ft_pipe(char *cmd_line, int *status, t_list *environment, char **env, char 
 			unset_cmd(tokens, env, export_list);
 		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
 			cd_cmd(tokens[1], cd_flag);
+		if (exits_redirect)
+			ou = redirections(split_pipe[i], env, status, environment, export_list, cd_flag);
 		int pid = fork();
 		if (pid == 0)
 		{
 			dup2(in_fd, 0);
 			if (split_pipe[i + 1])
 				dup2(fd[1], 1);
+			if (split_pipe[i + 1])
+				dup2(fd_error[1], 2);
 			close(fd[0]);
+			close(fd_error[0]);
 			if (exits_redirect)
-				redirections(split_pipe[i], env, status, environment, export_list, cd_flag);
+			{
+				if (ou)
+					printf("%s", ou);
+			}
 			else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 				exit_cmd(*status);
 			else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
@@ -312,10 +319,15 @@ void ft_pipe(char *cmd_line, int *status, t_list *environment, char **env, char 
 		{
 			waitpid(pid, status, 0);
 			close(fd[1]);
+			close(fd_error[1]);
 			in_fd = fd[0];
 		}
+		char *er = read_fd(fd_error[0]);
+		if (er)
+			join_errors = ft_strjoin(join_errors, er);
 		i++;
 	}
+	printf("%s", join_errors);
 }
 
 int main(int argc, char **argv, char **env)
@@ -338,6 +350,7 @@ int main(int argc, char **argv, char **env)
 	char *path_cmd;
 	char *herdoc_output;
 	short cd_flag;
+	char *redirection_output;
 
 	if (argc != 1)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
@@ -346,14 +359,8 @@ int main(int argc, char **argv, char **env)
 	tcgetattr(0, &ctr);
 	ctr.c_lflag &= ~ECHOCTL;
 	tcsetattr(0, 0, &ctr);
-	sig.sa_handler = handle_signal;
-	sigemptyset(&sig.sa_mask);
-	sig.sa_flags = SA_RESTART;
-	sigaction(SIGINT, &sig, NULL);
-	sig_quit.sa_handler = handle_signal;
-	sigemptyset(&sig_quit.sa_mask);
-	sig_quit.sa_flags = SA_RESTART;
-	sigaction(SIGQUIT, &sig_quit, NULL);
+	signal(SIGINT, sig_int);
+	signal(SIGQUIT, ft_handl_quit);
 	export_list = NULL;
 	herdoc_output = NULL;
 	old_pwd = NULL;
@@ -386,10 +393,13 @@ int main(int argc, char **argv, char **env)
 		{
 			ft_pipe(cmd_line, &status, environment, env, pwd, &export_list, &cd_flag);
 			continue;
-		}
+		} 
+		
 		else if (is_exist_redirect_pipe(cmd_line, 'o') || is_exist_redirect_pipe(cmd_line, 'i'))
 		{
-			redirections(cmd_line, env, &status, environment, &export_list, &cd_flag);
+			redirection_output = redirections(cmd_line, env, &status, environment, &export_list, &cd_flag);
+			if (redirection_output)
+				printf("%s", redirection_output);
 			continue;
 		}
 		tokens = ft_split_first_cmd2(cmd_line, ' ', WEXITSTATUS(status), environment);
@@ -448,9 +458,9 @@ int main(int argc, char **argv, char **env)
 		}
 		else
 		{
-			g_child_pid = pid;
+			g_signle_flag = pid;
 			wait(&status);
-			g_child_pid = 0;
+			g_signle_flag = 0;
 		}
 		free(cmd_line);
 	}
