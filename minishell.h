@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/16 16:30:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/16 18:11:18 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ t_list *search_in_list(char *str, t_list *list);
 short check_export_arg(char *arg);
 short check_unset_arg(char *arg);
 short is_exist_redirect_pipe(char *cmd_line, char redirect_pipe);
-t_redirections *list_redirections(char **tokens, char redirect_type, t_list *environment);
+t_redirections *list_redirections(char **tokens, t_list *environment);
 char *ft_getenv(char *var, t_list *environment);
 t_list *all_env(char *var_export, char *var_unset, char **env, t_list *export_list, short is_export_cmd, short env_export, short *cd_flag, char *old_pwd);
 short is_exist_var(char *var, char **env, t_list *export_list);

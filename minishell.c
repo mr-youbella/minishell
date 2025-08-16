@@ -6,11 +6,13 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/16 17:34:27 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/16 21:23:38 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+pid_t g_child_pid = 0;
 
 void handle_signal(int sig)
 {
@@ -91,7 +93,7 @@ char *read_fd(int fd)
 	return (free(buffer), file_content);
 }
 
-char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short is_return, t_list **environment, t_list **export_list, short *cd_flag)
+char *redirections(char *cmd_line, char **env, int *status, t_list *environment, t_list **export_list, short *cd_flag)
 {
 	int fd[2];
 	int fd_output[2];
@@ -105,95 +107,89 @@ char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short i
 	char *join_herdoc;
 	char *path_cmd;
 	char *output_cmd;
-	char *pipe_input;
 	char **tokens;
 	char **tokens_redirections;
-	t_redirections *redirections_output;
-	t_redirections *redirections_input;
+	t_redirections *redirectionst;
 
 	fd_file_output = 0;
 	fd_file_input = 0;
 	is_there_output = 0;
 	join_herdoc = NULL;
-	redirections_output = NULL;
-	redirections_input = NULL;
-	pipe_input = read_fd(pipe_fd);
+	redirectionst = NULL;
 	cmd_args = join_cmd_args(cmd_line, environment);
 	cmd_redirection = join_cmd_redirections(cmd_line, environment);
 	tokens = ft_split_first_cmd2(cmd_args, ' ', *status, environment);
 	if (!tokens)
 		return (NULL);
-	if (is_exist_redirect_pipe(cmd_redirection, 'o'))
+	if (is_exist_redirect_pipe(cmd_redirection, 'o') || is_exist_redirect_pipe(cmd_redirection, 'i'))
 	{
 		tokens_redirections = get_tokens_with_redirection(cmd_line);
 		if (!tokens_redirections)
 			return (NULL);
-		redirections_output = list_redirections(tokens_redirections, 'o', environment);
-		if (!redirections_output)
+		redirectionst = list_redirections(tokens_redirections, environment);
+		if (!redirectionst)
 			return (NULL);
 	}
-	if (is_exist_redirect_pipe(cmd_redirection, 'i'))
+	while (redirectionst)
 	{
-		tokens_redirections = get_tokens_with_redirection(cmd_line);
-		if (!tokens_redirections)
-			return (NULL);
-		redirections_input = list_redirections(tokens_redirections, 'i', environment);
-		if (!redirections_input)
-			return (NULL);
-	}
-	while (redirections_input)
-	{
-		pipe_input = NULL;
-		join_herdoc = NULL;
-		if (ft_strlen(redirections_input->type_redirection) == 2 && !ft_strncmp(redirections_input->type_redirection, "<<", 2))
+		if (ft_strlen(redirectionst->type_redirection) == 1 && !ft_strncmp(redirectionst->type_redirection, ">", 1))
 		{
+			is_there_output = 1;
+			fd_file_output = open(redirectionst->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+			if (fd_file_output < 0)
+			{
+				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
+				return (NULL);
+			}
+		}
+		else if (ft_strlen(redirectionst->type_redirection) == 2 && !ft_strncmp(redirectionst->type_redirection, ">>", 2))
+		{
+			is_there_output = 1;
+			fd_file_output = open(redirectionst->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
+			if (fd_file_output < 0)
+			{
+				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
+				return (NULL);
+			}
+		}
+		else if (ft_strlen(redirectionst->type_redirection) == 2 && !ft_strncmp(redirectionst->type_redirection, "<<", 2))
+		{
+			join_herdoc = NULL;
 			while (1)
 			{
 				input_herdoc = readline(CYAN "heredoc > " DEF);
 				if (!input_herdoc)
 				{
-					join_herdoc = NULL;
+					if (!join_herdoc)
+						join_herdoc = ft_strdup("");
 					break;
 				}
-				if (ft_strlen(input_herdoc) == ft_strlen(redirections_input->file_name) && !ft_strncmp(input_herdoc, redirections_input->file_name, ft_strlen(input_herdoc)))
+				if (ft_strlen(input_herdoc) == ft_strlen(redirectionst->file_name) && !ft_strncmp(input_herdoc, redirectionst->file_name, ft_strlen(input_herdoc)))
+				{
+					if (!join_herdoc)
+						join_herdoc = ft_strdup("");
 					break;
-				join_herdoc = ft_strjoin(join_herdoc, input_herdoc);
+				}
+				join_herdoc = ft_strjoin(join_herdoc, ft_dollar(input_herdoc, *status, environment));
 				join_herdoc = ft_strjoin(join_herdoc, "\n");
 			}
 		}
-		else
+		else if (ft_strlen(redirectionst->type_redirection) == 1 && !ft_strncmp(redirectionst->type_redirection, "<", 1))
 		{
-			fd_file_input = open(redirections_input->file_name, O_RDONLY);
+			join_herdoc = NULL;
+			if (!ft_strlen(redirectionst->file_name))
+			{
+				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
+				return (NULL);
+			}
+			fd_file_input = open(redirectionst->file_name, O_RDONLY);
 			if (fd_file_input < 0)
 			{
-				printf(RED "minishell: %s%s%s: No such file or directory.\n", BLUE, redirections_input->file_name, DEF);
+				printf(RED "minishell: %s%s%s: No such file or directory.\n", BLUE, redirectionst->file_name, DEF);
 				return (NULL);
 			}
 		}
-		redirections_input = redirections_input->next;
-	}
-	while (redirections_output)
-	{
-		is_there_output = 1;
-		if (ft_strlen(redirections_output->type_redirection) == 1 && !ft_strncmp(redirections_output->type_redirection, ">", 1))
-		{
-			fd_file_output = open(redirections_output->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-			if (fd_file_output < 0)
-			{
-				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
-				return (NULL);
-			}
-		}
-		else
-		{
-			fd_file_output = open(redirections_output->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
-			if (fd_file_output < 0)
-			{
-				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
-				return (NULL);
-			}
-		}
-		redirections_output = redirections_output->next;
+		redirectionst = redirectionst->next;
 	}
 	if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 		exit_cmd(*status);
@@ -208,19 +204,17 @@ char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short i
 		return (NULL);
 	pipe(fd);
 	pipe(fd_output);
-	if (pipe_input)
-		write(fd[1], pipe_input, ft_strlen(pipe_input));
-	else if (join_herdoc)
+	if (join_herdoc)
 		write(fd[1], join_herdoc, ft_strlen(join_herdoc));
 	close(fd[1]);
 	pid = fork();
 	if (!pid)
 	{
-		if (join_herdoc || pipe_input)
+		if (join_herdoc)
 			dup2(fd[0], 0);
-		if (fd_file_input > 0)
+		else if (fd_file_input > 0)
 			dup2(fd_file_input, 0);
-		if (is_there_output || is_return)
+		if (is_there_output)
 			dup2(fd_output[1], 1);
 		close(fd[0]);
 		close(fd_output[0]);
@@ -242,7 +236,7 @@ char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short i
 		close(fd[0]);
 		close(fd_output[1]);
 	}
-	if (is_there_output || is_return)
+	if (is_there_output)
 	{
 		output_cmd = read_fd(fd_output[0]);
 		close(fd_output[0]);
@@ -269,7 +263,7 @@ void ft_pipe(char *cmd_line, int *status, t_list *environment, char **env, char 
 		tokens = ft_split_first_cmd2(split_pipe[i], ' ', *status, environment);
 		if (is_exist_redirect_pipe(split_pipe[i], 'o') || is_exist_redirect_pipe(split_pipe[i], 'i'))
 			exits_redirect = 1;
-		if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6) && tokens[1])
+		else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6) && tokens[1])
 			export_cmd(env, tokens, export_list);
 		else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
 			unset_cmd(tokens, env, export_list);
@@ -282,8 +276,8 @@ void ft_pipe(char *cmd_line, int *status, t_list *environment, char **env, char 
 			if (split_pipe[i + 1])
 				dup2(fd[1], 1);
 			close(fd[0]);
-			if (redirect_output)
-				redirections(split_pipe[i], env, status, in_fd, 0, environment, export_list, cd_flag);
+			if (exits_redirect)
+				redirections(split_pipe[i], env, status, environment, export_list, cd_flag);
 			else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 				exit_cmd(*status);
 			else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
@@ -375,7 +369,7 @@ int main(int argc, char **argv, char **env)
 		}
 		else if (is_exist_redirect_pipe(cmd_line, 'o') || is_exist_redirect_pipe(cmd_line, 'i'))
 		{
-			redirections(cmd_line, env, &status, -1, 0, environment, &export_list, &cd_flag);
+			redirections(cmd_line, env, &status, environment, &export_list, &cd_flag);
 			continue;
 		}
 		tokens = ft_split_first_cmd2(cmd_line, ' ', WEXITSTATUS(status), environment);

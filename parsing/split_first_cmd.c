@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/16 02:45:07 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/16 19:38:27 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,6 +211,7 @@ char *ft_dollar(char *str, int status, t_list *environment)
 				continue;
 			}
 		}
+
 		alloc[k++] = str[i++];
 	}
 	alloc[k] = 0;
