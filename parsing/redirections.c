@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/16 16:42:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/16 17:29:44 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ t_redirections *list_redirections(char **tokens, char redirect_type, t_list *env
 	t_redirections *list;
 	t_redirections *new_node;
 
-	i = 1;
+	i = 0;
 	list = NULL;
 	while (tokens[i])
 	{

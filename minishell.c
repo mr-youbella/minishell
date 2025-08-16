@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/16 17:11:34 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/16 17:34:27 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ char *read_fd(int fd)
 	return (free(buffer), file_content);
 }
 
-char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short is_return, t_list *environment, t_list **export_list, short *cd_flag)
+char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short is_return, t_list **environment, t_list **export_list, short *cd_flag)
 {
 	int fd[2];
 	int fd_output[2];
@@ -134,35 +134,12 @@ char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short i
 	}
 	if (is_exist_redirect_pipe(cmd_redirection, 'i'))
 	{
-		tokens_redirections = ft_split_first_cmd2(cmd_redirection, ' ', 0, environment);
+		tokens_redirections = get_tokens_with_redirection(cmd_line);
 		if (!tokens_redirections)
 			return (NULL);
 		redirections_input = list_redirections(tokens_redirections, 'i', environment);
 		if (!redirections_input)
 			return (NULL);
-	}
-	while (redirections_output)
-	{
-		is_there_output = 1;
-		if (ft_strlen(redirections_output->type_redirection) == 1 && !ft_strncmp(redirections_output->type_redirection, ">", 1))
-		{
-			fd_file_output = open(redirections_output->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-			if (fd_file_output < 0)
-			{
-				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
-				return (NULL);
-			}
-		}
-		else
-		{
-			fd_file_output = open(redirections_output->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
-			if (fd_file_output < 0)
-			{
-				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
-				return (NULL);
-			}
-		}
-		redirections_output = redirections_output->next;
 	}
 	while (redirections_input)
 	{
@@ -194,6 +171,29 @@ char *redirections(char *cmd_line, char **env, int *status, int pipe_fd, short i
 			}
 		}
 		redirections_input = redirections_input->next;
+	}
+	while (redirections_output)
+	{
+		is_there_output = 1;
+		if (ft_strlen(redirections_output->type_redirection) == 1 && !ft_strncmp(redirections_output->type_redirection, ">", 1))
+		{
+			fd_file_output = open(redirections_output->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+			if (fd_file_output < 0)
+			{
+				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
+				return (NULL);
+			}
+		}
+		else
+		{
+			fd_file_output = open(redirections_output->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
+			if (fd_file_output < 0)
+			{
+				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
+				return (NULL);
+			}
+		}
+		redirections_output = redirections_output->next;
 	}
 	if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 		exit_cmd(*status);
