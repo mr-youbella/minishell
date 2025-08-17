@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/16 19:11:32 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/17 03:05:13 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,7 @@ short is_ambiguous_redirect(char *token, t_list *environment)
 	return (0);
 }
 
-t_redirections *list_redirections(char **tokens, t_list *environment)
+t_redirections *list_redirections(char **tokens, t_list *environment, int *status)
 {
 	size_t i;
 	t_redirections *list;
@@ -131,7 +131,7 @@ t_redirections *list_redirections(char **tokens, t_list *environment)
 			i++;
 			if (!tokens[i] || (ft_strlen(tokens[i]) == 2 && (!ft_strncmp(tokens[i], ">>", 2)) || !ft_strncmp(tokens[i], "<<", 2)))
 			{
-				printf(BLUE "minishell:%s %ssyntax error.\n" DEF, DEF, RED);
+				printf(BLUE "minishell:%s %ssyntax error in redirection.\n" DEF, DEF, RED);
 				return (NULL);
 			}
 		}
@@ -140,7 +140,7 @@ t_redirections *list_redirections(char **tokens, t_list *environment)
 			i++;
 			if (!tokens[i] || (ft_strlen(tokens[i]) == 1 && (!ft_strncmp(tokens[i], ">", 1) || !ft_strncmp(tokens[i], "<", 1))))
 			{
-				printf(BLUE "minishell:%s %ssyntax error.\n" DEF, DEF, RED);
+				printf(BLUE "minishell:%s %ssyntax error in redirection.\n" DEF, DEF, RED);
 				return (NULL);
 			}
 		}
@@ -150,7 +150,7 @@ t_redirections *list_redirections(char **tokens, t_list *environment)
 			continue;
 		}
 		char **tt;
-		char **t = ft_split_first_cmd2(tokens[i - 1], ' ', 0, environment);
+		char **t = ft_split_first_cmd2(tokens[i - 1], ' ', WEXITSTATUS(*status), environment);
 		if (ft_strlen(tokens[i - 1]) == 2 && !ft_strncmp(tokens[i - 1], "<<", 2))
 			new_node = craete_new_node(t[0], tokens[i]);
 		else if (is_ambiguous_redirect(tokens[i], environment))
@@ -160,7 +160,7 @@ t_redirections *list_redirections(char **tokens, t_list *environment)
 		}
 		else
 		{
-			tt = ft_split_first_cmd2(tokens[i], ' ', 0, environment);
+			tt = ft_split_first_cmd2(tokens[i], ' ', WEXITSTATUS(*status), environment);
 			new_node = craete_new_node(t[0], tt[0]);
 		}
 		add_node_in_back(&list, new_node);
