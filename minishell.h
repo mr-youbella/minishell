@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/17 02:49:28 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/17 21:25:52 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,31 +39,32 @@ typedef struct s_redirections
 	struct s_redirections *next;
 } t_redirections;
 
-char **ft_split_first_cmd(char *s, char c, int status, t_list *environment);
+char **ft_split_first_cmd(char *s, char c, t_list *environment, short is_dollar);
 t_list *search_in_list(char *str, t_list *list);
 short check_export_arg(char *arg);
 short check_unset_arg(char *arg);
 short is_exist_redirect_pipe(char *cmd_line, char redirect_pipe);
-t_redirections *list_redirections(char **tokens, t_list *environment, int *status);
+t_redirections *list_redirections(char **tokens, t_list *environment);
 char *ft_getenv(char *var, t_list *environment);
 t_list *all_env(char *var_export, char *var_unset, char **env, t_list *export_list, short is_export_cmd, short env_export, short *cd_flag, char *old_pwd);
 short is_exist_var(char *var, char **env, t_list *export_list);
 // Commands
-char *is_there_cmd(char **tokens, t_list *environment, int *status);
+char *is_there_cmd(char **tokens, t_list *environment);
 char *search_cmd(char *cmd, t_list *environment);
-short echo_cmd(char **tokens);
+void echo_cmd(char **tokens);
 t_list *env_cmd(char **env, t_list *export_list, short is_print);
 void export_cmd(char **env, char **tokens, t_list **export_list);
 void unset_cmd(char **tokens, char **env, t_list **export_list);
 void cd_cmd(char *tokens, short *cd_flag);
 char *pwd_cmd(short is_print);
-void exit_cmd(int status);
+void exit_cmd();
 
-char **ft_split_first_cmd2(char *cmd_line, char c, int status, t_list *environment);
+char **ft_split_first_cmd2(char *cmd_line, char c, t_list *environment, short is_dollar);
 char *join_cmd_args(char *cmd_line, t_list *environment);
 char *join_cmd_redirections(char *cmd_line, t_list *environment);
 char *extract_word(char *str, char c);
-char *ft_dollar(char *str, int status, t_list *environment);
+char *ft_dollar(char *str, t_list *environment);
 char **get_tokens_with_redirection(const char *cmd_line);
+int	ft_status(int status, short is_change);
 
 #endif

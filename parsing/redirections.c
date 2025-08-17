@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/17 03:05:13 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/17 21:27:10 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ short is_ambiguous_redirect(char *token, t_list *environment)
 				i++;
 			}
 			var_name = ft_substr(token, start, var_len + 1);
-			var_value = ft_dollar(var_name, 0, environment);
+			var_value = ft_dollar(var_name, environment);
 			while (var_value[j])
 			{
 				if (var_value[j] == ' ')
@@ -116,7 +116,7 @@ short is_ambiguous_redirect(char *token, t_list *environment)
 	return (0);
 }
 
-t_redirections *list_redirections(char **tokens, t_list *environment, int *status)
+t_redirections *list_redirections(char **tokens, t_list *environment)
 {
 	size_t i;
 	t_redirections *list;
@@ -124,6 +124,7 @@ t_redirections *list_redirections(char **tokens, t_list *environment, int *statu
 
 	i = 0;
 	list = NULL;
+	int status = ft_status(0, 0);
 	while (tokens[i])
 	{
 		if (ft_strlen(tokens[i]) == 2 && ((!ft_strncmp(tokens[i], ">>", 2)) || (!ft_strncmp(tokens[i], "<<", 2))))
@@ -149,19 +150,21 @@ t_redirections *list_redirections(char **tokens, t_list *environment, int *statu
 			i++;
 			continue;
 		}
-		char **tt;
-		char **t = ft_split_first_cmd2(tokens[i - 1], ' ', WEXITSTATUS(*status), environment);
+		char **file_name;
 		if (ft_strlen(tokens[i - 1]) == 2 && !ft_strncmp(tokens[i - 1], "<<", 2))
-			new_node = craete_new_node(t[0], tokens[i]);
+		{
+			file_name = ft_split_first_cmd2(tokens[i], ' ', environment, 0);
+			new_node = craete_new_node(tokens[i - 1], file_name[0]);
+		}
 		else if (is_ambiguous_redirect(tokens[i], environment))
 		{
 			tokens[i] = ft_strdup("");
-			new_node = craete_new_node(t[0], tokens[i]);
+			new_node = craete_new_node(tokens[i - 1], tokens[i]);
 		}
 		else
 		{
-			tt = ft_split_first_cmd2(tokens[i], ' ', WEXITSTATUS(*status), environment);
-			new_node = craete_new_node(t[0], tt[0]);
+			file_name = ft_split_first_cmd2(tokens[i], ' ', environment, 1);
+			new_node = craete_new_node(tokens[i - 1], file_name[0]);
 		}
 		add_node_in_back(&list, new_node);
 		i++;

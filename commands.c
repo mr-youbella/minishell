@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/16 23:57:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/17 19:52:46 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ char *search_cmd(char *cmd, t_list *environment)
 	return (NULL);
 }
 
-char *is_there_cmd(char **tokens, t_list *environment, int *status)
+char *is_there_cmd(char **tokens, t_list *environment)
 {
 	char *path_cmd;
 	char *join_error;
@@ -61,13 +61,13 @@ char *is_there_cmd(char **tokens, t_list *environment, int *status)
 		join_error = ft_strjoin(join_error, " command not found.\n");
 		join_error = ft_strjoin(join_error, DEF);
 		write(2, join_error, ft_strlen(join_error));
-		*status = 32512;
+		ft_status(32512, 1);
 		return (NULL);
 	}
 	return (path_cmd);
 }
 
-short echo_cmd(char **tokens)
+void echo_cmd(char **tokens)
 {
 	int j;
 	short is_op_echo;
@@ -90,7 +90,7 @@ short echo_cmd(char **tokens)
 	}
 	if (!is_op_echo)
 		printf("\n");
-	return (0);
+	ft_status(0, 1);
 }
 
 t_list *env_cmd(char **env, t_list *export_list, short is_print)
@@ -117,6 +117,7 @@ void cd_cmd(char *tokens, short *cd_flag)
 	else if (chdir(tokens) == -1)
 	{
 		printf(BLUE "minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, tokens, DEF);
+		ft_status(256, 1);
 		*cd_flag = 0;
 	}
 }
@@ -243,6 +244,7 @@ void unset_cmd(char **tokens, char **env, t_list **export_list)
 {
 	int j;
 
+	j = 0;
 	while (tokens[j])
 	{
 		if (check_unset_arg(tokens[j]))
@@ -265,8 +267,8 @@ char *pwd_cmd(short is_print)
 	return (pwd);
 }
 
-void exit_cmd(int status)
+void exit_cmd()
 {
 	printf(RED "exit\n" DEF);
-	exit(status);
+	exit(ft_status(0, 0));
 }

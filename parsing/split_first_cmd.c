@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/17 03:54:32 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/17 21:26:23 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,7 @@ size_t len_str(char *str, int status, t_list *environment)
 	return (len);
 }
 
-char *ft_dollar(char *str, int status, t_list *environment)
+char *ft_dollar(char *str, t_list *environment)
 {
 	char *env;
 	char *var;
@@ -153,6 +153,7 @@ char *ft_dollar(char *str, int status, t_list *environment)
 	i = 0;
 	k = 0;
 	quote = 0;
+	int status = ft_status(0, 0);
 	len = len_str(str, status, environment);
 	alloc = malloc(len + 1);
 
@@ -172,7 +173,7 @@ char *ft_dollar(char *str, int status, t_list *environment)
 			if (str[i + 1] == '?' && quote != 39)
 			{
 				env = ft_itoa(status);
-				size_t l = 0; 
+				size_t l = 0;
 				while (env[l])
 					alloc[k++] = env[l++];
 				free(env);
@@ -218,7 +219,7 @@ char *ft_dollar(char *str, int status, t_list *environment)
 	return (alloc);
 }
 
-char **ft_split_first_cmd(char *s, char c, int status, t_list *environment)
+char **ft_split_first_cmd(char *s, char c, t_list *environment, short is_dollar)
 {
 	char **tokens;
 	char *buffer;
@@ -259,7 +260,10 @@ char **ft_split_first_cmd(char *s, char c, int status, t_list *environment)
 			is_c = 1;
 			if (buffer)
 			{
-				tokens[j] = ft_dollar(buffer, status, environment);
+				if (!is_dollar)
+					tokens[j] = buffer;
+				else
+					tokens[j] = ft_dollar(buffer, environment);
 				buffer = NULL;
 				j++;
 			}
@@ -269,7 +273,12 @@ char **ft_split_first_cmd(char *s, char c, int status, t_list *environment)
 		i++;
 	}
 	if (buffer)
-		tokens[j] = ft_dollar(buffer, status, environment);
+	{
+		if (!is_dollar)
+			tokens[j] = buffer;
+		else
+			tokens[j] = ft_dollar(buffer, environment);
+	}
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
 	return (tokens);
@@ -301,7 +310,7 @@ static size_t count_final_words(char **tokens, char c)
 	return count;
 }
 
-char **ft_split_first_cmd2(char *cmd_line, char c, int status, t_list *environment)
+char **ft_split_first_cmd2(char *cmd_line, char c, t_list *environment, short is_dollar)
 {
 	size_t i, j, k;
 	char **tokens;
@@ -310,7 +319,7 @@ char **ft_split_first_cmd2(char *cmd_line, char c, int status, t_list *environme
 	short is_single_quote, is_double_quote;
 	size_t total_words;
 
-	tokens = ft_split_first_cmd(cmd_line, c, status, environment);
+	tokens = ft_split_first_cmd(cmd_line, c, environment, is_dollar);
 	if (!tokens)
 		return (NULL);
 	total_words = count_final_words(tokens, c);
@@ -370,7 +379,7 @@ void free_split(char **p)
 	i = 0;
 	while (p[i])
 	{
-		free(p[i]); 
+		free(p[i]);
 		i++;
 	}
 	free(p);
