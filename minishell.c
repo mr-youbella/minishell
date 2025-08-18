@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 19:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/17 21:27:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/18 02:41:08 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,12 +135,11 @@ char *redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	is_there_output = 0;
 	join_herdoc = NULL;
 	redirectionst = NULL;
-	cmd_args = join_cmd_args(cmd_line, environment);
-	cmd_redirection = join_cmd_redirections(cmd_line, environment);
-	tokens = ft_split_first_cmd2(cmd_args, ' ', environment, 1);
+	cmd_args = join_cmd_args(cmd_line);
+	tokens = split_command(cmd_args, ' ', environment, 1);
 	if (!tokens)
 		return (NULL);
-	if (is_exist_redirect_pipe(cmd_redirection, 'o') || is_exist_redirect_pipe(cmd_redirection, 'i'))
+	if (is_exist_redirect_pipe(cmd_line, 'r'))
 	{
 		tokens_redirections = get_tokens_with_redirection(cmd_line);
 		if (!tokens_redirections)
@@ -293,7 +292,7 @@ short is_empty_token(char *token)
 	return (1);
 }
 
-void ft_pipe(char *cmd_line, t_list *environment, char **env, char *pwd, t_list **export_list, short *cd_flag)
+void ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_list, short *cd_flag)
 {
 	int i = 0;
 	char check_end_pipe = cmd_line[ft_strlen(cmd_line) - 1];
@@ -302,7 +301,7 @@ void ft_pipe(char *cmd_line, t_list *environment, char **env, char *pwd, t_list 
 		printf(BLUE "minishell:%s %ssyntax error in pipe.\n" DEF, DEF, RED);
 		return;
 	}
-	char **split_pipe = ft_split_first_cmd(cmd_line, '|', environment, 0);
+	char **split_pipe = split_commmand_with_quotes(cmd_line, '|', environment, 0);
 	while (split_pipe[i])
 	{
 		if (is_empty_token(split_pipe[i]))
@@ -330,8 +329,8 @@ void ft_pipe(char *cmd_line, t_list *environment, char **env, char *pwd, t_list 
 		int exits_redirect = 0;
 		pipe(fd);
 		pipe(fd_error);
-		tokens = ft_split_first_cmd2(split_pipe[i], ' ', environment, 1);
-		if (is_exist_redirect_pipe(split_pipe[i], 'o') || is_exist_redirect_pipe(split_pipe[i], 'i'))
+		tokens = split_command(split_pipe[i], ' ', environment, 1);
+		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
 			exits_redirect = 1;
 		else if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6) && tokens[1])
 			export_cmd(env, tokens, export_list);
@@ -388,8 +387,6 @@ void ft_pipe(char *cmd_line, t_list *environment, char **env, char *pwd, t_list 
 int main(int argc, char **argv, char **env)
 {
 	struct stat file;
-	struct sigaction sig;
-	struct sigaction sig_quit;
 	struct termios ctr;
 	t_list *export_list;
 	t_list *environment;
@@ -440,23 +437,23 @@ int main(int argc, char **argv, char **env)
 		this_dir = ft_strjoin(this_dir, " ");
 		cmd_line = readline(this_dir);
 		if (!cmd_line)
-			exit_cmd(status);
+			exit_cmd();
 		if (!cmd_line[0])
 			continue;
 		add_history(cmd_line);
 		if (is_exist_redirect_pipe(cmd_line, '|'))
 		{
-			ft_pipe(cmd_line, environment, env, pwd, &export_list, &cd_flag);
+			ft_pipe(cmd_line, environment, env, &export_list, &cd_flag);
 			continue;
 		}
-		else if (is_exist_redirect_pipe(cmd_line, 'o') || is_exist_redirect_pipe(cmd_line, 'i'))
+		else if (is_exist_redirect_pipe(cmd_line, 'r'))
 		{
 			redirection_output = redirections(cmd_line, env, environment, &export_list, &cd_flag, -1, &old_pwd);
 			if (redirection_output)
 				printf("%s", redirection_output);
 			continue;
 		}
-		tokens = ft_split_first_cmd2(cmd_line, ' ', environment, 1);
+		tokens = split_command(cmd_line, ' ', environment, 1);
 		if (!tokens || !tokens[0])
 			continue;
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))

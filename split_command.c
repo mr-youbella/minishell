@@ -1,0 +1,229 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   split_command.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/17 22:26:03 by youbella          #+#    #+#             */
+/*   Updated: 2025/08/18 02:20:40 by youbella         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "minishell.h"
+
+short	is_unclose_quotes(size_t single_quote, size_t double_quotes)
+{
+	if (single_quote % 2 || double_quotes % 2)
+	{
+		printf(RED "syntax error:%s unclosed quote.\n", DEF);
+		return (1);
+	}
+	return (0);
+}
+
+char	*extract_word(char *str, char c)
+{
+	size_t	len_str;
+	char	*p;
+
+	len_str = 0;
+	if (str)
+		len_str = ft_strlen(str);
+	p = ft_calloc(len_str + 2, 1);
+	if (!p)
+		return (NULL);
+	if (str)
+		ft_strlcpy(p, str, len_str + 2);
+	p[len_str] = c;
+	free(str);
+	return (p);
+}
+
+static size_t	count_words_with_quotes(const char *s, char c)
+{
+	size_t	i;
+	size_t	count;
+	short	is_single_quote;
+	short	is_double_quote;
+
+	1 && (i = 0, count = 0);
+	1 && (is_single_quote = 0, is_double_quote = 0);
+	while (s[i])
+	{
+		while (s[i] == c && !is_single_quote && !is_double_quote)
+			i++;
+		if (s[i] != '\0')
+			count++;
+		while (s[i])
+		{
+			if (s[i] == 39 && !is_double_quote)
+				is_single_quote = !is_single_quote;
+			else if (s[i] == '"' && !is_single_quote)
+				is_double_quote = !is_double_quote;
+			else if (s[i] == c && !is_single_quote && !is_double_quote)
+				break ;
+			i++;
+		}
+	}
+	return (count);
+}
+
+char	**split_commmand_with_quotes(char *command, char c,
+									t_list *environment, short is_dollar)
+{
+	char	**tokens;
+	char	*buffer;
+	size_t	i;
+	size_t	j;
+	size_t	count_single_quote;
+	size_t	count_double_quotes;
+	short	is_single_quote;
+	short	is_double_quote;
+	short	is_c;
+
+	i = 0;
+	j = 0;
+	is_double_quote = 0;
+	is_single_quote = 0;
+	count_single_quote = 0;
+	count_double_quotes = 0;
+	buffer = NULL;
+	is_c = 0;
+	tokens = ft_calloc(count_words_with_quotes(command, c) + 1, sizeof(char *));
+	if (!tokens)
+		return (NULL);
+	while (command[i])
+	{
+		is_c = 0;
+		if (command[i] == 39 && !is_double_quote)
+		{
+			is_single_quote = !is_single_quote;
+			count_single_quote++;
+		}
+		else if (command[i] == '"' && !is_single_quote)
+		{
+			is_double_quote = !is_double_quote;
+			count_double_quotes++;
+		}
+		else if (command[i] == c && !is_double_quote && !is_single_quote)
+		{
+			is_c = 1;
+			if (buffer)
+			{
+				if (!is_dollar)
+					tokens[j] = buffer;
+				else
+					tokens[j] = ft_dollar(buffer, environment);
+				buffer = NULL;
+				j++;
+			}
+		}
+		if (!is_c)
+			buffer = extract_word(buffer, command[i]);
+		i++;
+	}
+	if (buffer)
+	{
+		if (!is_dollar)
+			tokens[j] = buffer;
+		else
+			tokens[j] = ft_dollar(buffer, environment);
+	}
+	if (is_unclose_quotes(count_single_quote, count_double_quotes))
+		return (NULL);
+	return (tokens);
+}
+
+static size_t	count_words(char **tokens, char c)
+{
+	size_t	i;
+	size_t	count;
+	size_t	j;
+	short	is_single_quote;
+	short	is_double_quote;
+
+	1 && (i = 0, count = 0);
+	while (tokens[i])
+	{
+		j = 0;
+		1 && (is_single_quote = 0, is_double_quote = 0);
+		while (tokens[i][j])
+		{
+			if (tokens[i][j] == 39 && !is_double_quote)
+				is_single_quote = !is_single_quote;
+			else if (tokens[i][j] == '"' && !is_single_quote)
+				is_double_quote = !is_double_quote;
+			else if (tokens[i][j] == c && !is_single_quote && !is_double_quote)
+				count++;
+			j++;
+		}
+		count++;
+		i++;
+	}
+	return (count);
+}
+
+char	**split_command(char *cmd_line, char c,
+						t_list *environment, short is_dollar)
+{
+	size_t	i;
+	size_t	j;
+	size_t	k;
+	char	**tokens;
+	char	**new_tokens;
+	char	*buffer;
+	short	is_single_quote;
+	short	is_double_quote;
+
+	i = 0;
+	k = 0;
+	tokens = split_commmand_with_quotes(cmd_line, c, environment, is_dollar);
+	if (!tokens)
+		return (NULL);
+	new_tokens = ft_calloc(count_words(tokens, c) + 1, sizeof(char *));
+	if (!new_tokens)
+		return (NULL);
+	while (tokens[i])
+	{
+		j = 0;
+		is_single_quote = 0;
+		is_double_quote = 0;
+		buffer = NULL;
+		while (tokens[i][j])
+		{
+			if (tokens[i][j] == 39 && !is_double_quote)
+			{
+				is_single_quote = !is_single_quote;
+				j++;
+				continue ;
+			}
+			else if (tokens[i][j] == '"' && !is_single_quote)
+			{
+				is_double_quote = !is_double_quote;
+				j++;
+				continue ;
+			}
+			else if (tokens[i][j] == c && !is_single_quote && !is_double_quote)
+			{
+				if (buffer)
+				{
+					new_tokens[k++] = buffer;
+					buffer = NULL;
+				}
+				while (tokens[i][j] == c)
+					j++;
+				continue ;
+			}
+			buffer = extract_word(buffer, tokens[i][j]);
+			j++;
+		}
+		if (buffer)
+			new_tokens[k++] = buffer;
+		else
+			new_tokens[k++] = ft_strdup("");
+		i++;
+	}
+	new_tokens[k] = NULL;
+	return (new_tokens);
+}

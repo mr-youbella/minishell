@@ -6,23 +6,24 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/17 19:52:46 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/18 04:12:25 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *search_cmd(char *cmd, t_list *environment)
+char	*search_cmd(char *cmd, t_list *environment)
 {
-	int i;
-	char *env_path;
-	char **split_env_path;
-	char *join_cmd_to_path;
+	int		i;
+	char	*env_path;
+	char	**split_env_path;
+	char	*join_cmd_to_path;
 
 	i = 0;
 	if (!cmd[0])
 		return (NULL);
-	if ((cmd[0] == '.' && cmd[1] == '/') || (cmd[0] == '.' && cmd[1] == '.' & cmd[2] == '/'))
+	if ((cmd[0] == '.' && cmd[1] == '/')
+		|| (cmd[0] == '.' && cmd[1] == '.' & cmd[2] == '/'))
 		return (cmd);
 	if (cmd[0] == '/')
 		return (cmd);
@@ -43,13 +44,19 @@ char *search_cmd(char *cmd, t_list *environment)
 	return (NULL);
 }
 
-char *is_there_cmd(char **tokens, t_list *environment)
+char	*is_there_cmd(char **tokens, t_list *environment)
 {
-	char *path_cmd;
-	char *join_error;
+	char	*path_cmd;
+	char	*join_error;
 
 	join_error = NULL;
-	if ((ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4)) || (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2)) || (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3)) || (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6)) || (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5)) || (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3)) || (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4)))
+	if ((ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
+		|| (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
+		|| (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3))
+		|| (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
+		|| (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
+		|| (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
+		|| (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4)))
 		return (ft_strdup(tokens[0]));
 	path_cmd = search_cmd(tokens[0], environment);
 	if (!path_cmd)
@@ -67,16 +74,17 @@ char *is_there_cmd(char **tokens, t_list *environment)
 	return (path_cmd);
 }
 
-void echo_cmd(char **tokens)
+void	echo_cmd(char **tokens)
 {
-	int j;
-	short is_op_echo;
-	char *str;
+	int		j;
+	short	is_op_echo;
+	char	*str;
 
 	j = 1;
 	is_op_echo = 0;
 	str = NULL;
-	while (tokens[j] && !ft_strncmp(tokens[j], "-n", 2) && ft_strlen(tokens[j]) == 2)
+	while (tokens[j] && !ft_strncmp(tokens[j], "-n", 2)
+		&& ft_strlen(tokens[j]) == 2)
 	{
 		is_op_echo = 1;
 		j++;
@@ -93,10 +101,10 @@ void echo_cmd(char **tokens)
 	ft_status(0, 1);
 }
 
-t_list *env_cmd(char **env, t_list *export_list, short is_print)
+t_list	*env_cmd(char **env, t_list *export_list, short is_print)
 {
-	t_list *environment;
-	t_list *copy_environment;
+	t_list	*environment;
+	t_list	*copy_environment;
 
 	environment = all_env(NULL, NULL, env, export_list, 0, 0, NULL, NULL);
 	copy_environment = environment;
@@ -108,25 +116,26 @@ t_list *env_cmd(char **env, t_list *export_list, short is_print)
 	return (environment);
 }
 
-void cd_cmd(char *tokens, short *cd_flag)
+void	cd_cmd(char *tokens, short *cd_flag)
 {
 	*cd_flag = 1;
-
 	if (!tokens)
 		chdir(getenv("HOME"));
 	else if (chdir(tokens) == -1)
 	{
-		printf(BLUE "minishell%s: cd: no such file or directory: %s%s%s\n", DEF, RED, tokens, DEF);
+		printf(BLUE "minishell%s: cd: no such file or directory: %s%s%s\n",
+			DEF, RED, tokens, DEF);
 		ft_status(256, 1);
 		*cd_flag = 0;
 	}
 }
 
-void sort_env(char **env_arr, int count)
+void	sort_env(char **env_arr, int count)
 {
-	int i, j;
-	char *temp;
-	size_t len;
+	int		i;
+	int		j;
+	char	*temp;
+	size_t	len;
 
 	i = 0;
 	while (i < count - 1)
@@ -150,16 +159,19 @@ void sort_env(char **env_arr, int count)
 	}
 }
 
-void print_sorted_env(t_list *environment)
+void	print_sorted_env(t_list *environment)
 {
-	int count = 0;
-	int i = 0;
-	t_list *tmp = environment;
-	size_t len_var;
-	char *var_name;
-	char *var_value;
-	char **env_array;
+	int		count;
+	int		i;
+	t_list	*tmp;
+	size_t	len_var;
+	char	*var_name;
+	char	*var_value;
+	char	**env_array;
 
+	count = 0;
+	i = 0;
+	tmp = environment;
 	while (tmp)
 	{
 		count++;
@@ -194,15 +206,12 @@ void print_sorted_env(t_list *environment)
 	free(env_array);
 }
 
-void export_cmd(char **env, char **tokens, t_list **export_list)
+void	export_cmd(char **env, char **tokens, t_list **export_list)
 {
-	size_t i;
-	size_t j;
-	size_t len_var;
-	short is_there_equal;
-	char *var_name;
-	char *var_value;
-	t_list *environment;
+	size_t	i;
+	size_t	j;
+	short	is_there_equal;
+	t_list	*environment;
 
 	i = 1;
 	if (!tokens[i])
@@ -211,7 +220,7 @@ void export_cmd(char **env, char **tokens, t_list **export_list)
 		print_sorted_env(environment);
 		environment = all_env(NULL, NULL, env, *export_list, 1, 2, NULL, NULL);
 		print_sorted_env(environment);
-		return;
+		return ;
 	}
 	while (tokens[i])
 	{
@@ -226,7 +235,7 @@ void export_cmd(char **env, char **tokens, t_list **export_list)
 					if (tokens[i][j] == '=')
 					{
 						is_there_equal = 1;
-						break;
+						break ;
 					}
 					j++;
 				}
@@ -240,9 +249,9 @@ void export_cmd(char **env, char **tokens, t_list **export_list)
 	}
 }
 
-void unset_cmd(char **tokens, char **env, t_list **export_list)
+void	unset_cmd(char **tokens, char **env, t_list **export_list)
 {
-	int j;
+	int	j;
 
 	j = 0;
 	while (tokens[j])
@@ -256,9 +265,10 @@ void unset_cmd(char **tokens, char **env, t_list **export_list)
 	}
 }
 
-char *pwd_cmd(short is_print)
+char	*pwd_cmd(short is_print)
 {
-	char *pwd;
+	char	*pwd;
+
 	pwd = getcwd(NULL, 0);
 	if (!pwd)
 		pwd = ft_strdup("minishell/unknown");
@@ -267,7 +277,7 @@ char *pwd_cmd(short is_print)
 	return (pwd);
 }
 
-void exit_cmd()
+void	exit_cmd(void)
 {
 	printf(RED "exit\n" DEF);
 	exit(ft_status(0, 0));

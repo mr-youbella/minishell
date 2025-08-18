@@ -6,29 +6,11 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/15 18:23:22 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/18 02:53:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../minishell.h"
-
-t_list *search_in_list(char *str, t_list *list)
-{
-	size_t i;
-	char *p;
-
-	while (list)
-	{
-		i = 0;
-		while ((char *)list->content && ((char *)list->content)[i] && ((char *)list->content)[i] != '=')
-			i++;
-		p = ft_substr((char *)list->content, 0, i);
-		if (ft_strlen(str) == ft_strlen(p) && !ft_strncmp(str, p, ft_strlen(str)))
-			return (list);
-		list = list->next;
-	}
-	return (NULL);
-}
+#include "minishell.h"
 
 short check_export_arg(char *arg)
 {

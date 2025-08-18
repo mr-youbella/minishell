@@ -6,13 +6,13 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/17 21:27:10 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/18 02:52:51 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../minishell.h"
+#include "minishell.h"
 
-static t_redirections *last_node(t_redirections *lst)
+static t_redirections	*last_node(t_redirections *lst)
 {
 	if (!lst)
 		return (NULL);
@@ -21,21 +21,21 @@ static t_redirections *last_node(t_redirections *lst)
 	return (lst);
 }
 
-static void add_node_in_back(t_redirections **lst, t_redirections *new)
+static void	add_node_in_back(t_redirections **lst, t_redirections *new)
 {
 	if (!new)
-		return;
+		return ;
 	if (!*lst)
 	{
 		*lst = new;
-		return;
+		return ;
 	}
 	last_node(*lst)->next = new;
 }
 
-static t_redirections *craete_new_node(char *redirect_type, char *file)
+static t_redirections	*craete_new_node(char *redirect_type, char *file)
 {
-	t_redirections *node;
+	t_redirections	*node;
 
 	node = malloc(sizeof(t_redirections));
 	if (!node)
@@ -46,9 +46,9 @@ static t_redirections *craete_new_node(char *redirect_type, char *file)
 	return (node);
 }
 
-short is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
+short	is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
 {
-	size_t i;
+	size_t	i;
 
 	i = 0;
 	while (cmd_line[i])
@@ -62,22 +62,27 @@ short is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
 				i++;
 		}
 		if (!cmd_line[i])
-			break;
-		if ((redirect_pipe == 'o' && cmd_line[i] == '>') || (redirect_pipe == 'i' && cmd_line[i] == '<' && cmd_line[i + 1] != '<' && cmd_line[i - 1] != '<') || (redirect_pipe == 'i' && cmd_line[i] == '<' && cmd_line[i + 1] == '<') || (redirect_pipe == '|' && cmd_line[i] == '|'))
+			break ;
+		if ((redirect_pipe == 'r' && cmd_line[i] == '>')
+			|| (redirect_pipe == 'r' && cmd_line[i] == '<'
+				&& cmd_line[i + 1] != '<' && cmd_line[i - 1] != '<')
+			|| (redirect_pipe == 'r' && cmd_line[i] == '<'
+				&& cmd_line[i + 1] == '<')
+			|| (redirect_pipe == '|' && cmd_line[i] == '|'))
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-short is_ambiguous_redirect(char *token, t_list *environment)
+short	is_ambiguous_redirect(char *token, t_list *environment)
 {
-	size_t i;
-	size_t j;
-	size_t start;
-	size_t var_len;
-	char *var_name;
-	char *var_value;
+	size_t	i;
+	size_t	j;
+	size_t	start;
+	size_t	var_len;
+	char	*var_name;
+	char	*var_value;
 
 	i = 0;
 	while (token[i])
@@ -116,44 +121,53 @@ short is_ambiguous_redirect(char *token, t_list *environment)
 	return (0);
 }
 
-t_redirections *list_redirections(char **tokens, t_list *environment)
+t_redirections	*list_redirections(char **tokens, t_list *environment)
 {
-	size_t i;
-	t_redirections *list;
-	t_redirections *new_node;
+	size_t			i;
+	t_redirections	*list;
+	t_redirections	*new_node;
+	char			**file_name;
 
 	i = 0;
 	list = NULL;
-	int status = ft_status(0, 0);
 	while (tokens[i])
 	{
-		if (ft_strlen(tokens[i]) == 2 && ((!ft_strncmp(tokens[i], ">>", 2)) || (!ft_strncmp(tokens[i], "<<", 2))))
+		if (ft_strlen(tokens[i]) == 2 && ((!ft_strncmp(tokens[i], ">>", 2))
+				|| (!ft_strncmp(tokens[i], "<<", 2))))
 		{
 			i++;
-			if (!tokens[i] || (ft_strlen(tokens[i]) == 2 && (!ft_strncmp(tokens[i], ">>", 2)) || !ft_strncmp(tokens[i], "<<", 2)))
+			if (!tokens[i] || (ft_strlen(tokens[i]) == 2
+					&& !ft_strncmp(tokens[i], ">>", 2))
+				|| !ft_strncmp(tokens[i], "<<", 2))
 			{
-				printf(BLUE "minishell:%s %ssyntax error in redirection.\n" DEF, DEF, RED);
+				printf(BLUE "minishell:%s %ssyntax error in redirection.\n"
+					DEF, DEF, RED);
 				return (NULL);
 			}
 		}
-		else if ((ft_strlen(tokens[i]) == 1) && ((!ft_strncmp(tokens[i], ">", 1)) || (!ft_strncmp(tokens[i], "<", 1))))
+		else if ((ft_strlen(tokens[i]) == 1)
+			&& ((!ft_strncmp(tokens[i], ">", 1))
+				|| (!ft_strncmp(tokens[i], "<", 1))))
 		{
 			i++;
-			if (!tokens[i] || (ft_strlen(tokens[i]) == 1 && (!ft_strncmp(tokens[i], ">", 1) || !ft_strncmp(tokens[i], "<", 1))))
+			if (!tokens[i] || (ft_strlen(tokens[i]) == 1
+					&& (!ft_strncmp(tokens[i], ">", 1)
+						|| !ft_strncmp(tokens[i], "<", 1))))
 			{
-				printf(BLUE "minishell:%s %ssyntax error in redirection.\n" DEF, DEF, RED);
+				printf(BLUE "minishell:%s %ssyntax error in redirection.\n"
+					DEF, DEF, RED);
 				return (NULL);
 			}
 		}
 		else
 		{
 			i++;
-			continue;
+			continue ;
 		}
-		char **file_name;
-		if (ft_strlen(tokens[i - 1]) == 2 && !ft_strncmp(tokens[i - 1], "<<", 2))
+		if (ft_strlen(tokens[i - 1]) == 2
+			&& !ft_strncmp(tokens[i - 1], "<<", 2))
 		{
-			file_name = ft_split_first_cmd2(tokens[i], ' ', environment, 0);
+			file_name = split_command(tokens[i], ' ', environment, 0);
 			new_node = craete_new_node(tokens[i - 1], file_name[0]);
 		}
 		else if (is_ambiguous_redirect(tokens[i], environment))
@@ -163,7 +177,7 @@ t_redirections *list_redirections(char **tokens, t_list *environment)
 		}
 		else
 		{
-			file_name = ft_split_first_cmd2(tokens[i], ' ', environment, 1);
+			file_name = split_command(tokens[i], ' ', environment, 1);
 			new_node = craete_new_node(tokens[i - 1], file_name[0]);
 		}
 		add_node_in_back(&list, new_node);
@@ -172,15 +186,20 @@ t_redirections *list_redirections(char **tokens, t_list *environment)
 	return (list);
 }
 
-size_t count_tokens_with_redirection(const char *cmd_line)
+size_t	count_tokens_with_redirection(const char *cmd_line)
 {
-	size_t i = 0;
-	size_t count = 0;
-	char c;
-	short is_single_quote = 0;
-	short is_double_quote = 0;
-	short in_token = 0;
+	size_t	i;
+	size_t	count;
+	char	c;
+	short	is_single_quote;
+	short	is_double_quote;
+	short	in_token;
 
+	i = 0;
+	count = 0;
+	is_single_quote = 0;
+	is_double_quote = 0;
+	in_token = 0;
 	while (cmd_line[i])
 	{
 		c = cmd_line[i];
@@ -189,16 +208,15 @@ size_t count_tokens_with_redirection(const char *cmd_line)
 			is_single_quote = !is_single_quote;
 			in_token = 1;
 			i++;
-			continue;
+			continue ;
 		}
 		if (c == '"' && !is_single_quote)
 		{
 			is_double_quote = !is_double_quote;
 			in_token = 1;
 			i++;
-			continue;
+			continue ;
 		}
-
 		if (!is_single_quote && !is_double_quote)
 		{
 			if (c == ' ')
@@ -209,7 +227,7 @@ size_t count_tokens_with_redirection(const char *cmd_line)
 					in_token = 0;
 				}
 				i++;
-				continue;
+				continue ;
 			}
 			if (c == '>' || c == '<')
 			{
@@ -218,40 +236,43 @@ size_t count_tokens_with_redirection(const char *cmd_line)
 					count++;
 					in_token = 0;
 				}
-				if ((c == '>' && cmd_line[i + 1] == '>') ||
-					(c == '<' && cmd_line[i + 1] == '<'))
+				if ((c == '>' && cmd_line[i + 1] == '>')
+					|| (c == '<' && cmd_line[i + 1] == '<'))
 					i += 2;
 				else
 					i++;
 				count++;
-				continue;
+				continue ;
 			}
 		}
-
 		in_token = 1;
 		i++;
 	}
-
 	if (in_token)
 		count++;
-
-	return count;
+	return (count);
 }
 
-char **get_tokens_with_redirection(const char *cmd_line)
+char	**get_tokens_with_redirection(const char *cmd_line)
 {
-	size_t i = 0;
-	size_t k = 0;
-	char c;
-	char *op;
-	short is_single_quote = 0;
-	short is_double_quote = 0;
-	char *buffer = NULL;
-	size_t total = count_tokens_with_redirection(cmd_line);
-	char **tokens = malloc((total + 1) * sizeof(char *));
+	size_t	i;
+	size_t	k;
+	char	c;
+	char	*op;
+	short	is_single_quote;
+	short	is_double_quote;
+	char	*buffer;
+	char	**tokens;
 
+	i = 0;
+	k = 0;
+	is_single_quote = 0;
+	is_double_quote = 0;
+	buffer = NULL;
+	tokens = malloc((count_tokens_with_redirection(cmd_line) + 1)
+			* sizeof(char *));
 	if (!tokens)
-		return NULL;
+		return (NULL);
 	while (cmd_line[i])
 	{
 		c = cmd_line[i];
@@ -270,20 +291,20 @@ char **get_tokens_with_redirection(const char *cmd_line)
 			{
 				tokens[k++] = ft_strdup(">>");
 				i += 2;
-				continue;
+				continue ;
 			}
 			else if (c == '<' && cmd_line[i + 1] == '<')
 			{
 				tokens[k++] = ft_strdup("<<");
 				i += 2;
-				continue;
+				continue ;
 			}
 			else
 			{
 				op = extract_word(NULL, c);
 				tokens[k++] = ft_strdup(op);
 				i++;
-				continue;
+				continue ;
 			}
 		}
 		if (!is_single_quote && !is_double_quote && c == ' ')
@@ -294,7 +315,7 @@ char **get_tokens_with_redirection(const char *cmd_line)
 				buffer = NULL;
 			}
 			i++;
-			continue;
+			continue ;
 		}
 		buffer = extract_word(buffer, c);
 		i++;
@@ -302,66 +323,39 @@ char **get_tokens_with_redirection(const char *cmd_line)
 	if (buffer)
 		tokens[k++] = buffer;
 	tokens[k] = NULL;
-	return tokens;
+	return (tokens);
 }
 
-char *join_cmd_args(char *cmd_line, t_list *environment)
+char	*join_cmd_args(char *cmd_line)
 {
-	char **p;
-	char *arg = NULL;
-	size_t i;
-	p = get_tokens_with_redirection(cmd_line);
-	if (!p)
-		return (NULL);
-	arg = ft_strjoin(p[0], " ");
+	size_t	i;
+	char	*cmd_arg;
+	char	**tokens;
+
 	i = 1;
-	while (p[i])
+	cmd_arg = NULL;
+	tokens = get_tokens_with_redirection(cmd_line);
+	if (!tokens)
+		return (NULL);
+	cmd_arg = ft_strjoin(tokens[0], " ");
+	while (tokens[i])
 	{
-		if ((ft_strlen(p[i]) == 1 && !ft_strncmp(p[i], ">", 1)) || (ft_strlen(p[i]) == 2 && !ft_strncmp(p[i], ">>", 2)) || (ft_strlen(p[i]) == 1 && !ft_strncmp(p[i], "<", 1)) || (ft_strlen(p[i]) == 2 && !ft_strncmp(p[i], "<<", 2)))
+		if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
+			|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2))
+			|| (ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], "<", 1))
+			|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], "<<", 2)))
 		{
-			if (p[i + 1])
+			if (tokens[i + 1])
 				i += 2;
 			else
 				i++;
 		}
 		else
 		{
-			arg = ft_strjoin(arg, p[i]);
-			arg = ft_strjoin(arg, " ");
+			cmd_arg = ft_strjoin(cmd_arg, tokens[i]);
+			cmd_arg = ft_strjoin(cmd_arg, " ");
 			i++;
 		}
 	}
-	return (arg);
-}
-
-char *join_cmd_redirections(char *cmd_line, t_list *environment)
-{
-	char **p;
-	char *red = NULL;
-	size_t i;
-	p = get_tokens_with_redirection(cmd_line);
-	if (!p)
-		return (NULL);
-	red = ft_strjoin(p[0], " ");
-	i = 1;
-	while (p[i])
-	{
-		if ((ft_strlen(p[i]) == 1 && !ft_strncmp(p[i], ">", 1)) || (ft_strlen(p[i]) == 2 && !ft_strncmp(p[i], ">>", 2)) || (ft_strlen(p[i]) == 1 && !ft_strncmp(p[i], "<", 1)) || (ft_strlen(p[i]) == 2 && !ft_strncmp(p[i], "<<", 2)))
-		{
-			red = ft_strjoin(red, p[i]);
-			red = ft_strjoin(red, " ");
-			if (p[i + 1])
-			{
-				red = ft_strjoin(red, p[i + 1]);
-				red = ft_strjoin(red, " ");
-			}
-			if (p[i + 1])
-				i += 2;
-			else
-				i++;
-		}
-		else
-			i++;
-	}
-	return (red);
+	return (cmd_arg);
 }

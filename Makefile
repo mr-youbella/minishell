@@ -6,16 +6,16 @@
 #    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/08/06 12:39:20 by youbella         ###   ########.fr        #
+#    Updated: 2025/08/18 02:21:15 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
-CFLAGS = #-Wall -Wextra -Werror #-g -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror #-g -fsanitize=address
 READLINE_INCLUDE = -I$(shell brew --prefix readline)/include
 READLINE_LIBRARY = -L$(shell brew --prefix readline)/lib -lreadline
 
-SRC = minishell.c parsing/split_first_cmd.c parsing/search.c parsing/redirections.c commands.c
+SRC = minishell.c dollar_sign.c search.c redirections.c commands.c split_command.c
 OBJS = $(SRC:.c=.o)
 NAME = minishell
 
