@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/18 04:12:25 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/18 07:10:02 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,11 +78,9 @@ void	echo_cmd(char **tokens)
 {
 	int		j;
 	short	is_op_echo;
-	char	*str;
 
 	j = 1;
 	is_op_echo = 0;
-	str = NULL;
 	while (tokens[j] && !ft_strncmp(tokens[j], "-n", 2)
 		&& ft_strlen(tokens[j]) == 2)
 	{

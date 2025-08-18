@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/18 06:50:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/18 07:09:51 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,6 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	pid_t			fd_file_output;
 	pid_t			fd_file_input;
 	pid_t			pid;
-	short			is_there_output;
 	char			*cmd_args;
 	char			*input_herdoc;
 	char			*join_herdoc;
@@ -122,7 +121,6 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		pipe_output = read_fd(fd_pipe);
 	fd_file_output = -1;
 	fd_file_input = -1;
-	is_there_output= 0;
 	join_herdoc = NULL;
 	redirectionst = NULL;
 	cmd_args = join_cmd_args(cmd_line);
@@ -143,7 +141,6 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		if (ft_strlen(redirectionst->type_redirection) == 1
 			&& !ft_strncmp(redirectionst->type_redirection, ">", 1))
 		{
-			is_there_output = 1;
 			fd_file_output = open(redirectionst->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 			if (fd_file_output < 0)
 			{
@@ -154,7 +151,6 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		else if (ft_strlen(redirectionst->type_redirection) == 2
 			&& !ft_strncmp(redirectionst->type_redirection, ">>", 2))
 		{
-			is_there_output = 1;
 			fd_file_output = open(redirectionst->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
 			if (fd_file_output < 0)
 			{
@@ -437,7 +433,6 @@ int	main(int argc, char **argv, char **env)
 	char			*this_dir;
 	char			*this_dir_tmp;
 	char			*path_cmd;
-	char			*herdoc_output;
 	char			*redirection_output;
 
 	if (argc != 1)
@@ -450,7 +445,6 @@ int	main(int argc, char **argv, char **env)
 	signal(SIGINT, handle_signal);
 	signal(SIGQUIT, handle_signal);
 	export_list = NULL;
-	herdoc_output = NULL;
 	old_pwd = NULL;
 	status = 0;
 	cd_flag = 0;
