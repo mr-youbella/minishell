@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/19 10:45:59 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/19 11:19:31 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -361,7 +361,8 @@ short	is_empty_token(char *token)
 
 void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_list, short *cd_flag, t_list **leaks)
 {
-	int		i;
+	size_t	i;
+	size_t	j;
 	int		status;
 	int		fd[2];
 	int		fd_error[2];
@@ -373,6 +374,7 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 	char	**split_pipe;
 	char	*join_errors;
 	char	*error;
+	char	*tmp;
 	char	*redirect_output;
 
 	i = 0;
@@ -384,7 +386,7 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		printf(BLUE "minishell:%s %ssyntax error in pipe.\n" DEF, DEF, RED);
 		return ;
 	}
-	split_pipe = split_commmand_with_quotes(cmd_line, '|', environment, 0, NULL);
+	split_pipe = split_commmand_with_quotes(cmd_line, '|', environment, 0, leaks);
 	while (split_pipe[i])
 	{
 		if (is_empty_token(split_pipe[i]))
@@ -396,23 +398,20 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 	}
 	i = 0;
 	while (split_pipe[i])
-		printf("--%s--\n", split_pipe[i++]);
-	i = 0;
-	while (split_pipe[i])
 	{
 		redirect_output = NULL;
 		exits_redirect = 0;
 		pipe(fd);
 		pipe(fd_error);
-		tokens = split_command(split_pipe[i], ' ', environment, 1, NULL);
+		tokens = split_command(split_pipe[i], ' ', environment, 1, leaks);
 		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
 			exits_redirect = 1;
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6) && tokens[1])
-			export_cmd(env, tokens, export_list, NULL);
+			export_cmd(env, tokens, export_list, leaks);
 		else if (ft_strlen(tokens[0]) == 5
 			&& !ft_strncmp(tokens[0], "unset", 5))
-			unset_cmd(tokens, env, export_list, NULL);
+			unset_cmd(tokens, env, export_list, leaks);
 		if (exits_redirect)
 			redirect_output = redirections(split_pipe[i], env, environment, export_list, cd_flag, in_fd, NULL, leaks);
 		pid = fork();
@@ -444,12 +443,12 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 				pwd_cmd(1);
 			else if (ft_strlen(tokens[0]) == 6
 				&& !ft_strncmp(tokens[0], "export", 6) && !tokens[1])
-				export_cmd(env, tokens, export_list, NULL);
+				export_cmd(env, tokens, export_list, leaks);
 			else if (ft_strlen(tokens[0]) == 3
 				&& !ft_strncmp(tokens[0], "env", 3))
-				env_cmd(env, *export_list, 1, NULL);
+				env_cmd(env, *export_list, 1, leaks);
 			else
-				execve(is_there_cmd(tokens, environment, NULL), tokens, env);
+				execve(is_there_cmd(tokens, environment, leaks), tokens, env);
 			exit(0);
 		}
 		else
@@ -462,14 +461,28 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 			close(in_fd);
 			in_fd = fd[0];
 		}
+		j = 0;
+		while (tokens[j])
+			free(tokens[j++]);
+		free(tokens);
 		error = read_fd(fd_error[0]);
 		if (error)
+		{
+			tmp = join_errors;
 			join_errors = ft_strjoin(join_errors, error);
+			free(tmp);
+			free(error);
+		}
 		close(fd_error[0]);
 		i++;
 	}
+	j = 0;
+	while (split_pipe[j])
+		free(split_pipe[j++]);
+	free(split_pipe);
 	if (join_errors)
 		printf("%s", join_errors);
+	free(join_errors);
 	if (in_fd > 0)
 		close(in_fd);
 }
