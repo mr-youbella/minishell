@@ -6,18 +6,19 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/18 02:28:39 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/19 07:08:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-size_t	len_str(char *str, int status, t_list *environment)
+static size_t	len_str(char *str, int status, t_list *environment, t_list **leaks)
 {
 	size_t	i;
 	size_t	len_var;
 	size_t	start;
 	size_t	len;
+	t_list	*new_leak;
 	char	*env_value;
 	char	*env_var;
 	char	quote;
@@ -39,6 +40,8 @@ size_t	len_str(char *str, int status, t_list *environment)
 			if (str[i + 1] == '?' && quote != 39)
 			{
 				env_value = ft_itoa(status);
+				new_leak = ft_lstnew(env_value);
+				ft_lstadd_back(leaks, new_leak);
 				len += ft_strlen(env_value);
 				i += 2;
 				continue ;
@@ -60,7 +63,9 @@ size_t	len_str(char *str, int status, t_list *environment)
 					i++;
 				}
 				env_var = ft_substr(str, start, len_var);
-				env_value = ft_getenv(env_var, environment);
+				new_leak = ft_lstnew(env_var);
+				ft_lstadd_back(leaks, new_leak);
+				env_value = ft_getenv(env_var, environment, leaks);
 				if (env_value)
 					len += ft_strlen(env_value);
 				continue ;
@@ -72,7 +77,7 @@ size_t	len_str(char *str, int status, t_list *environment)
 	return (len);
 }
 
-char	*ft_dollar(char *str, t_list *environment)
+char	*ft_dollar(char *str, t_list *environment, t_list **leaks)
 {
 	char	*env_value;
 	char	*env_var;
@@ -83,6 +88,7 @@ char	*ft_dollar(char *str, t_list *environment)
 	size_t	k;
 	size_t	start;
 	size_t	len_var;
+	t_list	*new_leak;
 	char	quote;
 	int		status;
 
@@ -90,7 +96,7 @@ char	*ft_dollar(char *str, t_list *environment)
 	j = 0;
 	quote = 0;
 	status = ft_status(0, 0);
-	len = len_str(str, status, environment);
+	len = len_str(str, status, environment, leaks);
 	result = malloc(len + 1);
 	if (!result)
 		return (NULL);
@@ -108,6 +114,8 @@ char	*ft_dollar(char *str, t_list *environment)
 			if (str[i + 1] == '?' && quote != 39)
 			{
 				env_value = ft_itoa(status);
+				new_leak = ft_lstnew(env_value);
+				ft_lstadd_back(leaks, new_leak);
 				k = 0;
 				while (env_value[k])
 					result[j++] = env_value[k++];
@@ -134,7 +142,9 @@ char	*ft_dollar(char *str, t_list *environment)
 					i++;
 				}
 				env_var = ft_substr(str, start, len_var);
-				env_value = ft_getenv(env_var, environment);
+				new_leak = ft_lstnew(env_var);
+				ft_lstadd_back(leaks, new_leak);
+				env_value = ft_getenv(env_var, environment, leaks);
 				if (env_value)
 				{
 					k = 0;

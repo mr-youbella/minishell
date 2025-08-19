@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/18 02:52:51 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/19 09:21:45 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ short	is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
 	return (0);
 }
 
-short	is_ambiguous_redirect(char *token, t_list *environment)
+short	is_ambiguous_redirect(char *token, t_list *environment, t_list **leaks)
 {
 	size_t	i;
 	size_t	j;
@@ -107,7 +107,7 @@ short	is_ambiguous_redirect(char *token, t_list *environment)
 				i++;
 			}
 			var_name = ft_substr(token, start, var_len + 1);
-			var_value = ft_dollar(var_name, environment);
+			var_value = ft_dollar(var_name, environment, leaks);
 			while (var_value[j])
 			{
 				if (var_value[j] == ' ')
@@ -121,7 +121,7 @@ short	is_ambiguous_redirect(char *token, t_list *environment)
 	return (0);
 }
 
-t_redirections	*list_redirections(char **tokens, t_list *environment)
+t_redirections	*list_redirections(char **tokens, t_list *environment, t_list **leaks)
 {
 	size_t			i;
 	t_redirections	*list;
@@ -167,18 +167,20 @@ t_redirections	*list_redirections(char **tokens, t_list *environment)
 		if (ft_strlen(tokens[i - 1]) == 2
 			&& !ft_strncmp(tokens[i - 1], "<<", 2))
 		{
-			file_name = split_command(tokens[i], ' ', environment, 0);
+			file_name = split_command(tokens[i], ' ', environment, 0, leaks);
 			new_node = craete_new_node(tokens[i - 1], file_name[0]);
+			free(file_name);
 		}
-		else if (is_ambiguous_redirect(tokens[i], environment))
+		else if (is_ambiguous_redirect(tokens[i], environment, leaks))
 		{
 			tokens[i] = ft_strdup("");
 			new_node = craete_new_node(tokens[i - 1], tokens[i]);
 		}
 		else
 		{
-			file_name = split_command(tokens[i], ' ', environment, 1);
+			file_name = split_command(tokens[i], ' ', environment, 1, leaks);
 			new_node = craete_new_node(tokens[i - 1], file_name[0]);
+			free(file_name);
 		}
 		add_node_in_back(&list, new_node);
 		i++;
@@ -302,7 +304,7 @@ char	**get_tokens_with_redirection(const char *cmd_line)
 			else
 			{
 				op = extract_word(NULL, c);
-				tokens[k++] = ft_strdup(op);
+				tokens[k++] = op;
 				i++;
 				continue ;
 			}
@@ -331,6 +333,7 @@ char	*join_cmd_args(char *cmd_line)
 	size_t	i;
 	char	*cmd_arg;
 	char	**tokens;
+	char	*tmp;
 
 	i = 1;
 	cmd_arg = NULL;
@@ -352,10 +355,18 @@ char	*join_cmd_args(char *cmd_line)
 		}
 		else
 		{
+			tmp = cmd_arg;
 			cmd_arg = ft_strjoin(cmd_arg, tokens[i]);
+			free(tmp);
+			tmp = cmd_arg;
 			cmd_arg = ft_strjoin(cmd_arg, " ");
+			free(tmp);
 			i++;
 		}
 	}
+	i = 0;
+	while (tokens[i])
+		free(tokens[i++]);
+	free(tokens);
 	return (cmd_arg);
 }

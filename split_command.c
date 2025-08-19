@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/17 22:26:03 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/18 02:20:40 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/19 07:52:48 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ static size_t	count_words_with_quotes(const char *s, char c)
 }
 
 char	**split_commmand_with_quotes(char *command, char c,
-									t_list *environment, short is_dollar)
+									t_list *environment, short is_dollar, t_list **leaks)
 {
 	char	**tokens;
 	char	*buffer;
@@ -114,7 +114,10 @@ char	**split_commmand_with_quotes(char *command, char c,
 				if (!is_dollar)
 					tokens[j] = buffer;
 				else
-					tokens[j] = ft_dollar(buffer, environment);
+				{
+					tokens[j] = ft_dollar(buffer, environment, leaks);
+					free(buffer);
+				}
 				buffer = NULL;
 				j++;
 			}
@@ -128,7 +131,10 @@ char	**split_commmand_with_quotes(char *command, char c,
 		if (!is_dollar)
 			tokens[j] = buffer;
 		else
-			tokens[j] = ft_dollar(buffer, environment);
+		{
+			tokens[j] = ft_dollar(buffer, environment, leaks);
+			free(buffer);
+		}
 	}
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
 		return (NULL);
@@ -164,8 +170,7 @@ static size_t	count_words(char **tokens, char c)
 	return (count);
 }
 
-char	**split_command(char *cmd_line, char c,
-						t_list *environment, short is_dollar)
+char	**split_command(char *cmd_line, char c, t_list *environment, short is_dollar, t_list **leaks)
 {
 	size_t	i;
 	size_t	j;
@@ -178,7 +183,7 @@ char	**split_command(char *cmd_line, char c,
 
 	i = 0;
 	k = 0;
-	tokens = split_commmand_with_quotes(cmd_line, c, environment, is_dollar);
+	tokens = split_commmand_with_quotes(cmd_line, c, environment, is_dollar, leaks);
 	if (!tokens)
 		return (NULL);
 	new_tokens = ft_calloc(count_words(tokens, c) + 1, sizeof(char *));
@@ -225,5 +230,9 @@ char	**split_command(char *cmd_line, char c,
 		i++;
 	}
 	new_tokens[k] = NULL;
+	i = 0;
+	while (tokens[i])
+		free(tokens[i++]);
+	free(tokens);
 	return (new_tokens);
 }

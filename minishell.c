@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/19 01:27:15 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/19 10:45:59 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,12 @@ void	handle_signal(int sig_num)
 	}
 }
 
-char	*ft_getenv(char *var, t_list *environment)
+char	*ft_getenv(char *var, t_list *environment, t_list **leaks)
 {
 	char	*var_env;
 	char	*env;
 	int		i;
+	t_list	*new_leak;
 
 	while (environment)
 	{
@@ -58,15 +59,18 @@ char	*ft_getenv(char *var, t_list *environment)
 			i++;
 		}
 		var_env = ft_substr((char *)environment->content, 0, i);
+		new_leak = ft_lstnew(var_env);
+		ft_lstadd_back(leaks, new_leak);
 		if (!var_env)
 			return (NULL);
 		env = ft_substr((char *)environment->content, i + 1, ft_strlen((char *)environment->content) - i - 1);
+		new_leak = ft_lstnew(env);
+		ft_lstadd_back(leaks, new_leak);
 		if (!env)
 			return (NULL);
 		if (ft_strlen(var) == ft_strlen(var_env)
 			&& !ft_strncmp(var, var_env, ft_strlen(var)))
-			return (free(var_env), env);
-		free(var_env);
+			return (env);
 		environment = environment->next;
 	}
 	return (NULL);
@@ -76,6 +80,7 @@ char	*read_fd(int fd)
 {
 	char	*file_content;
 	char	*buffer;
+	char	*tmp;
 	ssize_t	r;
 
 	if (fd < 0)
@@ -91,30 +96,37 @@ char	*read_fd(int fd)
 		if (!r || r == -1)
 			break ;
 		buffer[r] = 0;
+		tmp = file_content;
 		file_content = ft_strjoin(file_content, buffer);
+		free(tmp);
 		if (!file_content)
 			return (NULL);
 	}
 	return (free(buffer), file_content);
 }
 
-char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **export_list, short *cd_flag, int fd_pipe, char **old_pwd)
+char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **export_list, short *cd_flag, int fd_pipe, char **old_pwd, t_list **leaks)
 {
 	int				fd[2];
 	int				fd_output[2];
 	pid_t			fd_file_output;
+	t_list			*new_leak;
 	pid_t			fd_file_input;
 	pid_t			pid;
 	char			*cmd_args;
 	char			*input_herdoc;
+	char			*input_herdoc_dollar;
 	char			*join_herdoc;
 	char			*path_cmd;
 	char			*output_cmd;
+	char			*tmp;
 	char			**tokens;
 	char			*pipe_output;
 	char			**tokens_redirections;
-	t_redirections	*redirectionst;
+	t_redirections	*redirections;
+	t_redirections	*copy_redirections;
 	int				status;
+	size_t			i;
 
 	pipe_output = NULL;
 	if (fd_pipe > 0)
@@ -122,9 +134,22 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	fd_file_output = 0;
 	fd_file_input = 0;
 	join_herdoc = NULL;
-	redirectionst = NULL;
+	redirections = NULL;
 	cmd_args = join_cmd_args(cmd_line);
-	tokens = split_command(cmd_args, ' ', environment, 1);
+	tokens = split_command(cmd_args, ' ', environment, 1, leaks);
+	i = 0;
+	while (tokens && tokens[i])
+	{
+		new_leak = ft_lstnew(tokens[i]);
+		ft_lstadd_back(leaks, new_leak);
+		i++;
+		if (!tokens[i])
+		{
+			new_leak = ft_lstnew(tokens);
+			ft_lstadd_back(leaks, new_leak);
+		}
+	}
+	free(cmd_args);
 	if (!tokens)
 		return (NULL);
 	if (is_exist_redirect_pipe(cmd_line, 'r'))
@@ -132,35 +157,57 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		tokens_redirections = get_tokens_with_redirection(cmd_line);
 		if (!tokens_redirections)
 			return (NULL);
-		redirectionst = list_redirections(tokens_redirections, environment);
-		if (!redirectionst)
+		copy_redirections = list_redirections(tokens_redirections, environment, leaks);
+		redirections = copy_redirections;
+		i = 0;
+		while (tokens_redirections && tokens_redirections[i])
+		{
+			new_leak = ft_lstnew(tokens_redirections[i]);
+			ft_lstadd_back(leaks, new_leak);
+			i++;
+			if (!tokens_redirections[i])
+			{
+				new_leak = ft_lstnew(tokens_redirections);
+				ft_lstadd_back(leaks, new_leak);
+			}
+		}
+		while (copy_redirections)
+		{
+			new_leak = ft_lstnew(copy_redirections);
+			ft_lstadd_back(leaks, new_leak);
+			new_leak = ft_lstnew(copy_redirections->file_name);
+			ft_lstadd_back(leaks, new_leak);
+			copy_redirections = copy_redirections->next;
+		}
+		if (!redirections)
 			return (NULL);
 	}
-	while (redirectionst)
+	while (redirections)
 	{
-		if (ft_strlen(redirectionst->type_redirection) == 1
-			&& !ft_strncmp(redirectionst->type_redirection, ">", 1))
+		if (ft_strlen(redirections->type_redirection) == 1
+			&& !ft_strncmp(redirections->type_redirection, ">", 1))
 		{
-			fd_file_output = open(redirectionst->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+			fd_file_output = open(redirections->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 			if (fd_file_output < 0)
 			{
 				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
 				return (NULL);
 			}
 		}
-		else if (ft_strlen(redirectionst->type_redirection) == 2
-			&& !ft_strncmp(redirectionst->type_redirection, ">>", 2))
+		else if (ft_strlen(redirections->type_redirection) == 2
+			&& !ft_strncmp(redirections->type_redirection, ">>", 2))
 		{
-			fd_file_output = open(redirectionst->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
+			fd_file_output = open(redirections->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
 			if (fd_file_output < 0)
 			{
 				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
 				return (NULL);
 			}
 		}
-		else if (ft_strlen(redirectionst->type_redirection) == 2
-			&& !ft_strncmp(redirectionst->type_redirection, "<<", 2))
+		else if (ft_strlen(redirections->type_redirection) == 2
+			&& !ft_strncmp(redirections->type_redirection, "<<", 2))
 		{
+			free(join_herdoc);
 			join_herdoc = NULL;
 			while (1)
 			{
@@ -171,34 +218,42 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 						join_herdoc = ft_strdup("");
 					break ;
 				}
-				if (ft_strlen(input_herdoc) == ft_strlen(redirectionst->file_name) && !ft_strncmp(input_herdoc, redirectionst->file_name, ft_strlen(input_herdoc)))
+				if (ft_strlen(input_herdoc) == ft_strlen(redirections->file_name) && !ft_strncmp(input_herdoc, redirections->file_name, ft_strlen(input_herdoc)))
 				{
+					free(input_herdoc);
 					if (!join_herdoc)
 						join_herdoc = ft_strdup("");
 					break ;
 				}
-				join_herdoc = ft_strjoin(join_herdoc, ft_dollar(input_herdoc, environment));
+				input_herdoc_dollar = ft_dollar(input_herdoc, environment, leaks);
+				tmp = join_herdoc;
+				join_herdoc = ft_strjoin(join_herdoc, input_herdoc_dollar);
+				free(input_herdoc_dollar);
+				free(tmp);
+				tmp = join_herdoc;
 				join_herdoc = ft_strjoin(join_herdoc, "\n");
+				free(tmp);
+				free(input_herdoc);
 			}
 		}
-		else if (ft_strlen(redirectionst->type_redirection) == 1
-			&& !ft_strncmp(redirectionst->type_redirection, "<", 1))
+		else if (ft_strlen(redirections->type_redirection) == 1
+			&& !ft_strncmp(redirections->type_redirection, "<", 1))
 		{
 			join_herdoc = NULL;
-			if (!ft_strlen(redirectionst->file_name))
+			if (!ft_strlen(redirections->file_name))
 			{
 				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
 				return (NULL);
 			}
-			fd_file_input = open(redirectionst->file_name, O_RDONLY);
+			fd_file_input = open(redirections->file_name, O_RDONLY);
 			if (fd_file_input < 0)
 			{
 				printf(RED "minishell: %s%s%s: No such file or directory.\n",
-					BLUE, redirectionst->file_name, DEF);
+					BLUE, redirections->file_name, DEF);
 				return (NULL);
 			}
 		}
-		redirectionst = redirectionst->next;
+		redirections = redirections->next;
 	}
 	if ((ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], ">>", 2))
 		|| (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "<<", 2))
@@ -209,9 +264,9 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		exit_cmd();
 	else if (ft_strlen(tokens[0]) == 6
 		&& !ft_strncmp(tokens[0], "export", 6) && tokens[1])
-		export_cmd(env, tokens, export_list);
+		export_cmd(env, tokens, export_list, NULL);
 	else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
-		unset_cmd(tokens, env, export_list);
+		unset_cmd(tokens, env, export_list, NULL);
 	else if (ft_strlen(tokens[0]) == 2
 		&& !ft_strncmp(tokens[0], "cd", 2) && fd_pipe < 0)
 	{
@@ -219,7 +274,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		cd_cmd(tokens[1], cd_flag);
 		return (NULL);
 	}
-	path_cmd = is_there_cmd(tokens, environment);
+	path_cmd = is_there_cmd(tokens, environment, leaks);
 	if (!path_cmd)
 		return (NULL);
 	pipe(fd);
@@ -254,15 +309,17 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 			pwd_cmd(1);
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6) && !tokens[1])
-			export_cmd(env, tokens, export_list);
+			export_cmd(env, tokens, export_list, NULL);
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
-			env_cmd(env, *export_list, 1);
+			env_cmd(env, *export_list, 1, NULL);
 		else
 			execve(path_cmd, tokens, env);
 		exit(0);
 	}
 	else
 	{
+		free(join_herdoc);
+		free(path_cmd);
 		waitpid(pid, &status, 0);
 		ft_status(status, 1);
 		close(fd[1]);
@@ -276,9 +333,11 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	if (fd_file_output > 0 && output_cmd)
 	{
 		write(fd_file_output, output_cmd, ft_strlen(output_cmd));
+		free(output_cmd);
 		close(fd_file_output);
 		return (NULL);
 	}
+	free(output_cmd);
 	if (fd_file_output > 0)
 		close(fd_file_output);
 	if (fd_pipe > 0)
@@ -300,7 +359,7 @@ short	is_empty_token(char *token)
 	return (1);
 }
 
-void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_list, short *cd_flag)
+void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_list, short *cd_flag, t_list **leaks)
 {
 	int		i;
 	int		status;
@@ -320,12 +379,12 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 	in_fd = 0;
 	join_errors = NULL;
 	check_end_pipe = cmd_line[ft_strlen(cmd_line) - 1];
-	if (check_end_pipe == '|')
+	if (cmd_line[0] == '|' || check_end_pipe == '|')
 	{
 		printf(BLUE "minishell:%s %ssyntax error in pipe.\n" DEF, DEF, RED);
 		return ;
 	}
-	split_pipe = split_commmand_with_quotes(cmd_line, '|', environment, 0);
+	split_pipe = split_commmand_with_quotes(cmd_line, '|', environment, 0, NULL);
 	while (split_pipe[i])
 	{
 		if (is_empty_token(split_pipe[i]))
@@ -337,22 +396,25 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 	}
 	i = 0;
 	while (split_pipe[i])
+		printf("--%s--\n", split_pipe[i++]);
+	i = 0;
+	while (split_pipe[i])
 	{
 		redirect_output = NULL;
 		exits_redirect = 0;
 		pipe(fd);
 		pipe(fd_error);
-		tokens = split_command(split_pipe[i], ' ', environment, 1);
+		tokens = split_command(split_pipe[i], ' ', environment, 1, NULL);
 		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
 			exits_redirect = 1;
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6) && tokens[1])
-			export_cmd(env, tokens, export_list);
+			export_cmd(env, tokens, export_list, NULL);
 		else if (ft_strlen(tokens[0]) == 5
 			&& !ft_strncmp(tokens[0], "unset", 5))
-			unset_cmd(tokens, env, export_list);
+			unset_cmd(tokens, env, export_list, NULL);
 		if (exits_redirect)
-			redirect_output = redirections(split_pipe[i], env, environment, export_list, cd_flag, in_fd, NULL);
+			redirect_output = redirections(split_pipe[i], env, environment, export_list, cd_flag, in_fd, NULL, leaks);
 		pid = fork();
 		if (pid == 0)
 		{
@@ -382,12 +444,12 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 				pwd_cmd(1);
 			else if (ft_strlen(tokens[0]) == 6
 				&& !ft_strncmp(tokens[0], "export", 6) && !tokens[1])
-				export_cmd(env, tokens, export_list);
+				export_cmd(env, tokens, export_list, NULL);
 			else if (ft_strlen(tokens[0]) == 3
 				&& !ft_strncmp(tokens[0], "env", 3))
-				env_cmd(env, *export_list, 1);
+				env_cmd(env, *export_list, 1, NULL);
 			else
-				execve(is_there_cmd(tokens, environment), tokens, env);
+				execve(is_there_cmd(tokens, environment, NULL), tokens, env);
 			exit(0);
 		}
 		else
@@ -412,12 +474,22 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		close(in_fd);
 }
 
+void	f()
+{
+	system("leaks minishell");
+}
+
 int	main(int argc, char **argv, char **env)
 {
+	atexit(f);
 	struct stat		file;
 	struct termios	ctr;
+	t_list			*leaks;
 	t_list			*export_list;
 	t_list			*environment;
+	t_list			*all_environment;
+	t_list			*new_leak;
+	t_list			*tmp;
 	short			cd_flag;
 	int				i;
 	int				status;
@@ -443,6 +515,8 @@ int	main(int argc, char **argv, char **env)
 	signal(SIGQUIT, handle_signal);
 	export_list = NULL;
 	old_pwd = NULL;
+	leaks = NULL;
+	tokens = NULL;
 	status = 0;
 	cd_flag = 0;
 	pid = fork();
@@ -453,8 +527,17 @@ int	main(int argc, char **argv, char **env)
 	while (1)
 	{
 		i = 0;
-		environment = all_env(NULL, NULL, env, export_list, 0, 0, &cd_flag, old_pwd);
+		all_environment = all_env(NULL, NULL, env, export_list, 0, 0, &cd_flag, old_pwd, &leaks);
+		environment = all_environment;
+		while (all_environment)
+		{
+			new_leak = ft_lstnew(all_environment);
+			ft_lstadd_back(&leaks, new_leak);
+			all_environment = all_environment->next;
+		}
 		pwd = pwd_cmd(0);
+		new_leak = ft_lstnew(pwd);
+		ft_lstadd_back(&leaks, new_leak);
 		path = ft_split(pwd, '/');
 		while (path[i])
 		{
@@ -482,30 +565,57 @@ int	main(int argc, char **argv, char **env)
 		free(this_dir);
 		this_dir = this_dir_tmp;
 		cmd_line = readline(this_dir);
+		new_leak = ft_lstnew(cmd_line);
+		ft_lstadd_back(&leaks, new_leak);
 		free(this_dir);
 		if (!cmd_line)
 		{
+			while (leaks)
+			{
+				free(leaks->content);
+				tmp = leaks;
+				leaks = leaks->next;
+				free(tmp);
+			}
+			while (export_list)
+			{
+				tmp = export_list;
+				export_list = export_list->next;
+				free(tmp);
+			}
 			// exit_cmd();
 			return (0);
 		}
 		if (!cmd_line[0])
 			continue ;
 		add_history(cmd_line);
+		tokens = split_command(cmd_line, ' ', environment, 1, &leaks);
+		if (!tokens || !tokens[0])
+			continue ;
+		i = 0;
+		while (tokens[i])
+		{
+			new_leak = ft_lstnew(tokens[i]);
+			ft_lstadd_back(&leaks, new_leak);
+			i++;
+			if (!tokens[i])
+			{
+				new_leak = ft_lstnew(tokens);
+				ft_lstadd_back(&leaks, new_leak);
+			}
+		}
 		if (is_exist_redirect_pipe(cmd_line, '|'))
 		{
-			ft_pipe(cmd_line, environment, env, &export_list, &cd_flag);
+			ft_pipe(cmd_line, environment, env, &export_list, &cd_flag, &leaks);
 			continue ;
 		}
 		else if (is_exist_redirect_pipe(cmd_line, 'r'))
 		{
-			redirection_output = redirections(cmd_line, env, environment, &export_list, &cd_flag, -1, &old_pwd);
+			redirection_output = redirections(cmd_line, env, environment, &export_list, &cd_flag, -1, &old_pwd, &leaks);
 			if (redirection_output)
 				printf("%s", redirection_output);
 			continue ;
 		}
-		tokens = split_command(cmd_line, ' ', environment, 1);
-		if (!tokens || !tokens[0])
-			continue ;
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 		{
 			printf(RED "exit\n" DEF);
@@ -520,18 +630,18 @@ int	main(int argc, char **argv, char **env)
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6))
 		{
-			export_cmd(env, tokens, &export_list);
+			export_cmd(env, tokens, &export_list, &leaks);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 5
 			&& !ft_strncmp(tokens[0], "unset", 5))
 		{
-			unset_cmd(tokens, env, &export_list);
+			unset_cmd(tokens, env, &export_list, &leaks);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
 		{
-			env_cmd(env, export_list, 1);
+			env_cmd(env, export_list, 1, &leaks);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3))
@@ -550,7 +660,7 @@ int	main(int argc, char **argv, char **env)
 			cd_cmd(tokens[1], &cd_flag);
 			continue ;
 		}
-		path_cmd = is_there_cmd(tokens, environment);
+		path_cmd = is_there_cmd(tokens, environment, &leaks);
 		if (!path_cmd)
 			continue ;
 		pid = fork();
@@ -563,12 +673,12 @@ int	main(int argc, char **argv, char **env)
 		}
 		else
 		{
+			free(path_cmd);
 			g_signle_flag = pid;
 			waitpid(pid, &status, 0);
 			ft_status(status, 1);
 			g_signle_flag = 0;
 		}
-		free(cmd_line);
 	}
 	return (0);
 }

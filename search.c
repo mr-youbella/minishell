@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/18 07:05:14 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/19 08:34:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ short	check_export_arg(char *arg)
 	}
 	while (arg[i])
 	{
+		if (arg[i] == '=')
+			break ;
 		if (arg[i] == '!' || arg[i] == '&' || arg[i] == '(' || arg[i] == ')')
 		{
 			printf(BLUE "minishell: %sexport: %snot valid in this context. %s\n"
@@ -63,22 +65,27 @@ short	check_unset_arg(char *arg)
 	return (1);
 }
 
-t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_list, short is_export_cmd, short env_export, short *cd_flag, char *old_pwd)
+t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_list, short is_export_cmd, short env_export, short *cd_flag, char *old_pwd, t_list **leaks)
 {
 	t_list			*enviroment;
 	t_list			*new_node;
+	t_list			*new_leak;
+	t_list			*tmp;
 	size_t			i;
 	size_t			j;
 	static short	oldpwd_flag;
 	short			is_with_value;
 	char			*name_var_export;
 	char			*name_var_env;
+	char			*pwd;
 
 	enviroment = NULL;
 	i = 0;
 	while (var_export && var_export[i] && var_export[i] != '=')
 		i++;
 	name_var_export = ft_substr(var_export, 0, i);
+	new_leak = ft_lstnew(name_var_export);
+	ft_lstadd_back(leaks, new_leak);
 	i = 0;
 	if (!env_export || env_export == 1)
 	{
@@ -93,6 +100,8 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 			while (env[i][j] && env[i][j] != '=')
 				j++;
 			name_var_env = ft_substr(env[i], 0, j);
+			new_leak = ft_lstnew(name_var_env);
+			ft_lstadd_back(leaks, new_leak);
 			if (name_var_export && j == ft_strlen(name_var_export) && !ft_strncmp(env[i], name_var_export, j))
 				env[i] = var_export;
 			else if (cd_flag && !*cd_flag && !oldpwd_flag)
@@ -100,6 +109,8 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 				if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "OLDPWD", j))
 				{
 					name_var_env = ft_strjoin("OLDPWD", "");
+					new_leak = ft_lstnew(name_var_env);
+					ft_lstadd_back(leaks, new_leak);
 					env[i] = name_var_env;
 				}
 			}
@@ -107,12 +118,19 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 			{
 				if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "PWD", j))
 				{
-					name_var_env = ft_strjoin("PWD=", pwd_cmd(0));
+					pwd = pwd_cmd(0);
+					new_leak = ft_lstnew(pwd);
+					ft_lstadd_back(leaks, new_leak);
+					name_var_env = ft_strjoin("PWD=", pwd);
+					new_leak = ft_lstnew(name_var_env);
+					ft_lstadd_back(leaks, new_leak);
 					env[i] = name_var_env;
 				}
 				else if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "OLDPWD", j) && old_pwd)
 				{
 					name_var_env = ft_strjoin("OLDPWD=", old_pwd);
+					new_leak = ft_lstnew(name_var_env);
+					ft_lstadd_back(leaks, new_leak);
 					env[i] = name_var_env;
 				}
 				oldpwd_flag = 1;
@@ -123,7 +141,14 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 				ft_lstadd_back(&enviroment, new_node);
 			}
 			else
+			{
 				env[i] = ft_strdup("");
+				
+				{
+					new_leak = ft_lstnew(env[i]);
+					ft_lstadd_back(leaks, new_leak);
+				}
+			}
 			i++;
 		}
 		if (cd_flag)
@@ -161,19 +186,32 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 			export_list = export_list->next;
 		}
 	}
+	if (var_export || var_unset)
+	{
+		while (enviroment)
+		{
+			tmp = enviroment;
+			enviroment = enviroment->next;
+			free(tmp);
+		}
+		return (NULL);
+	}
 	return (enviroment);
 }
 
-short	is_exist_var(char *var, char **env, t_list *export_list)
+short	is_exist_var(char *var, char **env, t_list *export_list, t_list **leaks)
 {
 	size_t	i;
 	size_t	j;
+	t_list	*new_leak;
 	char	*var_name;
 
 	i = 0;
 	while (var && var[i] && var[i] != '=')
 		i++;
 	var_name = ft_substr(var, 0, i);
+	new_leak = ft_lstnew(var_name);
+	ft_lstadd_back(leaks, new_leak);
 	i = 0;
 	while (env[i])
 	{
@@ -183,7 +221,7 @@ short	is_exist_var(char *var, char **env, t_list *export_list)
 			continue ;
 		}
 		j = 0;
-		while (env[i] && env[i][j] != '=')
+		while (env[i] && env[i][j] && env[i][j] != '=')
 			j++;
 		if (var_name && j == ft_strlen(var_name) && !ft_strncmp(env[i], var_name, j))
 			return (1);
