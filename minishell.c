@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/18 07:09:51 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/19 01:27:15 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,8 +119,8 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	pipe_output = NULL;
 	if (fd_pipe > 0)
 		pipe_output = read_fd(fd_pipe);
-	fd_file_output = -1;
-	fd_file_input = -1;
+	fd_file_output = 0;
+	fd_file_input = 0;
 	join_herdoc = NULL;
 	redirectionst = NULL;
 	cmd_args = join_cmd_args(cmd_line);
@@ -233,6 +233,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		else
 			write(fd[1], "", 0);
 	}
+	close(fd[1]);
 	pid = fork();
 	if (!pid)
 	{
@@ -278,7 +279,8 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		close(fd_file_output);
 		return (NULL);
 	}
-	close(fd_file_output);
+	if (fd_file_output > 0)
+		close(fd_file_output);
 	if (fd_pipe > 0)
 		return (NULL);
 	return (output_cmd);
@@ -356,9 +358,10 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		{
 			dup2(in_fd, 0);
 			if (split_pipe[i + 1])
+			{
 				dup2(fd[1], 1);
-			if (split_pipe[i + 1])
 				dup2(fd_error[1], 2);
+			}
 			close(fd[0]);
 			close(fd_error[0]);
 			close(fd[1]);
@@ -393,8 +396,8 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 			ft_status(status, 1);
 			close(fd[1]);
 			close(fd_error[1]);
-			if (in_fd != 0)
-				close(in_fd);
+		if (in_fd > 0)
+			close(in_fd);
 			in_fd = fd[0];
 		}
 		error = read_fd(fd_error[0]);
@@ -405,18 +408,12 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 	}
 	if (join_errors)
 		printf("%s", join_errors);
-	if (in_fd != 0)
+	if (in_fd > 0)
 		close(in_fd);
-}
-
-void	f()
-{
-	system("leaks minishell | grep 'leaks for'");
 }
 
 int	main(int argc, char **argv, char **env)
 {
-	atexit(f);
 	struct stat		file;
 	struct termios	ctr;
 	t_list			*export_list;
