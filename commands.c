@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/19 08:12:50 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 04:05:12 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,9 @@ char	*search_cmd(char *cmd, t_list *environment, t_list **leaks)
 		return (NULL);
 	if ((cmd[0] == '.' && cmd[1] == '/')
 		|| (cmd[0] == '.' && cmd[1] == '.' & cmd[2] == '/'))
-		return (cmd);
+		return (ft_strdup(cmd));
 	if (cmd[0] == '/')
-		return (cmd);
+		return (ft_strdup(cmd));
 	env_path = ft_getenv("PATH", environment, leaks);
 	split_env_path = ft_split(env_path, ':');
 	while (split_env_path && split_env_path[i])
@@ -68,7 +68,7 @@ char	*is_there_cmd(char **tokens, t_list *environment, t_list **leaks)
 		|| (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
 		|| (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
 		|| (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4)))
-		return (tokens[0]);
+		return (ft_strdup(tokens[0]));
 	path_cmd = search_cmd(tokens[0], environment, leaks);
 	if (!path_cmd)
 	{
@@ -96,13 +96,16 @@ char	*is_there_cmd(char **tokens, t_list *environment, t_list **leaks)
 	return (path_cmd);
 }
 
-void	echo_cmd(char **tokens)
+char	*echo_cmd(char **tokens, short is_return)
 {
 	int		j;
 	short	is_op_echo;
+	char	*echo;
+	char	*tmp;
 
 	j = 1;
 	is_op_echo = 0;
+	echo = NULL;
 	while (tokens[j] && !ft_strncmp(tokens[j], "-n", 2)
 		&& ft_strlen(tokens[j]) == 2)
 	{
@@ -111,14 +114,40 @@ void	echo_cmd(char **tokens)
 	}
 	while (tokens[j])
 	{
-		printf("%s", tokens[j]);
+		if (is_return)
+		{
+			tmp = echo;
+			echo = ft_strjoin(echo, tokens[j]);
+			free(tmp);
+		}
+		else
+			printf("%s", tokens[j]);
 		if (tokens[j + 1])
-			printf(" ");
+		{
+			if (is_return)
+			{
+				tmp = echo;
+				echo = ft_strjoin(echo, " ");
+				free(tmp);
+			}
+			else
+				printf(" ");
+		}
 		j++;
 	}
 	if (!is_op_echo)
-		printf("\n");
+	{
+		if (is_return)
+		{
+			tmp = echo;
+			echo = ft_strjoin(echo, "\n");
+			free(tmp);
+		}
+		else
+			printf("\n");
+	}
 	ft_status(0, 1);
+	return (echo);
 }
 
 t_list	*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks)

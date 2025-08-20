@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/19 11:19:31 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 04:57:28 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	t_redirections	*copy_redirections;
 	int				status;
 	size_t			i;
+	char			*echo;
 
 	pipe_output = NULL;
 	if (fd_pipe > 0)
@@ -135,6 +136,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	fd_file_input = 0;
 	join_herdoc = NULL;
 	redirections = NULL;
+	echo = NULL;
 	cmd_args = join_cmd_args(cmd_line);
 	tokens = split_command(cmd_args, ' ', environment, 1, leaks);
 	i = 0;
@@ -267,6 +269,8 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		export_cmd(env, tokens, export_list, NULL);
 	else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
 		unset_cmd(tokens, env, export_list, NULL);
+	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
+		echo = echo_cmd(tokens, 1);
 	else if (ft_strlen(tokens[0]) == 2
 		&& !ft_strncmp(tokens[0], "cd", 2) && fd_pipe < 0)
 	{
@@ -304,12 +308,12 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		close(fd[1]);
 		close(fd_output[1]);
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
-			echo_cmd(tokens);
+			printf("%s", echo);
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "pwd", 3))
 			pwd_cmd(1);
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6) && !tokens[1])
-			export_cmd(env, tokens, export_list, NULL);
+			export_cmd(env, tokens, export_list, leaks);
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
 			env_cmd(env, *export_list, 1, NULL);
 		else
@@ -318,9 +322,10 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	}
 	else
 	{
+		waitpid(pid, &status, 0);
 		free(join_herdoc);
 		free(path_cmd);
-		waitpid(pid, &status, 0);
+		free(echo);
 		ft_status(status, 1);
 		close(fd[1]);
 		close(fd_output[1]);
@@ -337,7 +342,6 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		close(fd_file_output);
 		return (NULL);
 	}
-	free(output_cmd);
 	if (fd_file_output > 0)
 		close(fd_file_output);
 	if (fd_pipe > 0)
@@ -376,10 +380,12 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 	char	*error;
 	char	*tmp;
 	char	*redirect_output;
+	char	*echo;
 
 	i = 0;
 	in_fd = 0;
 	join_errors = NULL;
+	echo = NULL;
 	check_end_pipe = cmd_line[ft_strlen(cmd_line) - 1];
 	if (cmd_line[0] == '|' || check_end_pipe == '|')
 	{
@@ -412,6 +418,9 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		else if (ft_strlen(tokens[0]) == 5
 			&& !ft_strncmp(tokens[0], "unset", 5))
 			unset_cmd(tokens, env, export_list, leaks);
+		else if (ft_strlen(tokens[0]) == 4
+			&& !ft_strncmp(tokens[0], "echo", 4))
+			echo_cmd(tokens, 0);
 		if (exits_redirect)
 			redirect_output = redirections(split_pipe[i], env, environment, export_list, cd_flag, in_fd, NULL, leaks);
 		pid = fork();
@@ -437,7 +446,7 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 				exit_cmd();
 			else if (ft_strlen(tokens[0]) == 4
 				&& !ft_strncmp(tokens[0], "echo", 4))
-				echo_cmd(tokens);
+				printf("%s", echo);
 			else if (ft_strlen(tokens[0]) == 3
 				&& !ft_strncmp(tokens[0], "pwd", 3))
 				pwd_cmd(1);
@@ -457,9 +466,10 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 			ft_status(status, 1);
 			close(fd[1]);
 			close(fd_error[1]);
-		if (in_fd > 0)
-			close(in_fd);
+			if (in_fd > 0)
+				close(in_fd);
 			in_fd = fd[0];
+			free(echo);
 		}
 		j = 0;
 		while (tokens[j])
@@ -487,14 +497,14 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		close(in_fd);
 }
 
-void	f()
-{
-	system("leaks minishell");
-}
+// void	f()
+// {
+// 	system("leaks minishell");
+// }
 
 int	main(int argc, char **argv, char **env)
 {
-	atexit(f);
+	// atexit(f);
 	struct stat		file;
 	struct termios	ctr;
 	t_list			*leaks;
@@ -664,7 +674,7 @@ int	main(int argc, char **argv, char **env)
 		}
 		else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
 		{
-			echo_cmd(tokens);
+			echo_cmd(tokens, 0);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
