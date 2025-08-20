@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/20 09:39:30 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 13:33:51 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,11 +174,22 @@ t_list	*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks)
 	return (environment);
 }
 
-void	cd_cmd(char *tokens, short *cd_flag)
+void	cd_cmd(char *tokens, short *cd_flag, t_list *environment, t_list **leaks)
 {
+	char	*home;
+	
 	*cd_flag = 1;
+	home = ft_getenv("HOME", environment, leaks);
 	if (!tokens)
-		chdir(getenv("HOME"));
+	{
+		if (!home)
+		{
+			printf(BLUE "minishell: %scd: %sHOME not set.%s\n", DEF, RED, DEF);
+			*cd_flag = 0;
+		}
+		else
+			chdir(home);
+	}
 	else if (chdir(tokens) == -1)
 	{
 		printf(BLUE "minishell%s: cd: no such file or directory: %s%s%s\n",

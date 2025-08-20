@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/20 10:55:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 13:30:05 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,7 +286,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		&& !ft_strncmp(tokens[0], "cd", 2) && fd_pipe < 0)
 	{
 		*old_pwd = pwd_cmd(0);
-		cd_cmd(tokens[1], cd_flag);
+		cd_cmd(tokens[1], cd_flag, environment, leaks);
 		return (NULL);
 	}
 	path_cmd = is_there_cmd(tokens, environment, leaks);
@@ -383,6 +383,7 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 {
 	size_t	i;
 	size_t	j;
+	t_list	*new_leak;
 	int		status;
 	int		fd[2];
 	int		fd_error[2];
@@ -502,8 +503,16 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		}
 		j = 0;
 		while (tokens[j])
-			free(tokens[j++]);
-		free(tokens);
+		{
+			new_leak = ft_lstnew(tokens[j]);
+			ft_lstadd_back(leaks, new_leak);
+			j++;
+			if (!tokens[j])
+			{
+				new_leak = ft_lstnew(tokens);
+				ft_lstadd_back(leaks, new_leak);
+			}
+		}
 		error = read_fd(fd_error[0]);
 		if (error)
 		{
@@ -552,7 +561,7 @@ void	f()
 
 int	main(int argc, char **argv, char **env)
 {
-	// atexit(f);
+	atexit(f);
 	struct stat		file;
 	struct termios	ctr;
 	t_list			*leaks;
@@ -716,7 +725,7 @@ int	main(int argc, char **argv, char **env)
 		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
 		{
 			old_pwd = pwd;
-			cd_cmd(tokens[1], &cd_flag);
+			cd_cmd(tokens[1], &cd_flag, environment, &leaks);
 			continue ;
 		}
 		path_cmd = is_there_cmd(tokens, environment, &leaks);

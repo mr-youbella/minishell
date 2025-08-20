@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/17 22:26:03 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/19 07:52:48 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 12:51:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,9 +180,13 @@ char	**split_command(char *cmd_line, char c, t_list *environment, short is_dolla
 	char	*buffer;
 	short	is_single_quote;
 	short	is_double_quote;
+	short	is_space;
 
 	i = 0;
 	k = 0;
+	is_space = 0;
+	if (c == ' ')
+		is_space = 1;
 	tokens = split_commmand_with_quotes(cmd_line, c, environment, is_dollar, leaks);
 	if (!tokens)
 		return (NULL);
@@ -209,14 +213,14 @@ char	**split_command(char *cmd_line, char c, t_list *environment, short is_dolla
 				j++;
 				continue ;
 			}
-			else if (tokens[i][j] == c && !is_single_quote && !is_double_quote)
+			else if ((tokens[i][j] == c || (is_space && tokens[i][j] == '\t')) && !is_single_quote && !is_double_quote)
 			{
 				if (buffer)
 				{
 					new_tokens[k++] = buffer;
 					buffer = NULL;
 				}
-				while (tokens[i][j] == c)
+				while (tokens[i][j] == c || (is_space && tokens[i][j] == '\t'))
 					j++;
 				continue ;
 			}
