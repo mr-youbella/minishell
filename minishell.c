@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/20 10:01:29 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 10:55:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,13 @@ int	ft_status(int status, short is_change)
 
 void	handle_signal(int sig_num)
 {
-	if (g_signle_flag == 0 && sig_num == SIGQUIT)
-		write(1, "Quit: 3\n", 9);
+	if (sig_num == SIGQUIT)
+	{
+		int status = ft_status(0, 0);
+		pid_t pid = wait(&status);
+		if (pid > 0)
+			write(1, "Quit: 3\n", 9);
+	}
 	else if (g_signle_flag == 0 && sig_num == SIGINT)
 	{
 		ft_status(256, 1);
@@ -493,6 +498,7 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 			free(echo);
 			free(export);
 			free(pwd);
+			free(redirect_output);
 		}
 		j = 0;
 		while (tokens[j])
