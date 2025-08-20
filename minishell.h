@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/20 03:33:28 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 07:10:55 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ char			*is_there_cmd(char **tokens, t_list *environment, t_list **leaks);
 char			*search_cmd(char *cmd, t_list *environment, t_list **leaks);
 char			*echo_cmd(char **tokens, short is_return);
 t_list			*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks);
-void			export_cmd(char **env, char **tokens, t_list **export_list, t_list **leaks);
+char			*export_cmd(char **env, char **tokens, t_list **export_list, t_list **leaks, short is_return);
 void			unset_cmd(char **tokens, char **env, t_list **export_list, t_list **leaks);
 void			cd_cmd(char *tokens, short *cd_flag);
 char			*pwd_cmd(short is_print);
