@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/17 22:26:03 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/20 12:51:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 15:11:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,16 @@ static size_t	count_words_with_quotes(const char *s, char c)
 	size_t	count;
 	short	is_single_quote;
 	short	is_double_quote;
+	short	is_space;
 
+	is_space = 0;
+	if (c == ' ')
+		is_space = 1;
 	1 && (i = 0, count = 0);
 	1 && (is_single_quote = 0, is_double_quote = 0);
 	while (s[i])
 	{
-		while (s[i] == c && !is_single_quote && !is_double_quote)
+		while ((s[i] == c || (is_space && s[i] == '\t')) && !is_single_quote && !is_double_quote)
 			i++;
 		if (s[i] != '\0')
 			count++;
@@ -61,7 +65,7 @@ static size_t	count_words_with_quotes(const char *s, char c)
 				is_single_quote = !is_single_quote;
 			else if (s[i] == '"' && !is_single_quote)
 				is_double_quote = !is_double_quote;
-			else if (s[i] == c && !is_single_quote && !is_double_quote)
+			else if ((s[i] == c || (is_space && s[i] == '\t')) && !is_single_quote && !is_double_quote)
 				break ;
 			i++;
 		}
@@ -81,7 +85,11 @@ char	**split_commmand_with_quotes(char *command, char c,
 	short	is_single_quote;
 	short	is_double_quote;
 	short	is_c;
+	short	is_space;
 
+	is_space = 0;
+	if (c == ' ')
+		is_space = 1;
 	i = 0;
 	j = 0;
 	is_double_quote = 0;
@@ -106,7 +114,7 @@ char	**split_commmand_with_quotes(char *command, char c,
 			is_double_quote = !is_double_quote;
 			count_double_quotes++;
 		}
-		else if (command[i] == c && !is_double_quote && !is_single_quote)
+		else if ((command[i] == c || (is_space && command[i] == '\t'))&& !is_double_quote && !is_single_quote)
 		{
 			is_c = 1;
 			if (buffer)
@@ -148,7 +156,11 @@ static size_t	count_words(char **tokens, char c)
 	size_t	j;
 	short	is_single_quote;
 	short	is_double_quote;
+	short	is_space;
 
+	is_space = 0;
+	if (c == ' ')
+		is_space = 1;
 	1 && (i = 0, count = 0);
 	while (tokens[i])
 	{
@@ -160,7 +172,7 @@ static size_t	count_words(char **tokens, char c)
 				is_single_quote = !is_single_quote;
 			else if (tokens[i][j] == '"' && !is_single_quote)
 				is_double_quote = !is_double_quote;
-			else if (tokens[i][j] == c && !is_single_quote && !is_double_quote)
+			else if ((tokens[i][j] == c || (is_space && tokens[i][j] == '\t')) && !is_single_quote && !is_double_quote)
 				count++;
 			j++;
 		}

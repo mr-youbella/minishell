@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/20 13:30:05 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/20 17:44:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,7 +329,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 				printf("%s", export);
 		}
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
-			env_cmd(env, *export_list, 1, NULL);
+			env_cmd(env, *export_list, 1, leaks);
 		else
 			execve(path_cmd, tokens, env);
 		exit(0);
@@ -342,6 +342,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		free(echo);
 		free(export);
 		free(pwd);
+		free(pipe_output);
 		ft_status(status, 1);
 		close(fd[1]);
 		close(fd_output[1]);
@@ -360,8 +361,6 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	}
 	if (fd_file_output > 0)
 		close(fd_file_output);
-	if (fd_pipe > 0)
-		return (NULL);
 	return (output_cmd);
 }
 
@@ -379,7 +378,7 @@ short	is_empty_token(char *token)
 	return (1);
 }
 
-void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_list, short *cd_flag, t_list **leaks)
+void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_list, short *cd_flag, t_list **leaks, char **old_pwd)
 {
 	size_t	i;
 	size_t	j;
@@ -432,7 +431,10 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		pipe(fd_error);
 		tokens = split_command(split_pipe[i], ' ', environment, 1, leaks);
 		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
+		{
 			exits_redirect = 1;
+			redirect_output = redirections(split_pipe[i], env, environment, export_list, cd_flag, in_fd, old_pwd, leaks);
+		}
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6))
 			export = export_cmd(env, tokens, export_list, leaks, 1);
@@ -445,8 +447,6 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		else if (ft_strlen(tokens[0]) == 3
 			&& (!ft_strncmp(tokens[0], "pwd", 3) || !ft_strncmp(tokens[0], "PWD", 3)))
 			pwd = pwd_cmd(0);
-		if (exits_redirect)
-			redirect_output = redirections(split_pipe[i], env, environment, export_list, cd_flag, in_fd, NULL, leaks);
 		pid = fork();
 		if (pid == 0)
 		{
@@ -658,7 +658,10 @@ int	main(int argc, char **argv, char **env)
 		add_history(cmd_line);
 		tokens = split_command(cmd_line, ' ', environment, 1, &leaks);
 		if (!tokens || !tokens[0])
+		{
+			free(tokens);
 			continue ;
+		}
 		i = 0;
 		while (tokens[i])
 		{
@@ -673,7 +676,7 @@ int	main(int argc, char **argv, char **env)
 		}
 		if (is_exist_redirect_pipe(cmd_line, '|'))
 		{
-			ft_pipe(cmd_line, environment, env, &export_list, &cd_flag, &leaks);
+			ft_pipe(cmd_line, environment, env, &export_list, &cd_flag, &leaks, &old_pwd);
 			continue ;
 		}
 		else if (is_exist_redirect_pipe(cmd_line, 'r'))
