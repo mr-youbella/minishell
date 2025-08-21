@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/19 09:21:45 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/21 18:42:34 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,16 +49,18 @@ static t_redirections	*craete_new_node(char *redirect_type, char *file)
 short	is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
 {
 	size_t	i;
+	char	quot;
 
 	i = 0;
 	while (cmd_line[i])
 	{
 		if (cmd_line[i] == '"' || cmd_line[i] == 39)
 		{
+			quot = cmd_line[i];
 			i++;
-			while (cmd_line[i] && cmd_line[i] != '"' && cmd_line[i] != 39)
+			while (cmd_line[i] && cmd_line[i] != quot)
 				i++;
-			if (cmd_line[i] == '"' || cmd_line[i] == 39)
+			if (cmd_line[i] == quot)
 				i++;
 		}
 		if (!cmd_line[i])
@@ -83,20 +85,25 @@ short	is_ambiguous_redirect(char *token, t_list *environment, t_list **leaks)
 	size_t	var_len;
 	char	*var_name;
 	char	*var_value;
+	char	quot;
 
 	i = 0;
+	var_value = NULL;
 	while (token[i])
 	{
 		var_len = 0;
 		j = 0;
 		if (token[i] == 39 || token[i] == '"')
 		{
+			quot = token[i];
 			i++;
-			while (token[i] && token[i] != 39 && token[i] != '"')
+			while (token[i] && token[i] != quot)
 				i++;
-			if (token[i] == 39 || token[i] == '"')
+			if (token[i] == quot)
 				i++;
 		}
+		if (!token[i])
+			break ;
 		if (token[i] == '$')
 		{
 			start = i;
@@ -108,17 +115,18 @@ short	is_ambiguous_redirect(char *token, t_list *environment, t_list **leaks)
 			}
 			var_name = ft_substr(token, start, var_len + 1);
 			var_value = ft_dollar(var_name, environment, leaks);
+			free(var_name);
 			while (var_value[j])
 			{
 				if (var_value[j] == ' ')
-					return (1);
+					return (free(var_value), 1);
 				j++;
 			}
 		}
 		else
 			i++;
 	}
-	return (0);
+	return (free(var_value), 0);
 }
 
 t_redirections	*list_redirections(char **tokens, t_list *environment, t_list **leaks)
@@ -132,30 +140,14 @@ t_redirections	*list_redirections(char **tokens, t_list *environment, t_list **l
 	list = NULL;
 	while (tokens[i])
 	{
-		if (ft_strlen(tokens[i]) == 2 && ((!ft_strncmp(tokens[i], ">>", 2))
-				|| (!ft_strncmp(tokens[i], "<<", 2))))
+		if ((ft_strlen(tokens[i]) == 2 && ((!ft_strncmp(tokens[i], ">>", 2)) || (!ft_strncmp(tokens[i], "<<", 2)))) || ((ft_strlen(tokens[i]) == 1) && ((!ft_strncmp(tokens[i], ">", 1)) || (!ft_strncmp(tokens[i], "<", 1)))))
 		{
 			i++;
-			if (!tokens[i] || (ft_strlen(tokens[i]) == 2
-					&& !ft_strncmp(tokens[i], ">>", 2))
-				|| !ft_strncmp(tokens[i], "<<", 2))
+			if ((!tokens[i] || (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2)) || !ft_strncmp(tokens[i], "<<", 2)) || (!tokens[i] || (ft_strlen(tokens[i]) == 1 && (!ft_strncmp(tokens[i], ">", 1) || !ft_strncmp(tokens[i], "<", 1)))))
 			{
 				printf(BLUE "minishell:%s %ssyntax error in redirection.\n"
 					DEF, DEF, RED);
-				return (NULL);
-			}
-		}
-		else if ((ft_strlen(tokens[i]) == 1)
-			&& ((!ft_strncmp(tokens[i], ">", 1))
-				|| (!ft_strncmp(tokens[i], "<", 1))))
-		{
-			i++;
-			if (!tokens[i] || (ft_strlen(tokens[i]) == 1
-					&& (!ft_strncmp(tokens[i], ">", 1)
-						|| !ft_strncmp(tokens[i], "<", 1))))
-			{
-				printf(BLUE "minishell:%s %ssyntax error in redirection.\n"
-					DEF, DEF, RED);
+				ft_status(258, 1);
 				return (NULL);
 			}
 		}

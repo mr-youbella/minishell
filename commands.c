@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/20 13:33:51 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/21 19:33:21 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,6 @@ char	*search_cmd(char *cmd, t_list *environment, t_list **leaks)
 	i = 0;
 	if (!cmd[0])
 		return (NULL);
-	if ((cmd[0] == '.' && cmd[1] == '/')
-		|| (cmd[0] == '.' && cmd[1] == '.' & cmd[2] == '/'))
-		return (ft_strdup(cmd));
 	if (cmd[0] == '/')
 		return (ft_strdup(cmd));
 	env_path = ft_getenv("PATH", environment, leaks);
@@ -59,6 +56,7 @@ char	*is_there_cmd(char **tokens, t_list *environment, t_list **leaks)
 	char	*path_cmd;
 	char	*join_error;
 	char	*tmp;
+	int		fd;
 
 	join_error = NULL;
 	if ((ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
@@ -69,6 +67,18 @@ char	*is_there_cmd(char **tokens, t_list *environment, t_list **leaks)
 		|| (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
 		|| (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4)))
 		return (ft_strdup(tokens[0]));
+	if ((tokens[0][0] == '.' && tokens[0][1] == '/')
+		|| (tokens[0][0] == '.' && tokens[0][1] == '.' & tokens[0][2] == '/'))
+	{
+		fd = open(tokens[0], O_RDONLY);
+		if (fd < 0)
+		{
+			printf(RED "minishell: %s%s%s: No such file or directory.\n", BLUE, tokens[0], DEF);
+			ft_status(127, 1);
+			return (NULL);
+		}
+		return (ft_strdup(tokens[0]));
+	}
 	path_cmd = search_cmd(tokens[0], environment, leaks);
 	if (!path_cmd)
 	{
@@ -90,7 +100,7 @@ char	*is_there_cmd(char **tokens, t_list *environment, t_list **leaks)
 		write(2, join_error, ft_strlen(join_error));
 		free(tmp);
 		free(join_error);
-		ft_status(32512, 1);
+		ft_status(127, 1);
 		return (NULL);
 	}
 	return (path_cmd);
@@ -122,7 +132,7 @@ char	*echo_cmd(char **tokens, short is_return)
 		}
 		else
 			printf("%s", tokens[j]);
-		if (tokens[j + 1])
+		if (tokens[j + 1] && ft_strlen(tokens[j]))
 		{
 			if (is_return)
 			{
@@ -156,8 +166,10 @@ t_list	*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks)
 	t_list	*all_environment;
 	t_list	*copy_environment;
 	t_list	*new_leak;
+	size_t	i;
+	short	is_with_value;
 
-	all_environment = all_env(NULL, NULL, env, export_list, 0, 0, NULL, NULL, leaks);
+	all_environment = all_env(NULL, NULL, env, NULL, export_list, 0, 0, NULL, NULL, leaks);
 	environment = all_environment;
 	while (all_environment)
 	{
@@ -168,7 +180,19 @@ t_list	*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks)
 	copy_environment = environment;
 	while (is_print && copy_environment)
 	{
-		printf("%s\n", (char *)copy_environment->content);
+		is_with_value = 0;
+		i = 0;
+		while (((char *)copy_environment->content)[i])
+		{
+			if (((char *)copy_environment->content)[i] == '=')
+			{
+				is_with_value = 1;
+				break ;
+			}
+			i++;
+		}
+		if (is_with_value)
+			printf("%s\n", (char *)copy_environment->content);
 		copy_environment = copy_environment->next;
 	}
 	return (environment);
@@ -194,7 +218,7 @@ void	cd_cmd(char *tokens, short *cd_flag, t_list *environment, t_list **leaks)
 	{
 		printf(BLUE "minishell%s: cd: no such file or directory: %s%s%s\n",
 			DEF, RED, tokens, DEF);
-		ft_status(256, 1);
+		ft_status(1, 1);
 		*cd_flag = 0;
 	}
 }
@@ -324,7 +348,7 @@ static char	*print_sorted_env(t_list *environment, t_list **leaks, short is_retu
 	return (export);
 }
 
-char	*export_cmd(char **env, char **tokens, t_list **export_list, t_list **leaks, short is_return)
+char	*export_cmd(char **env, char **real_env, char **tokens, t_list **export_list, t_list **leaks, short is_return)
 {
 	size_t	i;
 	size_t	j;
@@ -339,7 +363,7 @@ char	*export_cmd(char **env, char **tokens, t_list **export_list, t_list **leaks
 	i = 1;
 	if (!tokens[i])
 	{
-		all_environment = all_env(NULL, NULL, env, *export_list, 1, 1, NULL, NULL, leaks);
+		all_environment = all_env(NULL, NULL, env, NULL, *export_list, 1, 1, NULL, NULL, leaks);
 		environment = all_environment;
 		while (all_environment)
 		{
@@ -348,7 +372,7 @@ char	*export_cmd(char **env, char **tokens, t_list **export_list, t_list **leaks
 			all_environment = all_environment->next;
 		}
 		export = print_sorted_env(environment, leaks, is_return);
-		all_environment = all_env(NULL, NULL, env, *export_list, 1, 2, NULL, NULL, leaks);
+		all_environment = all_env(NULL, NULL, env, NULL, *export_list, 1, 2, NULL, NULL, leaks);
 		environment = all_environment;
 		while (all_environment)
 		{
@@ -369,6 +393,16 @@ char	*export_cmd(char **env, char **tokens, t_list **export_list, t_list **leaks
 		is_there_equal = 0;
 		if (check_export_arg(tokens[i]))
 		{
+			while (tokens[i][j] && tokens[i][j] != '=')
+				j++;
+			tmp = ft_substr(tokens[i], 0, j);
+			j = 0;
+			if (is_exist_in_env(tmp, real_env, -1))
+			{
+				all_env(tokens[i], NULL, env, real_env, *export_list, 0, 0, NULL, NULL, leaks);
+				i++;
+				continue;
+			}
 			if (is_exist_var(tokens[i], env, *export_list, leaks))
 			{
 				while (tokens[i][j])
@@ -381,10 +415,11 @@ char	*export_cmd(char **env, char **tokens, t_list **export_list, t_list **leaks
 					j++;
 				}
 				if (is_there_equal)
-					all_env(tokens[i], NULL, env, *export_list, 0, 0, NULL, NULL, leaks);
+					all_env(tokens[i], NULL, env, real_env, *export_list, 0, 0, NULL, NULL, leaks);
 			}
 			else
 				ft_lstadd_back(export_list, ft_lstnew(tokens[i]));
+			free(tmp);
 		}
 		i++;
 	}
@@ -401,7 +436,7 @@ void	unset_cmd(char **tokens, char **env, t_list **export_list, t_list **leaks)
 		if (check_unset_arg(tokens[j]))
 		{
 			if (is_exist_var(tokens[j], env, *export_list, leaks))
-				all_env(NULL, tokens[j], env, *export_list, 0, 0, NULL, NULL, leaks);
+				all_env(NULL, tokens[j], env, NULL, *export_list, 0, 0, NULL, NULL, leaks);
 		}
 		j++;
 	}

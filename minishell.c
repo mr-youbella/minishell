@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/20 17:44:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/21 20:11:30 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-short	g_signle_flag = 0;
+short	g_signal_flag = 0;
 
 int	ft_status(int status, short is_change)
 {
@@ -20,21 +20,24 @@ int	ft_status(int status, short is_change)
 
 	if (is_change)
 		new_status = status;
-	return (WEXITSTATUS(new_status));
+	return (new_status);
 }
 
 void	handle_signal(int sig_num)
 {
 	if (sig_num == SIGQUIT)
 	{
-		int status = ft_status(0, 0);
-		pid_t pid = wait(&status);
-		if (pid > 0)
-			write(1, "Quit: 3\n", 9);
+		if (g_signal_flag > 0)
+			g_signal_flag = SIGQUIT;
+		else
+		{
+			rl_on_new_line();
+            rl_redisplay();
+		}
 	}
-	else if (g_signle_flag == 0 && sig_num == SIGINT)
+	else if (g_signal_flag == 0 && sig_num == SIGINT)
 	{
-		ft_status(256, 1);
+		ft_status(1, 1);
 		printf("\n");
 		rl_on_new_line();
 		rl_replace_line("", 0);
@@ -110,7 +113,7 @@ char	*read_fd(int fd)
 	return (free(buffer), file_content);
 }
 
-char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **export_list, short *cd_flag, int fd_pipe, char **old_pwd, t_list **leaks)
+char	*redirections(char *cmd_line, char **env, char **real_env, t_list *environment, t_list **export_list, short *cd_flag, int fd_pipe, char **old_pwd, t_list **leaks, short is_just_creat)
 {
 	int				fd[2];
 	int				fd_output[2];
@@ -163,46 +166,46 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	free(cmd_args);
 	if (!tokens)
 		return (NULL);
-	if (is_exist_redirect_pipe(cmd_line, 'r'))
+	tokens_redirections = get_tokens_with_redirection(cmd_line);
+	i = 0;
+	while (tokens_redirections && tokens_redirections[i])
 	{
-		tokens_redirections = get_tokens_with_redirection(cmd_line);
-		if (!tokens_redirections)
-			return (NULL);
-		copy_redirections = list_redirections(tokens_redirections, environment, leaks);
-		redirections = copy_redirections;
-		i = 0;
-		while (tokens_redirections && tokens_redirections[i])
+		new_leak = ft_lstnew(tokens_redirections[i]);
+		ft_lstadd_back(leaks, new_leak);
+		i++;
+		if (!tokens_redirections[i])
 		{
-			new_leak = ft_lstnew(tokens_redirections[i]);
+			new_leak = ft_lstnew(tokens_redirections);
 			ft_lstadd_back(leaks, new_leak);
-			i++;
-			if (!tokens_redirections[i])
-			{
-				new_leak = ft_lstnew(tokens_redirections);
-				ft_lstadd_back(leaks, new_leak);
-			}
 		}
-		while (copy_redirections)
-		{
-			new_leak = ft_lstnew(copy_redirections);
-			ft_lstadd_back(leaks, new_leak);
-			new_leak = ft_lstnew(copy_redirections->file_name);
-			ft_lstadd_back(leaks, new_leak);
-			copy_redirections = copy_redirections->next;
-		}
-		if (!redirections)
-			return (NULL);
 	}
+	if (!tokens_redirections)
+		return (NULL);
+	copy_redirections = list_redirections(tokens_redirections, environment, leaks);
+	redirections = copy_redirections;
+	while (copy_redirections)
+	{
+		new_leak = ft_lstnew(copy_redirections->file_name);
+		ft_lstadd_back(leaks, new_leak);
+		new_leak = ft_lstnew(copy_redirections);
+		ft_lstadd_back(leaks, new_leak);
+		copy_redirections = copy_redirections->next;
+	}
+	if (!redirections)
+		return (NULL);
 	while (redirections)
 	{
 		if (ft_strlen(redirections->type_redirection) == 1
 			&& !ft_strncmp(redirections->type_redirection, ">", 1))
 		{
-			fd_file_output = open(redirections->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-			if (fd_file_output < 0)
+			if (is_just_creat != 2)
 			{
-				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
-				return (NULL);
+				fd_file_output = open(redirections->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+				if (fd_file_output < 0)
+				{
+					printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
+					return (NULL);
+				}
 			}
 		}
 		else if (ft_strlen(redirections->type_redirection) == 2
@@ -254,6 +257,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 			if (!ft_strlen(redirections->file_name))
 			{
 				printf(BLUE "minishell: %sambiguous redirect.%s\n", RED, DEF);
+				ft_status(1, 1);
 				return (NULL);
 			}
 			fd_file_input = open(redirections->file_name, O_RDONLY);
@@ -261,11 +265,14 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 			{
 				printf(RED "minishell: %s%s%s: No such file or directory.\n",
 					BLUE, redirections->file_name, DEF);
+				ft_status(1, 1);
 				return (NULL);
 			}
 		}
 		redirections = redirections->next;
 	}
+	if (is_just_creat == 1)
+		return (NULL);
 	if ((ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], ">>", 2))
 		|| (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "<<", 2))
 		|| (ft_strlen(tokens[0]) == 1 && !ft_strncmp(tokens[0], ">", 1))
@@ -275,7 +282,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		exit_cmd();
 	else if (ft_strlen(tokens[0]) == 6
 		&& !ft_strncmp(tokens[0], "export", 6))
-		export = export_cmd(env, tokens, export_list, leaks, 1);
+		export = export_cmd(env, real_env, tokens, export_list, leaks, 1);
 	else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
 		unset_cmd(tokens, env, export_list, leaks);
 	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
@@ -285,7 +292,7 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	else if (ft_strlen(tokens[0]) == 2
 		&& !ft_strncmp(tokens[0], "cd", 2) && fd_pipe < 0)
 	{
-		*old_pwd = pwd_cmd(0);
+		*old_pwd = ft_getenv("PWD", environment, leaks);
 		cd_cmd(tokens[1], cd_flag, environment, leaks);
 		return (NULL);
 	}
@@ -319,7 +326,10 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 		close(fd[1]);
 		close(fd_output[1]);
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
-			printf("%s", echo);
+		{
+			if (echo)
+				printf("%s", echo);
+		}	
 		else if (ft_strlen(tokens[0]) == 3 && (!ft_strncmp(tokens[0], "pwd", 3) || !ft_strncmp(tokens[0], "PWD", 3)))
 			printf("%s\n", pwd);
 		else if (ft_strlen(tokens[0]) == 6
@@ -336,16 +346,18 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	}
 	else
 	{
+		g_signal_flag = pid;
 		waitpid(pid, &status, 0);
+		ft_status(WEXITSTATUS(status), 1);
 		free(join_herdoc);
 		free(path_cmd);
 		free(echo);
 		free(export);
 		free(pwd);
 		free(pipe_output);
-		ft_status(status, 1);
 		close(fd[1]);
 		close(fd_output[1]);
+		g_signal_flag = 0;
 	}
 	output_cmd = read_fd(fd_output[0]);
 	close(fd[0]);
@@ -361,6 +373,8 @@ char	*redirections(char *cmd_line, char **env, t_list *environment, t_list **exp
 	}
 	if (fd_file_output > 0)
 		close(fd_file_output);
+	if (is_just_creat == 2)
+		return (NULL);
 	return (output_cmd);
 }
 
@@ -378,7 +392,7 @@ short	is_empty_token(char *token)
 	return (1);
 }
 
-void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_list, short *cd_flag, t_list **leaks, char **old_pwd)
+void	ft_pipe(char *cmd_line, t_list *environment, char **env, char **real_env, t_list **export_list, short *cd_flag, t_list **leaks, char **old_pwd)
 {
 	size_t	i;
 	size_t	j;
@@ -407,6 +421,7 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 	if (cmd_line[0] == '|' || check_end_pipe == '|')
 	{
 		printf(BLUE "minishell:%s %ssyntax error in pipe.\n" DEF, DEF, RED);
+		ft_status(258, 1);
 		return ;
 	}
 	split_pipe = split_commmand_with_quotes(cmd_line, '|', environment, 0, leaks);
@@ -415,8 +430,16 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		if (is_empty_token(split_pipe[i]))
 		{
 			printf(BLUE "minishell:%s %ssyntax error in pipe.\n" DEF, DEF, RED);
+			ft_status(258, 1);
 			return ;
 		}
+		i++;
+	}
+	i = 0;
+	while (split_pipe[i])
+	{
+		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
+			redirections(split_pipe[i], env, real_env, environment, export_list, cd_flag, in_fd, old_pwd, leaks, 1);
 		i++;
 	}
 	i = 0;
@@ -433,11 +456,11 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
 		{
 			exits_redirect = 1;
-			redirect_output = redirections(split_pipe[i], env, environment, export_list, cd_flag, in_fd, old_pwd, leaks);
+			redirect_output = redirections(split_pipe[i], env, real_env, environment, export_list, cd_flag, in_fd, old_pwd, leaks, 2);
 		}
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6))
-			export = export_cmd(env, tokens, export_list, leaks, 1);
+			export = export_cmd(env, real_env, tokens, export_list, leaks, 1);
 		else if (ft_strlen(tokens[0]) == 5
 			&& !ft_strncmp(tokens[0], "unset", 5))
 			unset_cmd(tokens, env, export_list, leaks);
@@ -489,8 +512,9 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 		}
 		else
 		{
+			g_signal_flag = pid;
 			waitpid(pid, &status, 0);
-			ft_status(status, 1);
+			ft_status(WEXITSTATUS(status), 1);
 			close(fd[1]);
 			close(fd_error[1]);
 			if (in_fd > 0)
@@ -500,6 +524,8 @@ void	ft_pipe(char *cmd_line, t_list *environment, char **env, t_list **export_li
 			free(export);
 			free(pwd);
 			free(redirect_output);
+			g_signal_flag = 0;
+
 		}
 		j = 0;
 		while (tokens[j])
@@ -561,7 +587,7 @@ void	f()
 
 int	main(int argc, char **argv, char **env)
 {
-	atexit(f);
+	// atexit(f);
 	struct stat		file;
 	struct termios	ctr;
 	t_list			*leaks;
@@ -582,6 +608,7 @@ int	main(int argc, char **argv, char **env)
 	char			*this_dir_tmp;
 	char			*path_cmd;
 	char			*redirection_output;
+	char			**copy_env;
 
 	if (argc != 1)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
@@ -596,17 +623,30 @@ int	main(int argc, char **argv, char **env)
 	old_pwd = NULL;
 	leaks = NULL;
 	tokens = NULL;
+	this_dir = NULL;
 	status = 0;
 	cd_flag = 0;
+	i = 0;
+	while (env[i])
+		i++;
+	copy_env = malloc((i + 1) * sizeof(char *));
+	i = 0;
+	while (env[i])
+	{
+		copy_env[i] = env[i];
+		i++;
+	}
+	copy_env[i] = NULL;
 	pid = fork();
 	if (!pid)
 		execve("/usr/bin/clear", (char *[]){"clear", NULL}, env);
 	waitpid(pid, &status, 0);
+	ft_status(WEXITSTATUS(status), 1);
 	printf(YELLOW "↪ Welcome to our MiniShell 🤪 ↩\n" DEF);
 	while (1)
 	{
 		i = 0;
-		all_environment = all_env(NULL, NULL, env, export_list, 0, 0, &cd_flag, old_pwd, &leaks);
+		all_environment = all_env(NULL, NULL, copy_env, env, export_list, 0, 0, &cd_flag, old_pwd, &leaks);
 		environment = all_environment;
 		while (all_environment)
 		{
@@ -676,12 +716,12 @@ int	main(int argc, char **argv, char **env)
 		}
 		if (is_exist_redirect_pipe(cmd_line, '|'))
 		{
-			ft_pipe(cmd_line, environment, env, &export_list, &cd_flag, &leaks, &old_pwd);
+			ft_pipe(cmd_line, environment, copy_env, env, &export_list, &cd_flag, &leaks, &old_pwd);
 			continue ;
 		}
 		else if (is_exist_redirect_pipe(cmd_line, 'r'))
 		{
-			redirection_output = redirections(cmd_line, env, environment, &export_list, &cd_flag, -1, &old_pwd, &leaks);
+			redirection_output = redirections(cmd_line, copy_env, env, environment ,&export_list, &cd_flag, -1, &old_pwd, &leaks, 0);
 			if (redirection_output)
 				printf("%s", redirection_output);
 			continue ;
@@ -696,23 +736,24 @@ int	main(int argc, char **argv, char **env)
 		{
 			printf(RED "minishell: %s%s%s is a directory.\n",
 				BLUE, tokens[0], DEF);
+			ft_status(126, 1);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 6
 			&& !ft_strncmp(tokens[0], "export", 6))
 		{
-			export_cmd(env, tokens, &export_list, &leaks, 0);
+			export_cmd(copy_env, env, tokens, &export_list, &leaks, 0);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 5
 			&& !ft_strncmp(tokens[0], "unset", 5))
 		{
-			unset_cmd(tokens, env, &export_list, &leaks);
+			unset_cmd(tokens, copy_env, &export_list, &leaks);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
 		{
-			env_cmd(env, export_list, 1, &leaks);
+			env_cmd(copy_env, export_list, 1, &leaks);
 			continue ;
 		}
 		else if (ft_strlen(tokens[0]) == 3 && (!ft_strncmp(tokens[0], "pwd", 3) || !ft_strncmp(tokens[0], "PWD", 3)))
@@ -727,7 +768,7 @@ int	main(int argc, char **argv, char **env)
 		}
 		else if (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
 		{
-			old_pwd = pwd;
+			old_pwd = ft_getenv("PWD", environment, &leaks);
 			cd_cmd(tokens[1], &cd_flag, environment, &leaks);
 			continue ;
 		}
@@ -737,18 +778,24 @@ int	main(int argc, char **argv, char **env)
 		pid = fork();
 		if (pid == 0)
 		{
-			execve(path_cmd, tokens, env);
+			execve(path_cmd, tokens, copy_env);
 			printf(RED "minishell: %s%s%s: %s.\n",
 				BLUE, tokens[0], DEF, strerror(errno));
 			exit(0);
 		}
 		else
 		{
-			free(path_cmd);
-			g_signle_flag = pid;
+			g_signal_flag = pid;
 			waitpid(pid, &status, 0);
-			ft_status(status, 1);
-			g_signle_flag = 0;
+			if (g_signal_flag == SIGQUIT)
+			{
+				printf("Quit: 3\n");
+				ft_status(131, 1);
+			}
+			else
+				ft_status(WEXITSTATUS(status), 1);
+			g_signal_flag = 0;
+			free(path_cmd);
 		}
 	}
 	return (0);

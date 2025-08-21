@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/19 07:08:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/21 19:34:51 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,10 +124,6 @@ char	*ft_dollar(char *str, t_list *environment, t_list **leaks)
 			}
 			else if (!ft_isalpha(str[i + 1]) && str[i + 1] != '_')
 			{
-				if (!str[i + 1] || str[i + 1] == '$')
-					i += 0;
-				else
-					i += 2;
 				result[j++] = str[i++];
 				continue ;
 			}

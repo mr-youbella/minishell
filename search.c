@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/19 08:34:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/21 18:43:45 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ short	check_export_arg(char *arg)
 	{
 		printf(BLUE "minishell: %sexport: %svariable not an identifier.%s\n"
 			DEF, DEF, RED, CYAN);
+		ft_status(1, 1);
 		return (0);
 	}
 	while (arg[i])
@@ -33,6 +34,7 @@ short	check_export_arg(char *arg)
 		{
 			printf(BLUE "minishell: %sexport: %snot valid in this context. %s\n"
 				DEF, DEF, RED, CYAN);
+			ft_status(1, 1);
 			return (0);
 		}
 		i++;
@@ -49,8 +51,8 @@ short	check_unset_arg(char *arg)
 		return (0);
 	if (!ft_isalpha(arg[i]) && arg[i] != '_')
 	{
-		printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n"
-			DEF, DEF, CYAN, arg, DEF, RED);
+		printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n" DEF, DEF, CYAN, arg, DEF, RED);
+		ft_status(1, 1);
 		return (0);
 	}
 	while (arg[i])
@@ -58,6 +60,7 @@ short	check_unset_arg(char *arg)
 		if (!ft_isalpha(arg[i]) && !ft_isdigit(arg[i]) && arg[i] != '_')
 		{
 			printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n"DEF, DEF, CYAN, arg, DEF, RED);
+			ft_status(1, 1);
 			return (0);
 		}
 		i++;
@@ -65,7 +68,32 @@ short	check_unset_arg(char *arg)
 	return (1);
 }
 
-t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_list, short is_export_cmd, short env_export, short *cd_flag, char *old_pwd, t_list **leaks)
+short	is_exist_in_env(char *str, char **env, long position)
+{
+	size_t	i;
+	size_t	j;
+	char	*var;
+	
+	if (!str || !env)
+		return (0);
+	i = 0;
+	while (env[i])
+	{
+		j = 0;
+		while (env[i][j] && env[i][j] != '=')
+			j++;
+		var = ft_substr(env[i], 0, j);
+		if (ft_strlen(str) == ft_strlen(var) && !ft_strncmp(str, var, j))
+		{
+			if (position == (long)i || position == -1)
+				return (1);
+		}
+		i++;
+	}
+	return (0);
+}
+
+t_list	*all_env(char *var_export, char *var_unset, char **env, char **real_env, t_list *export_list, short is_export_cmd, short env_export, short *cd_flag, char *old_pwd, t_list **leaks)
 {
 	t_list			*enviroment;
 	t_list			*new_node;
@@ -74,6 +102,7 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 	size_t			i;
 	size_t			j;
 	static short	oldpwd_flag;
+	static short	is_chaneg_oldpwd;
 	short			is_with_value;
 	char			*name_var_export;
 	char			*name_var_env;
@@ -93,6 +122,14 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 		{
 			if (!ft_strlen(env[i]))
 			{
+				if (name_var_export)
+				{
+					if (is_exist_in_env(name_var_export, real_env, i))
+					{
+						env[i] = var_export;
+						name_var_export = NULL;
+					}
+				}
 				i++;
 				continue;
 			}
@@ -104,11 +141,12 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 			ft_lstadd_back(leaks, new_leak);
 			if (name_var_export && j == ft_strlen(name_var_export) && !ft_strncmp(env[i], name_var_export, j))
 				env[i] = var_export;
-			else if (cd_flag && !*cd_flag && !oldpwd_flag)
+			else if (cd_flag && !*cd_flag && !oldpwd_flag && !is_chaneg_oldpwd)
 			{
 				if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "OLDPWD", j))
 				{
-					name_var_env = ft_strjoin("OLDPWD", "");
+					is_chaneg_oldpwd = 1;
+					name_var_env = ft_strdup("OLDPWD");
 					new_leak = ft_lstnew(name_var_env);
 					ft_lstadd_back(leaks, new_leak);
 					env[i] = name_var_env;
@@ -126,9 +164,16 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 					ft_lstadd_back(leaks, new_leak);
 					env[i] = name_var_env;
 				}
-				else if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "OLDPWD", j) && old_pwd)
+				else if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "OLDPWD", j))
 				{
-					name_var_env = ft_strjoin("OLDPWD=", old_pwd);
+					if (old_pwd)
+						name_var_env = ft_strjoin("OLDPWD=", old_pwd);
+					else
+					{
+						old_pwd = pwd_cmd(0);
+						name_var_env = ft_strjoin("OLDPWD=", old_pwd);
+						free(old_pwd);
+					}
 					new_leak = ft_lstnew(name_var_env);
 					ft_lstadd_back(leaks, new_leak);
 					env[i] = name_var_env;
@@ -143,7 +188,6 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, t_list *export_li
 			else
 			{
 				env[i] = ft_strdup("");
-				
 				{
 					new_leak = ft_lstnew(env[i]);
 					ft_lstadd_back(leaks, new_leak);
