@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   search.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/21 18:43:45 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/21 21:29:37 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,8 +86,9 @@ short	is_exist_in_env(char *str, char **env, long position)
 		if (ft_strlen(str) == ft_strlen(var) && !ft_strncmp(str, var, j))
 		{
 			if (position == (long)i || position == -1)
-				return (1);
+				return (free(var), 1);
 		}
+		free(var);
 		i++;
 	}
 	return (0);

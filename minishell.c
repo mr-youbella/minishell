@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/21 20:11:30 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/21 21:34:16 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -587,7 +587,7 @@ void	f()
 
 int	main(int argc, char **argv, char **env)
 {
-	// atexit(f);
+	atexit(f);
 	struct stat		file;
 	struct termios	ctr;
 	t_list			*leaks;
@@ -689,6 +689,7 @@ int	main(int argc, char **argv, char **env)
 		free(this_dir);
 		if (!cmd_line)
 		{
+			free(copy_env);
 			free_leaks(leaks, export_list);
 			// exit_cmd();
 			return (0);
