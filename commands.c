@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/21 19:33:21 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/22 10:32:18 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,8 +401,10 @@ char	*export_cmd(char **env, char **real_env, char **tokens, t_list **export_lis
 			{
 				all_env(tokens[i], NULL, env, real_env, *export_list, 0, 0, NULL, NULL, leaks);
 				i++;
+				free(tmp);
 				continue;
 			}
+			free(tmp);
 			if (is_exist_var(tokens[i], env, *export_list, leaks))
 			{
 				while (tokens[i][j])
@@ -419,7 +421,6 @@ char	*export_cmd(char **env, char **real_env, char **tokens, t_list **export_lis
 			}
 			else
 				ft_lstadd_back(export_list, ft_lstnew(tokens[i]));
-			free(tmp);
 		}
 		i++;
 	}

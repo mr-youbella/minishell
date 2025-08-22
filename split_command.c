@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_command.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/17 22:26:03 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/21 10:50:59 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/22 10:59:34 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,13 @@ char	**split_commmand_with_quotes(char *command, char c,
 		}
 	}
 	if (is_unclose_quotes(count_single_quote, count_double_quotes))
+	{
+		i = 0;
+		while (tokens[i])
+			free(tokens[i++]);
+		free(tokens);
 		return (NULL);
+	}
 	return (tokens);
 }
 

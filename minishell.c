@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/21 21:34:16 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/22 11:10:33 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -729,6 +729,7 @@ int	main(int argc, char **argv, char **env)
 		}
 		if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 		{
+			free(copy_env);
 			free_leaks(leaks, export_list);
 			printf(RED "exit\n" DEF);
 			break ;
