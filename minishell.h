@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/23 16:45:00 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 21:35:56 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_var
 	char 	**copy_env;
 	short	cd_flag;
 	char	*old_pwd;
+	short	is_return;
 }	t_var;
 
 typedef struct s_var_pipe
@@ -54,10 +55,19 @@ typedef struct s_var_pipe
 
 typedef struct s_var_redirect
 {
+	pid_t	pid;
 	t_var	*variables;
 	int		fd_file_input;
 	int		fd_file_output;
 	char	*join_herdoc;
+	short	return_val;
+	char	*cmd_result;
+	int		fd_output[2];
+	int		fd_pipe;
+	char	*path_cmd;
+	char	*pipe_output;
+	char	**tokens;
+	char	*output_cmd;
 }	t_var_redirect;
 
 typedef struct s_redirections

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/23 04:14:01 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 18:22:03 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,10 +66,7 @@ short	is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
 		if (!cmd_line[i])
 			break ;
 		if ((redirect_pipe == 'r' && cmd_line[i] == '>')
-			|| (redirect_pipe == 'r' && cmd_line[i] == '<'
-				&& cmd_line[i + 1] != '<' && cmd_line[i - 1] != '<')
-			|| (redirect_pipe == 'r' && cmd_line[i] == '<'
-				&& cmd_line[i + 1] == '<')
+			|| (redirect_pipe == 'r' && cmd_line[i] == '<')
 			|| (redirect_pipe == '|' && cmd_line[i] == '|'))
 			return (1);
 		i++;
