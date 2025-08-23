@@ -3,15 +3,15 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: youbella <youbella@student.42.fr>          +#+  +:+       +#+         #
+#    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/08/23 13:22:54 by youbella         ###   ########.fr        #
+#    Updated: 2025/08/23 16:41:48 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g #-fsanitize=address
+CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address
 READLINE_INCLUDE = -I$(shell brew --prefix readline)/include
 READLINE_LIBRARY = -L$(shell brew --prefix readline)/lib -lreadline
 

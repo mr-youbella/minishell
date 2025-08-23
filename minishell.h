@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/23 13:22:33 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 16:45:00 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,14 @@ typedef struct s_var_pipe
 	char	**tokens;
 	t_var	*variables;
 }	t_var_pipe;
+
+typedef struct s_var_redirect
+{
+	t_var	*variables;
+	int		fd_file_input;
+	int		fd_file_output;
+	char	*join_herdoc;
+}	t_var_redirect;
 
 typedef struct s_redirections
 {

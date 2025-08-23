@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/23 13:31:42 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 16:47:20 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,39 +127,234 @@ char	*read_fd(int fd)
 	return (free(buffer), file_content);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void	free_list(t_var *variables, t_list *list, t_redirections *redirections)
+{
+	t_list	*new_leak;
+
+	while (redirections)
+	{
+		new_leak = ft_lstnew(redirections->file_name);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		new_leak = ft_lstnew(redirections);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		redirections = redirections->next;
+	}
+	while (list)
+	{
+		new_leak = ft_lstnew(list);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		list = list->next;
+	}
+}
+
+void	free_array(char **arr, short is_stock, t_var *variables)
+{
+	size_t	i;
+	t_list	*new_leak;
+
+	i = 0;
+	if (is_stock)
+	{
+		while (arr && arr[i])
+		{
+			new_leak = ft_lstnew(arr[i]);
+			ft_lstadd_back(&variables->leaks, new_leak);
+			i++;
+			if (!arr[i])
+			{
+				new_leak = ft_lstnew(arr);
+				ft_lstadd_back(&variables->leaks, new_leak);
+			}
+		}
+	}
+	else
+	{
+		while (arr && arr[i])
+			free(arr[i++]);
+		free(arr);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+short	setup_redirections(char *cmd_line, t_var_redirect *var_redirection)
+{
+	t_redirections	*redirections;
+	char			**tokens_redirections;
+	char			*input_herdoc;
+	char			*input_herdoc_dollar;
+	char			*tmp;
+
+	var_redirection->fd_file_input = 0;
+	var_redirection->fd_file_output = 0;
+	var_redirection->join_herdoc = NULL;
+	tokens_redirections = get_tokens_with_redirection(cmd_line);
+	free_array(tokens_redirections, 1, var_redirection->variables);
+	redirections = list_redirections(tokens_redirections, var_redirection->variables);
+	free_list(var_redirection->variables, NULL, redirections);
+	if (!redirections)
+		return (0);
+	while (redirections)
+	{
+		if (ft_strlen(redirections->type_redirection) == 1
+			&& !ft_strncmp(redirections->type_redirection, ">", 1))
+		{
+			var_redirection->fd_file_output = open(redirections->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+			if (var_redirection->fd_file_output < 0)
+			{
+				write(2, "\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n", ft_strlen("\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n"));
+				ft_status(1, 1);
+				return (0);
+			}
+		}
+		else if (ft_strlen(redirections->type_redirection) == 2
+			&& !ft_strncmp(redirections->type_redirection, ">>", 2))
+		{
+			var_redirection->fd_file_output = open(redirections->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
+			if (var_redirection->fd_file_output < 0)
+			{
+				write(2, "\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n", ft_strlen("\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n"));
+				ft_status(1, 1);
+				return (0);
+			}
+		}
+		else if (ft_strlen(redirections->type_redirection) == 2
+			&& !ft_strncmp(redirections->type_redirection, "<<", 2))
+		{
+			free(var_redirection->join_herdoc);
+			var_redirection->join_herdoc = NULL;
+			while (1)
+			{
+				input_herdoc = readline(CYAN "heredoc > " DEF);
+				if (!input_herdoc)
+				{
+					if (!var_redirection->join_herdoc)
+						var_redirection->join_herdoc = ft_strdup("");
+					break ;
+				}
+				if (ft_strlen(input_herdoc) == ft_strlen(redirections->file_name) && !ft_strncmp(input_herdoc, redirections->file_name, ft_strlen(input_herdoc)))
+				{
+					free(input_herdoc);
+					if (!var_redirection->join_herdoc)
+						var_redirection->join_herdoc = ft_strdup("");
+					break ;
+				}
+				input_herdoc_dollar = ft_dollar(input_herdoc, var_redirection->variables);
+				tmp = var_redirection->join_herdoc;
+				var_redirection->join_herdoc = ft_strjoin(var_redirection->join_herdoc, input_herdoc_dollar);
+				free(input_herdoc_dollar);
+				free(tmp);
+				tmp = var_redirection->join_herdoc;
+				var_redirection->join_herdoc = ft_strjoin(var_redirection->join_herdoc, "\n");
+				free(tmp);
+				free(input_herdoc);
+			}
+		}
+		else if (ft_strlen(redirections->type_redirection) == 1
+			&& !ft_strncmp(redirections->type_redirection, "<", 1))
+		{
+			var_redirection->join_herdoc = NULL;
+			if (!ft_strlen(redirections->file_name))
+			{
+				write(2, "\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n", ft_strlen("\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n"));
+				ft_status(1, 1);
+				return (0);
+			}
+			var_redirection->fd_file_input = open(redirections->file_name, O_RDONLY);
+			if (var_redirection->fd_file_input < 0)
+			{
+				write(2, "\033[31mminishell: \033[34m", ft_strlen("\033[31mminishell: \033[34m"));
+				write(2, redirections->file_name, ft_strlen(redirections->file_name));
+				write(2, "\033[0m: No such file or directory.\n", ft_strlen("\033[0m: No such file or directory.\n"));
+				ft_status(1, 1);
+				return (0);
+			}
+		}
+		redirections = redirections->next;
+	}
+	return (1);
+}
+
 char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variables)
 {
 	int				fd[2];
 	int				fd_output[2];
-	pid_t			fd_file_output;
 	t_list			*new_leak;
-	pid_t			fd_file_input;
 	pid_t			pid;
 	char			*cmd_args;
-	char			*input_herdoc;
-	char			*input_herdoc_dollar;
-	char			*join_herdoc;
 	char			*path_cmd;
 	char			*output_cmd;
-	char			*tmp;
 	char			**tokens;
 	char			*pipe_output;
 	char			**tokens_redirections;
-	t_redirections	*redirections;
-	t_redirections	*copy_redirections;
 	int				status;
 	size_t			i;
 	char			*echo;
 	char			*export;
 	char			*pwd;
+	t_var_redirect	*var_redirection;
 
+	var_redirection = malloc(sizeof(t_var_redirect));
+	var_redirection->variables = variables;
 	pipe_output = NULL;
 	if (fd_pipe > 0)
 		pipe_output = read_fd(fd_pipe);
-	fd_file_input = 0;
-	fd_file_output = 0;
-	join_herdoc = NULL;
-	redirections = NULL;
 	echo = NULL;
 	export = NULL;
 	pwd = NULL;
@@ -195,96 +390,8 @@ char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variable
 	}
 	if (!tokens_redirections)
 		return (NULL);
-	copy_redirections = list_redirections(tokens_redirections, variables);
-	redirections = copy_redirections;
-	while (copy_redirections)
-	{
-		new_leak = ft_lstnew(copy_redirections->file_name);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		new_leak = ft_lstnew(copy_redirections);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		copy_redirections = copy_redirections->next;
-	}
-	if (!redirections)
+	if (!setup_redirections(cmd_line, var_redirection))
 		return (NULL);
-	while (redirections)
-	{
-		if (ft_strlen(redirections->type_redirection) == 1
-			&& !ft_strncmp(redirections->type_redirection, ">", 1))
-		{
-			fd_file_output = open(redirections->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-			if (fd_file_output < 0)
-			{
-				write(2, "\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n", ft_strlen("\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n"));
-				ft_status(1, 1);
-				return (NULL);
-			}
-		}
-		else if (ft_strlen(redirections->type_redirection) == 2
-			&& !ft_strncmp(redirections->type_redirection, ">>", 2))
-		{
-			fd_file_output = open(redirections->file_name, O_CREAT | O_APPEND | O_WRONLY, 0644);
-			if (fd_file_output < 0)
-			{
-				write(2, "\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n", ft_strlen("\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n"));
-				ft_status(1, 1);
-				return (NULL);
-			}
-		}
-		else if (ft_strlen(redirections->type_redirection) == 2
-			&& !ft_strncmp(redirections->type_redirection, "<<", 2))
-		{
-			free(join_herdoc);
-			join_herdoc = NULL;
-			while (1)
-			{
-				input_herdoc = readline(CYAN "heredoc > " DEF);
-				if (!input_herdoc)
-				{
-					if (!join_herdoc)
-						join_herdoc = ft_strdup("");
-					break ;
-				}
-				if (ft_strlen(input_herdoc) == ft_strlen(redirections->file_name) && !ft_strncmp(input_herdoc, redirections->file_name, ft_strlen(input_herdoc)))
-				{
-					free(input_herdoc);
-					if (!join_herdoc)
-						join_herdoc = ft_strdup("");
-					break ;
-				}
-				input_herdoc_dollar = ft_dollar(input_herdoc, variables);
-				tmp = join_herdoc;
-				join_herdoc = ft_strjoin(join_herdoc, input_herdoc_dollar);
-				free(input_herdoc_dollar);
-				free(tmp);
-				tmp = join_herdoc;
-				join_herdoc = ft_strjoin(join_herdoc, "\n");
-				free(tmp);
-				free(input_herdoc);
-			}
-		}
-		else if (ft_strlen(redirections->type_redirection) == 1
-			&& !ft_strncmp(redirections->type_redirection, "<", 1))
-		{
-			join_herdoc = NULL;
-			if (!ft_strlen(redirections->file_name))
-			{
-				write(2, "\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n", ft_strlen("\033[34mmminishell: \033[31mambiguous redirect.\033[0m\n"));
-				ft_status(1, 1);
-				return (NULL);
-			}
-			fd_file_input = open(redirections->file_name, O_RDONLY);
-			if (fd_file_input < 0)
-			{
-				write(2, "\033[31mminishell: \033[34m", ft_strlen("\033[31mminishell: \033[34m"));
-				write(2, redirections->file_name, ft_strlen(redirections->file_name));
-				write(2, "\033[0m: No such file or directory.\n", ft_strlen("\033[0m: No such file or directory.\n"));
-				ft_status(1, 1);
-				return (NULL);
-			}
-		}
-		redirections = redirections->next;
-	}
 	if ((ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], ">>", 2))
 		|| (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "<<", 2))
 		|| (ft_strlen(tokens[0]) == 1 && !ft_strncmp(tokens[0], ">", 1))
@@ -313,8 +420,8 @@ char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variable
 		return (NULL);
 	pipe(fd);
 	pipe(fd_output);
-	if (join_herdoc)
-		write(fd[1], join_herdoc, ft_strlen(join_herdoc));
+	if (var_redirection->join_herdoc)
+		write(fd[1], var_redirection->join_herdoc, ft_strlen(var_redirection->join_herdoc));
 	else if (fd_pipe > 0)
 	{
 		if (pipe_output)
@@ -326,10 +433,10 @@ char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variable
 	pid = fork();
 	if (!pid)
 	{
-		if (join_herdoc)
+		if (var_redirection->join_herdoc)
 			dup2(fd[0], 0);
-		else if (fd_file_input > 0)
-			dup2(fd_file_input, 0);
+		else if (var_redirection->fd_file_input > 0)
+			dup2(var_redirection->fd_file_input, 0);
 		else if (fd_pipe > 0)
 			dup2(fd[0], 0);
 		dup2(fd_output[1], 1);
@@ -361,7 +468,7 @@ char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variable
 		g_signal_flag = pid;
 		waitpid(pid, &status, 0);
 		ft_status(WEXITSTATUS(status), 1);
-		free(join_herdoc);
+		free(var_redirection->join_herdoc);
 		free(path_cmd);
 		free(echo);
 		free(export);
@@ -374,18 +481,18 @@ char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variable
 	output_cmd = read_fd(fd_output[0]);
 	close(fd[0]);
 	close(fd_output[0]);
-	if (fd_file_input > 0)
-    	close(fd_file_input);
-	if (fd_file_output > 0 && output_cmd)
+	if (var_redirection->fd_file_input > 0)
+    	close(var_redirection->fd_file_input);
+	if (var_redirection->fd_file_output > 0 && output_cmd)
 	{
-		write(fd_file_output, output_cmd, ft_strlen(output_cmd));
+		write(var_redirection->fd_file_output, output_cmd, ft_strlen(output_cmd));
 		free(output_cmd);
-		close(fd_file_output);
+		close(var_redirection->fd_file_output);
 		return (NULL);
 	}
-	if (fd_file_output > 0)
-		close(fd_file_output);
-	fd_file_output = 0;
+	if (var_redirection->fd_file_output > 0)
+		close(var_redirection->fd_file_output);
+	var_redirection->fd_file_output = 0;
 	return (output_cmd);
 }
 
@@ -428,35 +535,6 @@ char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variable
 
 
 
-
-
-void	free_array(char **arr, short is_stock, t_var *variables)
-{
-	size_t	i;
-	t_list	*new_leak;
-
-	i = 0;
-	if (is_stock)
-	{
-		while (arr && arr[i])
-		{
-			new_leak = ft_lstnew(arr[i]);
-			ft_lstadd_back(&variables->leaks, new_leak);
-			i++;
-			if (!arr[i])
-			{
-				new_leak = ft_lstnew(arr);
-				ft_lstadd_back(&variables->leaks, new_leak);
-			}
-		}
-	}
-	else
-	{
-		while (arr && arr[i])
-			free(arr[i++]);
-		free(arr);
-	}
-}
 
 short	is_empty_token(char *token)
 {
@@ -817,18 +895,6 @@ char	*ft_readline(char *pwd)
 	return (cmd_line = readline(last_dir), free(pwd), free(last_dir), cmd_line);
 }
 
-void	free_list(t_var *variables, t_list *list)
-{
-	t_list	*new_leak;
-
-	while (list)
-	{
-		new_leak = ft_lstnew(list);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		list = list->next;
-	}
-}
-
 void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 {
 	t_list	*new_leak;
@@ -838,7 +904,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 	while (1)
 	{
 		variables->environment = all_env(NULL, NULL, copy_env, 0, 0, variables);
-		free_list(variables, variables->environment);
+		free_list(variables, variables->environment, NULL);
 		1 && (command = ft_readline(pwd_cmd(0)), new_leak = ft_lstnew(command));
 		ft_lstadd_back(&variables->leaks, new_leak);
 		if (!command)
@@ -894,7 +960,7 @@ int	main(int argc, char **argv, char **env)
 	char			**copy_env;
 	struct termios	ctr;
 
-	atexit(f);
+	// atexit(f);
 	if (argc != 1 && argv)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
 	status = 0;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/23 08:49:09 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 16:39:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,10 +54,8 @@ char	*search_cmd(char *cmd, t_var *variables)
 char	*is_there_cmd(char **tokens, t_var *variables)
 {
 	char	*path_cmd;
-	char	*join_error;
 	int		fd;
 
-	join_error = NULL;
 	if (is_buitin_cmd(tokens[0]))
 		return (NULL);
 	if ((tokens[0][0] == '.' && tokens[0][1] == '/')
