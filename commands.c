@@ -6,13 +6,13 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/22 10:32:18 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 08:49:09 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char	*search_cmd(char *cmd, t_list *environment, t_list **leaks)
+char	*search_cmd(char *cmd, t_var *variables)
 {
 	int		i;
 	char	*env_path;
@@ -25,7 +25,7 @@ char	*search_cmd(char *cmd, t_list *environment, t_list **leaks)
 		return (NULL);
 	if (cmd[0] == '/')
 		return (ft_strdup(cmd));
-	env_path = ft_getenv("PATH", environment, leaks);
+	env_path = ft_getenv("PATH", variables);
 	split_env_path = ft_split(env_path, ':');
 	while (split_env_path && split_env_path[i])
 	{
@@ -51,55 +51,35 @@ char	*search_cmd(char *cmd, t_list *environment, t_list **leaks)
 	return (NULL);
 }
 
-char	*is_there_cmd(char **tokens, t_list *environment, t_list **leaks)
+char	*is_there_cmd(char **tokens, t_var *variables)
 {
 	char	*path_cmd;
 	char	*join_error;
-	char	*tmp;
 	int		fd;
 
 	join_error = NULL;
-	if ((ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
-		|| (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "cd", 2))
-		|| (ft_strlen(tokens[0]) == 3 && (!ft_strncmp(tokens[0], "pwd", 3) || !ft_strncmp(tokens[0], "PWD", 3)))
-		|| (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
-		|| (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
-		|| (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
-		|| (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4)))
-		return (ft_strdup(tokens[0]));
+	if (is_buitin_cmd(tokens[0]))
+		return (NULL);
 	if ((tokens[0][0] == '.' && tokens[0][1] == '/')
 		|| (tokens[0][0] == '.' && tokens[0][1] == '.' & tokens[0][2] == '/'))
 	{
 		fd = open(tokens[0], O_RDONLY);
 		if (fd < 0)
 		{
-			printf(RED "minishell: %s%s%s: No such file or directory.\n", BLUE, tokens[0], DEF);
+			write(2, "\033[31mminishell: \033[34m", ft_strlen("\033[31mminishell: \033[34m"));
+			write(2, tokens[0], ft_strlen(tokens[0]));
+			write(2, "\033[0m: No such file or directory.\n", ft_strlen("\033[0m: No such file or directory.\n"));
 			ft_status(127, 1);
 			return (NULL);
 		}
 		return (ft_strdup(tokens[0]));
 	}
-	path_cmd = search_cmd(tokens[0], environment, leaks);
+	path_cmd = search_cmd(tokens[0], variables);
 	if (!path_cmd)
 	{
-		join_error = ft_strjoin(join_error, RED);
-		tmp = join_error;
-		join_error = ft_strjoin(join_error, "minishell: ");
-		free(tmp);
-		tmp = join_error;
-		join_error = ft_strjoin(join_error, BLUE);
-		free(tmp);
-		tmp = join_error;
-		join_error = ft_strjoin(join_error, tokens[0]);
-		free(tmp);
-		tmp = join_error;
-		join_error = ft_strjoin(join_error, " command not found.\n");
-		free(tmp);
-		tmp = join_error;
-		join_error = ft_strjoin(join_error, DEF);
-		write(2, join_error, ft_strlen(join_error));
-		free(tmp);
-		free(join_error);
+		write(2, "\033[34mminishell: \033[31m", ft_strlen("\033[34mminishell: \033[34m"));
+		write(2, tokens[0], ft_strlen(tokens[0]));
+		write(2, "\033[0m command not found.\n", ft_strlen("\033[0m command not found.\n"));
 		ft_status(127, 1);
 		return (NULL);
 	}
@@ -160,7 +140,7 @@ char	*echo_cmd(char **tokens, short is_return)
 	return (echo);
 }
 
-t_list	*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks)
+t_list	*env_cmd(short is_print, char **copy_env, t_var *variables)
 {
 	t_list	*environment;
 	t_list	*all_environment;
@@ -169,12 +149,12 @@ t_list	*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks)
 	size_t	i;
 	short	is_with_value;
 
-	all_environment = all_env(NULL, NULL, env, NULL, export_list, 0, 0, NULL, NULL, leaks);
+	all_environment = all_env(NULL, NULL, copy_env, 0, 0, variables);
 	environment = all_environment;
 	while (all_environment)
 	{
 		new_leak = ft_lstnew(all_environment);
-		ft_lstadd_back(leaks, new_leak);
+		ft_lstadd_back(&variables->leaks, new_leak);
 		all_environment = all_environment->next;
 	}
 	copy_environment = environment;
@@ -198,28 +178,30 @@ t_list	*env_cmd(char **env, t_list *export_list, short is_print, t_list **leaks)
 	return (environment);
 }
 
-void	cd_cmd(char *tokens, short *cd_flag, t_list *environment, t_list **leaks)
+void	cd_cmd(char *tokens, t_var *variables)
 {
 	char	*home;
 	
-	*cd_flag = 1;
-	home = ft_getenv("HOME", environment, leaks);
+	variables->cd_flag = 1;
+	home = ft_getenv("HOME", variables);
 	if (!tokens)
 	{
 		if (!home)
 		{
-			printf(BLUE "minishell: %scd: %sHOME not set.%s\n", DEF, RED, DEF);
-			*cd_flag = 0;
+			write(2, "\033[34mminishell: \033[0mcd: \033[31mHOME not set.\033[0m\n", ft_strlen("\033[34mminishell: \033[0mcd: \033[31mHOME not set.\033[0m\n"));
+			ft_status(1, 1);
+			variables->cd_flag = 0;
 		}
 		else
 			chdir(home);
 	}
 	else if (chdir(tokens) == -1)
 	{
-		printf(BLUE "minishell%s: cd: no such file or directory: %s%s%s\n",
-			DEF, RED, tokens, DEF);
+		write(2, "\033[34mminishell:\033[0m cd: no such file or directory: \033[31m", ft_strlen("\033[34mminishell:\033[0m cd: no such file or directory: \033[31m"));
+		write(2, tokens, ft_strlen(tokens));
+		write(2, "\033[0m\n", ft_strlen("\033[0m\n"));
 		ft_status(1, 1);
-		*cd_flag = 0;
+		variables->cd_flag = 0;
 	}
 }
 
@@ -252,7 +234,7 @@ void	sort_env(char **env_arr, int count)
 	}
 }
 
-static char	*print_sorted_env(t_list *environment, t_list **leaks, short is_return)
+static char	*print_sorted_env(t_var *variables, short is_return)
 {
 	int		count;
 	int		i;
@@ -268,14 +250,14 @@ static char	*print_sorted_env(t_list *environment, t_list **leaks, short is_retu
 	count = 0;
 	i = 0;
 	export = NULL;
-	tmp = environment;
+	tmp = variables->environment;
 	while (tmp)
 	{
 		count++;
 		tmp = tmp->next;
 	}
 	env_array = malloc(sizeof(char *) * count);
-	tmp = environment;
+	tmp = variables->environment;
 	while (i < count)
 	{
 		env_array[i] = (char *)tmp->content;
@@ -293,7 +275,7 @@ static char	*print_sorted_env(t_list *environment, t_list **leaks, short is_retu
 			len_var++;
 		var_name = ft_substr(env_array[i], 0, len_var);
 		new_leak = ft_lstnew(var_name);
-		ft_lstadd_back(leaks, new_leak);
+		ft_lstadd_back(&variables->leaks, new_leak);
 		if (is_return)
 		{
 			tmp_export = export;
@@ -307,7 +289,7 @@ static char	*print_sorted_env(t_list *environment, t_list **leaks, short is_retu
 			printf("declare -x %s%s%s", GREEN, var_name, DEF);
 		var_value = ft_substr(env_array[i], len_var, ft_strlen(env_array[i]) - len_var);
 		new_leak = ft_lstnew(var_value);
-		ft_lstadd_back(leaks, new_leak);
+		ft_lstadd_back(&variables->leaks, new_leak);
 		if ((!var_value[0] && env_array[i][len_var - 1] != '=') || (!var_value))
 		{
 			if (is_return)
@@ -348,12 +330,11 @@ static char	*print_sorted_env(t_list *environment, t_list **leaks, short is_retu
 	return (export);
 }
 
-char	*export_cmd(char **env, char **real_env, char **tokens, t_list **export_list, t_list **leaks, short is_return)
+char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variables)
 {
 	size_t	i;
 	size_t	j;
 	short	is_there_equal;
-	t_list	*environment;
 	t_list	*all_environment;
 	t_list	*new_leak;
 	char	*export;
@@ -363,25 +344,25 @@ char	*export_cmd(char **env, char **real_env, char **tokens, t_list **export_lis
 	i = 1;
 	if (!tokens[i])
 	{
-		all_environment = all_env(NULL, NULL, env, NULL, *export_list, 1, 1, NULL, NULL, leaks);
-		environment = all_environment;
+		variables->environment = all_env(NULL, NULL, copy_env, 1, 1, variables);
+		all_environment = variables->environment;
 		while (all_environment)
 		{
 			new_leak = ft_lstnew(all_environment);
-			ft_lstadd_back(leaks, new_leak);
+			ft_lstadd_back(&variables->leaks, new_leak);
 			all_environment = all_environment->next;
 		}
-		export = print_sorted_env(environment, leaks, is_return);
-		all_environment = all_env(NULL, NULL, env, NULL, *export_list, 1, 2, NULL, NULL, leaks);
-		environment = all_environment;
+		export = print_sorted_env(variables, is_return);
+		variables->environment = all_env(NULL, NULL, copy_env, 1, 2, variables);
+		all_environment = variables->environment;
 		while (all_environment)
 		{
 			new_leak = ft_lstnew(all_environment);
-			ft_lstadd_back(leaks, new_leak);
+			ft_lstadd_back(&variables->leaks, new_leak);
 			all_environment = all_environment->next;
 		}
 		tmp = export;
-		tmp2 = print_sorted_env(environment, leaks, is_return);
+		tmp2 = print_sorted_env(variables, is_return);
 		export = ft_strjoin(export, tmp2);
 		free(tmp);
 		free(tmp2);
@@ -397,15 +378,15 @@ char	*export_cmd(char **env, char **real_env, char **tokens, t_list **export_lis
 				j++;
 			tmp = ft_substr(tokens[i], 0, j);
 			j = 0;
-			if (is_exist_in_env(tmp, real_env, -1))
+			if (is_exist_in_env(tmp, variables->env, -1))
 			{
-				all_env(tokens[i], NULL, env, real_env, *export_list, 0, 0, NULL, NULL, leaks);
+				all_env(tokens[i], NULL, copy_env, 0, 0, variables);
 				i++;
 				free(tmp);
 				continue;
 			}
 			free(tmp);
-			if (is_exist_var(tokens[i], env, *export_list, leaks))
+			if (is_exist_var(tokens[i], variables))
 			{
 				while (tokens[i][j])
 				{
@@ -417,17 +398,17 @@ char	*export_cmd(char **env, char **real_env, char **tokens, t_list **export_lis
 					j++;
 				}
 				if (is_there_equal)
-					all_env(tokens[i], NULL, env, real_env, *export_list, 0, 0, NULL, NULL, leaks);
+					all_env(tokens[i], NULL, copy_env, 0, 0, variables);
 			}
 			else
-				ft_lstadd_back(export_list, ft_lstnew(tokens[i]));
+				ft_lstadd_back(&variables->export_list, ft_lstnew(tokens[i]));
 		}
 		i++;
 	}
 	return (NULL);
 }
 
-void	unset_cmd(char **tokens, char **env, t_list **export_list, t_list **leaks)
+void	unset_cmd(char **tokens, char **copy_env,t_var *variables)
 {
 	int	j;
 
@@ -436,8 +417,8 @@ void	unset_cmd(char **tokens, char **env, t_list **export_list, t_list **leaks)
 	{
 		if (check_unset_arg(tokens[j]))
 		{
-			if (is_exist_var(tokens[j], env, *export_list, leaks))
-				all_env(NULL, tokens[j], env, NULL, *export_list, 0, 0, NULL, NULL, leaks);
+			if (is_exist_var(tokens[j], variables))
+				all_env(NULL, tokens[j], copy_env, 0, 0, variables);
 		}
 		j++;
 	}
@@ -455,8 +436,13 @@ char	*pwd_cmd(short is_print)
 	return (pwd);
 }
 
-void	exit_cmd(void)
+void	exit_cmd(char **copy_env, t_var *variables)
 {
+	int	status;
+	free(copy_env);
+	free_leaks(variables);
 	printf(RED "exit\n" DEF);
-	exit(ft_status(0, 0));
+	free(variables);
+	status = ft_status(0, 0);
+	exit(status);
 }

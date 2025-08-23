@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/21 21:29:37 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 04:29:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,7 @@ short	check_export_arg(char *arg)
 		return (0);
 	if (!ft_isalpha(arg[i]) && arg[i] != '_')
 	{
-		printf(BLUE "minishell: %sexport: %svariable not an identifier.%s\n"
-			DEF, DEF, RED, CYAN);
+		write(2, "\033[34mminishell: \033[31mexport: \033[0;36mvariable not an identifier.\n\033[0m", ft_strlen("\033[34mminishell: \033[31mexport: \033[0;36mvariable not an identifier.\n\033[0m"));
 		ft_status(1, 1);
 		return (0);
 	}
@@ -32,8 +31,7 @@ short	check_export_arg(char *arg)
 			break ;
 		if (arg[i] == '!' || arg[i] == '&' || arg[i] == '(' || arg[i] == ')')
 		{
-			printf(BLUE "minishell: %sexport: %snot valid in this context. %s\n"
-				DEF, DEF, RED, CYAN);
+			write(2, "\033[34mminishell: \033[31mexport: \033[0;36mnot valid in this context.\n\033[0m", ft_strlen("\033[34mminishell: \033[31mexport: \033[0;36mnot valid in this context.\n\033[0m"));
 			ft_status(1, 1);
 			return (0);
 		}
@@ -51,7 +49,9 @@ short	check_unset_arg(char *arg)
 		return (0);
 	if (!ft_isalpha(arg[i]) && arg[i] != '_')
 	{
-		printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n" DEF, DEF, CYAN, arg, DEF, RED);
+		write(2, "\033[34mminishell: \033[0munset: \033[0;36m", ft_strlen("\033[34mminishell: \033[0munset: \033[0;36m"));
+		write(2, arg, ft_strlen(arg));
+		write(2, "\033[0m: \033[31minvalid parameter name.\n\033[0m", ft_strlen("\033[0m: \033[31minvalid parameter name.\n\033[0m"));
 		ft_status(1, 1);
 		return (0);
 	}
@@ -59,7 +59,9 @@ short	check_unset_arg(char *arg)
 	{
 		if (!ft_isalpha(arg[i]) && !ft_isdigit(arg[i]) && arg[i] != '_')
 		{
-			printf(BLUE "minishell: %sunset: %s%s%s: %sinvalid parameter name.\n"DEF, DEF, CYAN, arg, DEF, RED);
+			write(2, "\033[34mminishell: \033[0munset: \033[0;36m", ft_strlen("\033[34mminishell: \033[0munset: \033[0;36m"));
+			write(2, arg, ft_strlen(arg));
+			write(2, "\033[0m: \033[31minvalid parameter name.\n\033[0m", ft_strlen("\033[0m: \033[31minvalid parameter name.\n\033[0m"));
 			ft_status(1, 1);
 			return (0);
 		}
@@ -94,7 +96,7 @@ short	is_exist_in_env(char *str, char **env, long position)
 	return (0);
 }
 
-t_list	*all_env(char *var_export, char *var_unset, char **env, char **real_env, t_list *export_list, short is_export_cmd, short env_export, short *cd_flag, char *old_pwd, t_list **leaks)
+t_list	*all_env(char *var_export, char *var_unset, char **copy_env, short is_export_cmd, short env_export, t_var *variables)
 {
 	t_list			*enviroment;
 	t_list			*new_node;
@@ -108,6 +110,7 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, char **real_env, 
 	char			*name_var_export;
 	char			*name_var_env;
 	char			*pwd;
+	t_list			*export_list;
 
 	enviroment = NULL;
 	i = 0;
@@ -115,19 +118,19 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, char **real_env, 
 		i++;
 	name_var_export = ft_substr(var_export, 0, i);
 	new_leak = ft_lstnew(name_var_export);
-	ft_lstadd_back(leaks, new_leak);
+	ft_lstadd_back(&variables->leaks, new_leak);
 	i = 0;
 	if (!env_export || env_export == 1)
 	{
-		while (env[i])
+		while (copy_env[i])
 		{
-			if (!ft_strlen(env[i]))
+			if (!ft_strlen(copy_env[i]))
 			{
 				if (name_var_export)
 				{
-					if (is_exist_in_env(name_var_export, real_env, i))
+					if (is_exist_in_env(name_var_export, variables->env, i))
 					{
-						env[i] = var_export;
+						copy_env[i] = var_export;
 						name_var_export = NULL;
 					}
 				}
@@ -135,72 +138,73 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, char **real_env, 
 				continue;
 			}
 			j = 0;
-			while (env[i][j] && env[i][j] != '=')
+			while (copy_env[i][j] && copy_env[i][j] != '=')
 				j++;
-			name_var_env = ft_substr(env[i], 0, j);
+			name_var_env = ft_substr(copy_env[i], 0, j);
 			new_leak = ft_lstnew(name_var_env);
-			ft_lstadd_back(leaks, new_leak);
-			if (name_var_export && j == ft_strlen(name_var_export) && !ft_strncmp(env[i], name_var_export, j))
-				env[i] = var_export;
-			else if (cd_flag && !*cd_flag && !oldpwd_flag && !is_chaneg_oldpwd)
+			ft_lstadd_back(&variables->leaks, new_leak);
+			if (name_var_export && j == ft_strlen(name_var_export) && !ft_strncmp(copy_env[i], name_var_export, j))
+				copy_env[i] = var_export;
+			else if (!variables->cd_flag && !oldpwd_flag && !is_chaneg_oldpwd)
 			{
-				if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "OLDPWD", j))
+				if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(copy_env[i], "OLDPWD", j))
 				{
 					is_chaneg_oldpwd = 1;
 					name_var_env = ft_strdup("OLDPWD");
 					new_leak = ft_lstnew(name_var_env);
-					ft_lstadd_back(leaks, new_leak);
-					env[i] = name_var_env;
+					ft_lstadd_back(&variables->leaks, new_leak);
+					copy_env[i] = name_var_env;
 				}
 			}
-			else if (cd_flag && *cd_flag)
+			else if (variables->cd_flag)
 			{
-				if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "PWD", j))
+				if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(copy_env[i], "PWD", j))
 				{
 					pwd = pwd_cmd(0);
 					new_leak = ft_lstnew(pwd);
-					ft_lstadd_back(leaks, new_leak);
+					ft_lstadd_back(&variables->leaks, new_leak);
 					name_var_env = ft_strjoin("PWD=", pwd);
 					new_leak = ft_lstnew(name_var_env);
-					ft_lstadd_back(leaks, new_leak);
-					env[i] = name_var_env;
+					ft_lstadd_back(&variables->leaks, new_leak);
+					copy_env[i] = name_var_env;
 				}
-				else if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(env[i], "OLDPWD", j))
+				else if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(copy_env[i], "OLDPWD", j))
 				{
-					if (old_pwd)
-						name_var_env = ft_strjoin("OLDPWD=", old_pwd);
+					if (variables->old_pwd)
+						name_var_env = ft_strjoin("OLDPWD=", variables->old_pwd);
 					else
 					{
-						old_pwd = pwd_cmd(0);
-						name_var_env = ft_strjoin("OLDPWD=", old_pwd);
-						free(old_pwd);
+						variables->old_pwd = pwd_cmd(0);
+						name_var_env = ft_strjoin("OLDPWD=", variables->old_pwd);
+						free(variables->old_pwd);
 					}
 					new_leak = ft_lstnew(name_var_env);
-					ft_lstadd_back(leaks, new_leak);
-					env[i] = name_var_env;
+					ft_lstadd_back(&variables->leaks, new_leak);
+					copy_env[i] = name_var_env;
 				}
 				oldpwd_flag = 1;
 			}
-			if (!(var_unset && ft_strlen(var_unset) == j && !ft_strncmp(env[i], var_unset, j)))
+			if (!(var_unset && ft_strlen(var_unset) == j && !ft_strncmp(copy_env[i], var_unset, j)))
 			{
-				new_node = ft_lstnew(env[i]);
+				new_node = ft_lstnew(copy_env[i]);
 				ft_lstadd_back(&enviroment, new_node);
 			}
 			else
 			{
-				env[i] = ft_strdup("");
+				copy_env[i] = ft_strdup("");
 				{
-					new_leak = ft_lstnew(env[i]);
-					ft_lstadd_back(leaks, new_leak);
+					new_leak = ft_lstnew(copy_env[i]);
+					ft_lstadd_back(&variables->leaks, new_leak);
 				}
 			}
 			i++;
 		}
-		if (cd_flag)
-			*cd_flag = 0;
+		if (variables->cd_flag)
+			variables->cd_flag = 0;
 	}
 	if (!env_export || env_export == 2)
 	{
+		export_list = variables->export_list;
 		while (export_list)
 		{
 			is_with_value = 0;
@@ -244,7 +248,7 @@ t_list	*all_env(char *var_export, char *var_unset, char **env, char **real_env, 
 	return (enviroment);
 }
 
-short	is_exist_var(char *var, char **env, t_list *export_list, t_list **leaks)
+short	is_exist_var(char *var, t_var *variables)
 {
 	size_t	i;
 	size_t	j;
@@ -256,35 +260,35 @@ short	is_exist_var(char *var, char **env, t_list *export_list, t_list **leaks)
 		i++;
 	var_name = ft_substr(var, 0, i);
 	new_leak = ft_lstnew(var_name);
-	ft_lstadd_back(leaks, new_leak);
+	ft_lstadd_back(&variables->leaks, new_leak);
 	i = 0;
-	while (env[i])
+	while (variables->env[i])
 	{
-		if (!ft_strlen(env[i]))
+		if (!ft_strlen(variables->env[i]))
 		{
 			i++;
 			continue ;
 		}
 		j = 0;
-		while (env[i] && env[i][j] && env[i][j] != '=')
+		while (variables->env[i] && variables->env[i][j] && variables->env[i][j] != '=')
 			j++;
-		if (var_name && j == ft_strlen(var_name) && !ft_strncmp(env[i], var_name, j))
+		if (var_name && j == ft_strlen(var_name) && !ft_strncmp(variables->env[i], var_name, j))
 			return (1);
 		i++;
 	}
-	while (export_list)
+	while (variables->export_list)
 	{
-		if (!export_list->content)
+		if (!variables->export_list->content)
 		{
-			export_list = export_list->next;
+			variables->export_list = variables->export_list->next;
 			continue ;
 		}
 		j = 0;
-		while (((char *)export_list->content)[j] && ((char *)export_list->content)[j] != '=')
+		while (((char *)variables->export_list->content)[j] && ((char *)variables->export_list->content)[j] != '=')
 			j++;
-		if (var_name && j == ft_strlen(var_name) && !ft_strncmp((char *)export_list->content, var_name, j))
+		if (var_name && j == ft_strlen(var_name) && !ft_strncmp((char *)variables->export_list->content, var_name, j))
 			return (1);
-		export_list = export_list->next;
+		variables->export_list = variables->export_list->next;
 	}
 	return (0);
 }

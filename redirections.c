@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/21 18:42:34 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 04:14:01 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ short	is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
 	return (0);
 }
 
-short	is_ambiguous_redirect(char *token, t_list *environment, t_list **leaks)
+short	is_ambiguous_redirect(char *token, t_var *variables)
 {
 	size_t	i;
 	size_t	j;
@@ -114,7 +114,7 @@ short	is_ambiguous_redirect(char *token, t_list *environment, t_list **leaks)
 				i++;
 			}
 			var_name = ft_substr(token, start, var_len + 1);
-			var_value = ft_dollar(var_name, environment, leaks);
+			var_value = ft_dollar(var_name, variables);
 			free(var_name);
 			while (var_value[j])
 			{
@@ -129,7 +129,7 @@ short	is_ambiguous_redirect(char *token, t_list *environment, t_list **leaks)
 	return (free(var_value), 0);
 }
 
-t_redirections	*list_redirections(char **tokens, t_list *environment, t_list **leaks)
+t_redirections	*list_redirections(char **tokens, t_var *variables)
 {
 	size_t			i;
 	t_redirections	*list;
@@ -145,8 +145,7 @@ t_redirections	*list_redirections(char **tokens, t_list *environment, t_list **l
 			i++;
 			if ((!tokens[i] || (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2)) || !ft_strncmp(tokens[i], "<<", 2)) || (!tokens[i] || (ft_strlen(tokens[i]) == 1 && (!ft_strncmp(tokens[i], ">", 1) || !ft_strncmp(tokens[i], "<", 1)))))
 			{
-				printf(BLUE "minishell:%s %ssyntax error in redirection.\n"
-					DEF, DEF, RED);
+				write(2, "\033[34mminishell:\033[31m syntax error in redirection.\n\033[0m", ft_strlen("\033[34mminishell:\033[31m syntax error in redirection.\n\033[0m"));
 				ft_status(258, 1);
 				return (NULL);
 			}
@@ -159,18 +158,18 @@ t_redirections	*list_redirections(char **tokens, t_list *environment, t_list **l
 		if (ft_strlen(tokens[i - 1]) == 2
 			&& !ft_strncmp(tokens[i - 1], "<<", 2))
 		{
-			file_name = split_command(tokens[i], ' ', environment, 0, leaks);
+			file_name = split_command(tokens[i], ' ', 0, variables);
 			new_node = craete_new_node(tokens[i - 1], file_name[0]);
 			free(file_name);
 		}
-		else if (is_ambiguous_redirect(tokens[i], environment, leaks))
+		else if (is_ambiguous_redirect(tokens[i], variables))
 		{
 			tokens[i] = ft_strdup("");
 			new_node = craete_new_node(tokens[i - 1], tokens[i]);
 		}
 		else
 		{
-			file_name = split_command(tokens[i], ' ', environment, 1, leaks);
+			file_name = split_command(tokens[i], ' ', 1, variables);
 			new_node = craete_new_node(tokens[i - 1], file_name[0]);
 			free(file_name);
 		}

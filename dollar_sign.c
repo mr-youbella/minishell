@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   dollar_sign.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/21 19:34:51 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/22 13:36:34 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static size_t	len_str(char *str, int status, t_list *environment, t_list **leaks)
+static size_t	len_str(char *str, int status, t_var *variables)
 {
 	size_t	i;
 	size_t	len_var;
@@ -41,7 +41,7 @@ static size_t	len_str(char *str, int status, t_list *environment, t_list **leaks
 			{
 				env_value = ft_itoa(status);
 				new_leak = ft_lstnew(env_value);
-				ft_lstadd_back(leaks, new_leak);
+				ft_lstadd_back(&variables->leaks, new_leak);
 				len += ft_strlen(env_value);
 				i += 2;
 				continue ;
@@ -64,8 +64,8 @@ static size_t	len_str(char *str, int status, t_list *environment, t_list **leaks
 				}
 				env_var = ft_substr(str, start, len_var);
 				new_leak = ft_lstnew(env_var);
-				ft_lstadd_back(leaks, new_leak);
-				env_value = ft_getenv(env_var, environment, leaks);
+				ft_lstadd_back(&variables->leaks, new_leak);
+				env_value = ft_getenv(env_var, variables);
 				if (env_value)
 					len += ft_strlen(env_value);
 				continue ;
@@ -77,7 +77,7 @@ static size_t	len_str(char *str, int status, t_list *environment, t_list **leaks
 	return (len);
 }
 
-char	*ft_dollar(char *str, t_list *environment, t_list **leaks)
+char	*ft_dollar(char *str, t_var *variables)
 {
 	char	*env_value;
 	char	*env_var;
@@ -96,7 +96,7 @@ char	*ft_dollar(char *str, t_list *environment, t_list **leaks)
 	j = 0;
 	quote = 0;
 	status = ft_status(0, 0);
-	len = len_str(str, status, environment, leaks);
+	len = len_str(str, status, variables);
 	result = malloc(len + 1);
 	if (!result)
 		return (NULL);
@@ -115,7 +115,7 @@ char	*ft_dollar(char *str, t_list *environment, t_list **leaks)
 			{
 				env_value = ft_itoa(status);
 				new_leak = ft_lstnew(env_value);
-				ft_lstadd_back(leaks, new_leak);
+				ft_lstadd_back(&variables->leaks, new_leak);
 				k = 0;
 				while (env_value[k])
 					result[j++] = env_value[k++];
@@ -139,8 +139,8 @@ char	*ft_dollar(char *str, t_list *environment, t_list **leaks)
 				}
 				env_var = ft_substr(str, start, len_var);
 				new_leak = ft_lstnew(env_var);
-				ft_lstadd_back(leaks, new_leak);
-				env_value = ft_getenv(env_var, environment, leaks);
+				ft_lstadd_back(&variables->leaks, new_leak);
+				env_value = ft_getenv(env_var, variables);
 				if (env_value)
 				{
 					k = 0;

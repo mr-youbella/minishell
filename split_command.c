@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/17 22:26:03 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/22 10:59:34 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 05:38:39 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@ short	is_unclose_quotes(size_t single_quote, size_t double_quotes)
 {
 	if (single_quote % 2 || double_quotes % 2)
 	{
-		printf(RED "syntax error:%s unclosed quote.\n", DEF);
+		write(2, "\033[34mminishell: \033[31msyntax error:\033[0m unclosed quote.\n", ft_strlen("\033[34mminishell: \033[31msyntax error:\033[0m unclosed quote.\n"));
+		ft_status(258, 1);
 		return (1);
 	}
 	return (0);
@@ -73,8 +74,7 @@ static size_t	count_words_with_quotes(const char *s, char c)
 	return (count);
 }
 
-char	**split_commmand_with_quotes(char *command, char c,
-									t_list *environment, short is_dollar, t_list **leaks)
+char	**split_commmand_with_quotes(char *command, char c, short is_dollar, t_var *variables)
 {
 	char	**tokens;
 	char	*buffer;
@@ -123,7 +123,7 @@ char	**split_commmand_with_quotes(char *command, char c,
 					tokens[j] = buffer;
 				else
 				{
-					tokens[j] = ft_dollar(buffer, environment, leaks);
+					tokens[j] = ft_dollar(buffer, variables);
 					free(buffer);
 				}
 				buffer = NULL;
@@ -140,7 +140,7 @@ char	**split_commmand_with_quotes(char *command, char c,
 			tokens[j] = buffer;
 		else
 		{
-			tokens[j] = ft_dollar(buffer, environment, leaks);
+			tokens[j] = ft_dollar(buffer, variables);
 			free(buffer);
 		}
 	}
@@ -188,7 +188,7 @@ static size_t	count_words(char **tokens, char c)
 	return (count);
 }
 
-char	**split_command(char *cmd_line, char c, t_list *environment, short is_dollar, t_list **leaks)
+char	**split_command(char *cmd_line, char c, short is_dollar, t_var *variables)
 {
 	size_t	i;
 	size_t	j;
@@ -205,7 +205,7 @@ char	**split_command(char *cmd_line, char c, t_list *environment, short is_dolla
 	is_space = 0;
 	if (c == ' ')
 		is_space = 1;
-	tokens = split_commmand_with_quotes(cmd_line, c, environment, is_dollar, leaks);
+	tokens = split_commmand_with_quotes(cmd_line, c, is_dollar, variables);
 	if (!tokens)
 		return (NULL);
 	new_tokens = ft_calloc(count_words(tokens, c) + 1, sizeof(char *));
