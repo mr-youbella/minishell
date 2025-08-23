@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/23 13:16:10 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 13:31:42 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -430,7 +430,33 @@ char	*redirections(char *cmd_line, char **copy_env, int fd_pipe, t_var *variable
 
 
 
+void	free_array(char **arr, short is_stock, t_var *variables)
+{
+	size_t	i;
+	t_list	*new_leak;
 
+	i = 0;
+	if (is_stock)
+	{
+		while (arr && arr[i])
+		{
+			new_leak = ft_lstnew(arr[i]);
+			ft_lstadd_back(&variables->leaks, new_leak);
+			i++;
+			if (!arr[i])
+			{
+				new_leak = ft_lstnew(arr);
+				ft_lstadd_back(&variables->leaks, new_leak);
+			}
+		}
+	}
+	else
+	{
+		while (arr && arr[i])
+			free(arr[i++]);
+		free(arr);
+	}
+}
 
 short	is_empty_token(char *token)
 {
@@ -639,6 +665,7 @@ pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 			varpipe->redirections_output = redirections(split_pipe[i],
 					variables->copy_env, in_fd, variables);
 		pid = child_pipe(i, tokens_count, pipe_fd, varpipe);
+		free_array(varpipe->tokens, 0, variables);
 		i++;
 	}
 	return (free(varpipe), pid);
@@ -666,6 +693,7 @@ void	ft_pipe_loop(char **split_pipe, t_var *variables)
 	i = 0;
 	pid = while_pipe(split_pipe, pipe_fd, tokens_count, variables);
 	end_pipe(tokens_count, pipe_fd, pid);
+	free(pipe_fd);
 	return ;
 }
 
@@ -758,34 +786,6 @@ short	redirections_pipe(char **tokens, char *cmd_line,
 		return (1);
 	}
 	return (0);
-}
-
-void	free_array(char **arr, short is_stock, t_var *variables)
-{
-	size_t	i;
-	t_list	*new_leak;
-
-	i = 0;
-	if (is_stock)
-	{
-		while (arr && arr[i])
-		{
-			new_leak = ft_lstnew(arr[i]);
-			ft_lstadd_back(&variables->leaks, new_leak);
-			i++;
-			if (!arr[i])
-			{
-				new_leak = ft_lstnew(arr);
-				ft_lstadd_back(&variables->leaks, new_leak);
-			}
-		}
-	}
-	else
-	{
-		while (arr && arr[i])
-			free(arr[i++]);
-		free(arr);
-	}
 }
 
 char	*ft_readline(char *pwd)
@@ -894,7 +894,7 @@ int	main(int argc, char **argv, char **env)
 	char			**copy_env;
 	struct termios	ctr;
 
-	// atexit(f);
+	atexit(f);
 	if (argc != 1 && argv)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
 	status = 0;

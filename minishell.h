@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/23 13:13:50 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/23 13:22:33 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <termios.h>
 # include <fcntl.h>
 # include <sys/stat.h>
+# include <sys/wait.h>
 # include <errno.h>
 # include <readline/readline.h>
 # include <readline/history.h>
