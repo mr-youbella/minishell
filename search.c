@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/23 04:29:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 10:34:14 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,54 @@ short	is_exist_in_env(char *str, char **env, long position)
 	return (0);
 }
 
+short	add_export(t_env *env_var, t_list *export_list, t_list **enviroment, short is_with_value)
+{
+	t_list	*new_node;
+	size_t	j;
+
+	j = 0;
+	while (((char *)export_list->content)[j]
+		&& ((char *)export_list->content)[j] != '=')
+	{
+		j++;
+		if (((char *)export_list->content)[j] == '=')
+			is_with_value = 1;
+	}
+	if (env_var->name_var_export && j == ft_strlen(env_var->name_var_export)
+			&& !ft_strncmp((char *)export_list->content,
+				env_var->name_var_export, j))
+		export_list->content = env_var->var_export;
+	if (!(env_var->var_unset && ft_strlen(env_var->var_unset) == j
+		&& !ft_strncmp((char *)export_list->content, env_var->var_unset, j)))
+	{
+		if (is_with_value || env_var->is_export_cmd)
+		{
+			new_node = ft_lstnew(export_list->content);
+			ft_lstadd_back(enviroment, new_node);
+		}
+		return (1);
+	}
+	return (0);
+}
+
+void	get_export(t_var *variables, t_list **enviroment, t_env *env_var)
+{
+	t_list	*export_list;
+
+	export_list = variables->export_list;
+	while (export_list)
+	{
+		if (!export_list->content)
+		{
+			export_list = export_list->next;
+			continue;
+		}
+		if (!add_export(env_var, export_list, enviroment, 0))
+			export_list->content = NULL;
+		export_list = export_list->next;
+	}
+}
+
 t_list	*all_env(char *var_export, char *var_unset, char **copy_env, short is_export_cmd, short env_export, t_var *variables)
 {
 	t_list			*enviroment;
@@ -106,17 +154,21 @@ t_list	*all_env(char *var_export, char *var_unset, char **copy_env, short is_exp
 	size_t			j;
 	static short	oldpwd_flag;
 	static short	is_chaneg_oldpwd;
-	short			is_with_value;
 	char			*name_var_export;
 	char			*name_var_env;
 	char			*pwd;
-	t_list			*export_list;
+	t_env			*env_var;
 
+	env_var = malloc(sizeof(t_env));
+	env_var->var_export = var_export;
+	env_var->var_unset = var_unset;
+	env_var->is_export_cmd = is_export_cmd;
 	enviroment = NULL;
 	i = 0;
 	while (var_export && var_export[i] && var_export[i] != '=')
 		i++;
 	name_var_export = ft_substr(var_export, 0, i);
+	env_var->name_var_export = name_var_export;
 	new_leak = ft_lstnew(name_var_export);
 	ft_lstadd_back(&variables->leaks, new_leak);
 	i = 0;
@@ -203,38 +255,7 @@ t_list	*all_env(char *var_export, char *var_unset, char **copy_env, short is_exp
 			variables->cd_flag = 0;
 	}
 	if (!env_export || env_export == 2)
-	{
-		export_list = variables->export_list;
-		while (export_list)
-		{
-			is_with_value = 0;
-			if (!export_list->content)
-			{
-				export_list = export_list->next;
-				continue;
-			}
-			j = 0;
-			while (((char *)export_list->content)[j] && ((char *)export_list->content)[j] != '=')
-			{
-				j++;
-				if (((char *)export_list->content)[j] == '=')
-					is_with_value = 1;
-			}
-			if (name_var_export && j == ft_strlen(name_var_export) && !ft_strncmp((char *)export_list->content, name_var_export, j))
-				export_list->content = var_export;
-			if (!(var_unset && ft_strlen(var_unset) == j && !ft_strncmp((char *)export_list->content, var_unset, j)))
-			{
-				if (is_with_value || is_export_cmd)
-				{
-					new_node = ft_lstnew(export_list->content);
-					ft_lstadd_back(&enviroment, new_node);
-				}
-			}
-			else
-				export_list->content = NULL;
-			export_list = export_list->next;
-		}
-	}
+		get_export(variables, &enviroment, env_var);
 	if (var_export || var_unset)
 	{
 		while (enviroment)
@@ -248,7 +269,7 @@ t_list	*all_env(char *var_export, char *var_unset, char **copy_env, short is_exp
 	return (enviroment);
 }
 
-short	is_exist_var(char *var, t_var *variables)
+short	is_exist_var(char *var, t_var *variables, t_list *export_list)
 {
 	size_t	i;
 	size_t	j;
@@ -276,19 +297,19 @@ short	is_exist_var(char *var, t_var *variables)
 			return (1);
 		i++;
 	}
-	while (variables->export_list)
+	while (export_list)
 	{
-		if (!variables->export_list->content)
+		if (!export_list->content)
 		{
-			variables->export_list = variables->export_list->next;
+			export_list = export_list->next;
 			continue ;
 		}
 		j = 0;
-		while (((char *)variables->export_list->content)[j] && ((char *)variables->export_list->content)[j] != '=')
+		while (((char *)export_list->content)[j] && ((char *)export_list->content)[j] != '=')
 			j++;
-		if (var_name && j == ft_strlen(var_name) && !ft_strncmp((char *)variables->export_list->content, var_name, j))
+		if (var_name && j == ft_strlen(var_name) && !ft_strncmp((char *)export_list->content, var_name, j))
 			return (1);
-		variables->export_list = variables->export_list->next;
+		export_list = export_list->next;
 	}
 	return (0);
 }

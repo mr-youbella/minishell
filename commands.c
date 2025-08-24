@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/23 16:39:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 10:34:53 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -384,7 +384,7 @@ char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variabl
 				continue;
 			}
 			free(tmp);
-			if (is_exist_var(tokens[i], variables))
+			if (is_exist_var(tokens[i], variables, variables->export_list))
 			{
 				while (tokens[i][j])
 				{
@@ -415,7 +415,7 @@ void	unset_cmd(char **tokens, char **copy_env,t_var *variables)
 	{
 		if (check_unset_arg(tokens[j]))
 		{
-			if (is_exist_var(tokens[j], variables))
+			if (is_exist_var(tokens[j], variables, variables->export_list))
 				all_env(NULL, tokens[j], copy_env, 0, 0, variables);
 		}
 		j++;

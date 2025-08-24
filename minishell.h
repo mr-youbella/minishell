@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/23 21:35:56 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 10:34:30 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,14 @@
 # define CYAN "\033[0;36m"
 # define PINK "\033[35m"
 # define DEF "\033[0m"
+
+typedef struct s_env
+{
+	char	*var_export;
+	char	*var_unset;
+	char	*name_var_export;
+	short	is_export_cmd;
+}	t_env;
 
 typedef struct s_var
 {
@@ -83,7 +91,7 @@ short			is_exist_redirect_pipe(char *cmd_line, char redirect_pipe);
 t_redirections	*list_redirections(char **tokens, t_var *variables);
 char	*ft_getenv(char *var, t_var *variables);
 t_list	*all_env(char *var_export, char *var_unset, char **copy_env, short is_export_cmd, short env_export, t_var *variables);
-short	is_exist_var(char *var, t_var *variables);
+short	is_exist_var(char *var, t_var *variables, t_list *export_list);
 
 char	*is_there_cmd(char **tokens, t_var *variables);
 char	*search_cmd(char *cmd, t_var *variables);
