@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/24 11:38:14 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 13:24:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ short	check_export_arg(char *arg)
 	{
 		if (arg[i] == '=')
 			break ;
-		if (arg[i] == '!' || arg[i] == '&' || arg[i] == '(' || arg[i] == ')')
+		if (arg[i] == '!' || arg[i] == '&' || arg[i] == '(' || arg[i] == ')' || arg[i] == ' ')
 		{
 			write(2, "\033[34mminishell: \033[31mexport: \033[0;36mnot valid in this context.\n\033[0m", ft_strlen("\033[34mminishell: \033[31mexport: \033[0;36mnot valid in this context.\n\033[0m"));
 			ft_status(1, 1);
@@ -144,16 +144,76 @@ void	get_export(t_var *variables, t_list **enviroment, t_env *env_var)
 	}
 }
 
+void	check_pwdenv(char *name_var_env, size_t i, size_t j, t_var *variables)
+{
+	char	*pwd;
+	t_list	*new_leak;
+	
+	if (name_var_env && j == ft_strlen(name_var_env)
+		&& !ft_strncmp(variables->copy_env[i], "PWD", j))
+	{
+		pwd = pwd_cmd(0);
+		new_leak = ft_lstnew(pwd);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		name_var_env = ft_strjoin("PWD=", pwd);
+		new_leak = ft_lstnew(name_var_env);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		variables->copy_env[i] = name_var_env;
+	}
+	else if (name_var_env && j == ft_strlen(name_var_env)
+		&& !ft_strncmp(variables->copy_env[i], "OLDPWD", j))
+	{
+		if (variables->old_pwd)
+			name_var_env = ft_strjoin("OLDPWD=", variables->old_pwd);
+		else
+		{
+			variables->old_pwd = pwd_cmd(0);
+			name_var_env = ft_strjoin("OLDPWD=", variables->old_pwd);
+			free(variables->old_pwd);
+		}
+		new_leak = ft_lstnew(name_var_env);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		variables->copy_env[i] = name_var_env;
+	}
+}
+
+void	check_varenv(t_env *env_var, t_var *variables, size_t i, char *name_var_env)
+{
+	size_t			j;
+	static short	oldpwd_flag;
+	static short	is_chaneg_oldpwd;
+	t_list			*new_leak;
+
+	j = 0;
+	if (env_var->name_var_export && j == ft_strlen(env_var->name_var_export)
+		&& !ft_strncmp(variables->copy_env[i], env_var->name_var_export, j))
+		variables->copy_env[i] = env_var->var_export;
+	else if (!variables->cd_flag && !oldpwd_flag && !is_chaneg_oldpwd)
+	{
+		if (name_var_env && j == ft_strlen(name_var_env)
+			&& !ft_strncmp(variables->copy_env[i], "OLDPWD", j))
+		{
+			is_chaneg_oldpwd = 1;
+			name_var_env = ft_strdup("OLDPWD");
+			new_leak = ft_lstnew(name_var_env);
+			ft_lstadd_back(&variables->leaks, new_leak);
+			variables->copy_env[i] = name_var_env;
+		}
+	}
+	else if (variables->cd_flag)
+	{
+		check_pwdenv(name_var_env, i, j, variables);
+		oldpwd_flag = 1;
+	}
+}
+
 void	get_env(t_var *variables, t_list **enviroment, t_env *env_var)
 {
 	size_t	i;
 	size_t	j;
 	t_list	*new_node;
 	t_list	*new_leak;
-	char	*pwd;
 	char	*name_var_env;
-	static short	oldpwd_flag;
-	static short	is_chaneg_oldpwd;
 
 	i = 0;
 	while (variables->copy_env[i])
@@ -177,48 +237,9 @@ void	get_env(t_var *variables, t_list **enviroment, t_env *env_var)
 		name_var_env = ft_substr(variables->copy_env[i], 0, j);
 		new_leak = ft_lstnew(name_var_env);
 		ft_lstadd_back(&variables->leaks, new_leak);
-		if (env_var->name_var_export && j == ft_strlen(env_var->name_var_export) && !ft_strncmp(variables->copy_env[i], env_var->name_var_export, j))
-			variables->copy_env[i] = env_var->var_export;
-		else if (!variables->cd_flag && !oldpwd_flag && !is_chaneg_oldpwd)
-		{
-			if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(variables->copy_env[i], "OLDPWD", j))
-			{
-				is_chaneg_oldpwd = 1;
-				name_var_env = ft_strdup("OLDPWD");
-				new_leak = ft_lstnew(name_var_env);
-				ft_lstadd_back(&variables->leaks, new_leak);
-				variables->copy_env[i] = name_var_env;
-			}
-		}
-		else if (variables->cd_flag)
-		{
-			if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(variables->copy_env[i], "PWD", j))
-			{
-				pwd = pwd_cmd(0);
-				new_leak = ft_lstnew(pwd);
-				ft_lstadd_back(&variables->leaks, new_leak);
-				name_var_env = ft_strjoin("PWD=", pwd);
-				new_leak = ft_lstnew(name_var_env);
-				ft_lstadd_back(&variables->leaks, new_leak);
-				variables->copy_env[i] = name_var_env;
-			}
-			else if (name_var_env && j == ft_strlen(name_var_env) && !ft_strncmp(variables->copy_env[i], "OLDPWD", j))
-			{
-				if (variables->old_pwd)
-					name_var_env = ft_strjoin("OLDPWD=", variables->old_pwd);
-				else
-				{
-					variables->old_pwd = pwd_cmd(0);
-					name_var_env = ft_strjoin("OLDPWD=", variables->old_pwd);
-					free(variables->old_pwd);
-				}
-				new_leak = ft_lstnew(name_var_env);
-				ft_lstadd_back(&variables->leaks, new_leak);
-				variables->copy_env[i] = name_var_env;
-			}
-			oldpwd_flag = 1;
-		}
-		if (!(env_var->var_unset && ft_strlen(env_var->var_unset) == j && !ft_strncmp(variables->copy_env[i], env_var->var_unset, j)))
+		check_varenv(env_var, variables, i, name_var_env);
+		if (!(env_var->var_unset && ft_strlen(env_var->var_unset) == j
+			&& !ft_strncmp(variables->copy_env[i], env_var->var_unset, j)))
 		{
 			new_node = ft_lstnew(variables->copy_env[i]);
 			ft_lstadd_back(enviroment, new_node);

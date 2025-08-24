@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/24 11:36:26 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 13:33:25 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,14 +43,15 @@ typedef struct s_env
 
 typedef struct s_var
 {
-	t_list	*export_list;
-	t_list	*environment;
-	t_list 	*leaks;
-	char 	**env;
-	char 	**copy_env;
-	short	cd_flag;
-	char	*old_pwd;
-	short	is_return;
+	t_list			*export_list;
+	t_list			*environment;
+	t_list 			*leaks;
+	char 			**env;
+	char 			**copy_env;
+	short			cd_flag;
+	char			*old_pwd;
+	short			is_return;
+	struct termios	*ctr;
 }	t_var;
 
 typedef struct s_var_pipe
@@ -101,7 +102,7 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables);
 void	unset_cmd(char **tokens,t_var *variables);
 void	cd_cmd(char *tokens, t_var *variables);
 char			*pwd_cmd(short is_print);
-void	exit_cmd(char **copy_env, t_var *variables);
+void	exit_cmd(char **copy_env, t_var *variables, short is_print);
 
 char			*join_cmd_args(char *cmd_line);
 char			*extract_word(char *str, char c);

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/24 11:36:05 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 13:33:15 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,7 +197,7 @@ void	cd_cmd(char *tokens, t_var *variables)
 	
 	variables->cd_flag = 1;
 	home = ft_getenv("HOME", variables);
-	if (!tokens)
+	if (!tokens || (ft_strlen(tokens) == 1 && !ft_strncmp(tokens, "~", 1)))
 	{
 		if (!home)
 		{
@@ -449,12 +449,14 @@ char	*pwd_cmd(short is_print)
 	return (pwd);
 }
 
-void	exit_cmd(char **copy_env, t_var *variables)
+void	exit_cmd(char **copy_env, t_var *variables, short is_print)
 {
 	int	status;
+
 	free(copy_env);
 	free_leaks(variables);
-	printf(RED "exit\n" DEF);
+	if (is_print)
+		printf(RED "exit\n" DEF);
 	free(variables);
 	status = ft_status(0, 0);
 	exit(status);

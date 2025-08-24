@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/24 11:36:52 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 13:34:11 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -292,8 +292,9 @@ short	redirect_input(char *type_redirection, char *file_name,
 		var_redirection->fd_file_input = open(file_name, O_RDONLY);
 		if (var_redirection->fd_file_input < 0)
 		{
-			ft_putstr_fd("\033[34mminishell: ", 2);
-			ft_putstr_fd("\033[31mambiguous redirect.\033[0m\n", 2);
+			ft_putstr_fd("\033[34mminishell: \033[31m", 2);
+			ft_putstr_fd(file_name, 2);
+			ft_putstr_fd("\033[0m No such file or directory.\n", 2);
 			return (ft_status(1, 1), 0);
 		}
 	}
@@ -338,7 +339,7 @@ char	*builtin_cmd_redirections(char **tokens, int fd_pipe,
 		|| (ft_strlen(tokens[0]) == 1 && !ft_strncmp(tokens[0], "<", 1)))
 		return (var_redirection->return_val = 0, NULL);
 	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
-		exit_cmd(variables->copy_env, variables);
+		exit_cmd(variables->copy_env, variables, 1);
 	else if (ft_strlen(tokens[0]) == 6
 		&& !ft_strncmp(tokens[0], "export", 6))
 		return (export_cmd(tokens, 1, variables));
@@ -526,7 +527,10 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables)
 		return (NULL);
 	if (var_redirection->fd_file_output > 0)
 		close(var_redirection->fd_file_output);
-	output_cmd = ft_strdup(var_redirection->output_cmd);
+	if (!var_redirection->output_cmd)
+		output_cmd = NULL;
+	else
+		output_cmd = ft_strdup(var_redirection->output_cmd);
 	return (free(var_redirection), output_cmd);
 }
 
@@ -609,7 +613,7 @@ short	builtin_commands(char **tokens, char **copy_env, t_var *variables)
 		return (free(tokens), 1);
 	if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 	{
-		exit_cmd(copy_env, variables);
+		exit_cmd(copy_env, variables, 1);
 		return (ft_status(0, 0));
 	}
 	if (stat(tokens[0], &file) == 0 && S_ISDIR(file.st_mode))
@@ -666,17 +670,21 @@ void	mange_pipes(int *pipe_fd, size_t i, size_t tokens_count)
 		close(pipe_fd[j++]);
 }
 
-void	end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid)
+void    end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid, t_var *variables)
 {
 	size_t	i;
-	int		status;
+	int	status;
 
 	i = 0;
 	while (i < 2 * (tokens_count - 1))
 		close(pipe_fd[i++]);
 	i = 0;
-	waitpid(pid, &status, 0);
+	1 && (g_signal_flag = pid, waitpid(pid, &status, 0));
 	ft_status(WEXITSTATUS(status), 1);
+	if (g_signal_flag == SIGQUIT)
+		1 && (printf("Quit: 3\n"), ft_status(131, 1));
+	g_signal_flag = 0;
+	tcsetattr(0, 0, variables->ctr);
 	while (i < tokens_count)
 	{
 		wait(NULL);
@@ -764,7 +772,7 @@ void	ft_pipe_loop(char **split_pipe, t_var *variables)
 	}
 	i = 0;
 	pid = while_pipe(split_pipe, pipe_fd, tokens_count, variables);
-	end_pipe(tokens_count, pipe_fd, pid);
+	end_pipe(tokens_count, pipe_fd, pid, variables);
 	free(pipe_fd);
 	return ;
 }
@@ -901,7 +909,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 		1 && (command = ft_readline(pwd_cmd(0)), new_leak = ft_lstnew(command));
 		ft_lstadd_back(&variables->leaks, new_leak);
 		if (!command)
-			exit_cmd(copy_env, variables);
+			exit_cmd(copy_env, variables, 1);
 		if (!command[0])
 			continue ;
 		add_history(command);
@@ -960,8 +968,8 @@ int	main(int argc, char **argv, char **env)
 	variables = malloc(sizeof(t_var));
 	1 && (variables->cd_flag = 0, variables->env = env);
 	1 && (variables->environment = NULL, variables->export_list = NULL);
-	variables->leaks = NULL;
-	variables->cd_flag = 0;
+	1 && (variables->leaks = NULL, variables->cd_flag = 0);
+	variables->ctr = &ctr;
 	copy_env = copy_environment(env);
 	variables->copy_env = copy_env;
 	setup_terminal(&ctr);
