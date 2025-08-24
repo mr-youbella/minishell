@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/24 10:34:53 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 11:36:05 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,22 @@ char	*is_there_cmd(char **tokens, t_var *variables)
 	return (path_cmd);
 }
 
+short	check_option_echo(char *token)
+{
+	size_t	i;
+
+	i = 1;
+	if (token[0] != '-')
+		return (0);
+	while (token[i])
+	{
+		if (token[i] != 'n')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 char	*echo_cmd(char **tokens, short is_return)
 {
 	int		j;
@@ -94,8 +110,7 @@ char	*echo_cmd(char **tokens, short is_return)
 	j = 1;
 	is_op_echo = 0;
 	echo = NULL;
-	while (tokens[j] && !ft_strncmp(tokens[j], "-n", 2)
-		&& ft_strlen(tokens[j]) == 2)
+	while (tokens[j] && check_option_echo(tokens[j]))
 	{
 		is_op_echo = 1;
 		j++;
@@ -138,7 +153,7 @@ char	*echo_cmd(char **tokens, short is_return)
 	return (echo);
 }
 
-t_list	*env_cmd(short is_print, char **copy_env, t_var *variables)
+t_list	*env_cmd(short is_print, t_var *variables)
 {
 	t_list	*environment;
 	t_list	*all_environment;
@@ -147,7 +162,7 @@ t_list	*env_cmd(short is_print, char **copy_env, t_var *variables)
 	size_t	i;
 	short	is_with_value;
 
-	all_environment = all_env(NULL, NULL, copy_env, 0, 0, variables);
+	all_environment = all_env(NULL, NULL, 0, 0, variables);
 	environment = all_environment;
 	while (all_environment)
 	{
@@ -328,7 +343,7 @@ static char	*print_sorted_env(t_var *variables, short is_return)
 	return (export);
 }
 
-char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variables)
+char	*export_cmd(char **tokens, short is_return, t_var *variables)
 {
 	size_t	i;
 	size_t	j;
@@ -342,7 +357,7 @@ char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variabl
 	i = 1;
 	if (!tokens[i])
 	{
-		variables->environment = all_env(NULL, NULL, copy_env, 1, 1, variables);
+		variables->environment = all_env(NULL, NULL, 1, 1, variables);
 		all_environment = variables->environment;
 		while (all_environment)
 		{
@@ -351,7 +366,7 @@ char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variabl
 			all_environment = all_environment->next;
 		}
 		export = print_sorted_env(variables, is_return);
-		variables->environment = all_env(NULL, NULL, copy_env, 1, 2, variables);
+		variables->environment = all_env(NULL, NULL, 1, 2, variables);
 		all_environment = variables->environment;
 		while (all_environment)
 		{
@@ -378,7 +393,7 @@ char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variabl
 			j = 0;
 			if (is_exist_in_env(tmp, variables->env, -1))
 			{
-				all_env(tokens[i], NULL, copy_env, 0, 0, variables);
+				all_env(tokens[i], NULL, 0, 0, variables);
 				i++;
 				free(tmp);
 				continue;
@@ -396,7 +411,7 @@ char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variabl
 					j++;
 				}
 				if (is_there_equal)
-					all_env(tokens[i], NULL, copy_env, 0, 0, variables);
+					all_env(tokens[i], NULL, 0, 0, variables);
 			}
 			else
 				ft_lstadd_back(&variables->export_list, ft_lstnew(tokens[i]));
@@ -406,7 +421,7 @@ char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variabl
 	return (NULL);
 }
 
-void	unset_cmd(char **tokens, char **copy_env,t_var *variables)
+void	unset_cmd(char **tokens, t_var *variables)
 {
 	int	j;
 
@@ -416,7 +431,7 @@ void	unset_cmd(char **tokens, char **copy_env,t_var *variables)
 		if (check_unset_arg(tokens[j]))
 		{
 			if (is_exist_var(tokens[j], variables, variables->export_list))
-				all_env(NULL, tokens[j], copy_env, 0, 0, variables);
+				all_env(NULL, tokens[j], 0, 0, variables);
 		}
 		j++;
 	}

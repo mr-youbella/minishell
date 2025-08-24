@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/23 21:42:06 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 11:36:52 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -341,9 +341,9 @@ char	*builtin_cmd_redirections(char **tokens, int fd_pipe,
 		exit_cmd(variables->copy_env, variables);
 	else if (ft_strlen(tokens[0]) == 6
 		&& !ft_strncmp(tokens[0], "export", 6))
-		return (export_cmd(variables->copy_env, tokens, 1, variables));
+		return (export_cmd(tokens, 1, variables));
 	else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
-		unset_cmd(tokens, variables->copy_env, variables);
+		unset_cmd(tokens, variables);
 	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
 		return (echo_cmd(tokens, 1));
 	else if (ft_strlen(tokens[0]) == 3 && (!ft_strncmp(tokens[0], "pwd", 3)
@@ -395,7 +395,7 @@ pid_t	create_process_redirection(t_var_redirect *var_redirection,
 				printf("%s", var_redirection->cmd_result);
 		}
 		else if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
-			env_cmd(1, variables->copy_env, variables);
+			env_cmd(1, variables);
 		else
 			execve(var_redirection->path_cmd, tokens, variables->env);
 		exit(ft_status(0, 0));
@@ -572,13 +572,13 @@ char	**get_tokens_pipe(char *cmd_line, t_var *variables)
 	return (split_pipe);
 }
 
-short	builtin_commands2(char **tokens, char **copy_env, t_var *variables)
+short	builtin_commands2(char **tokens, t_var *variables)
 {
 	char	*pwd;
 
 	if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
 	{
-		unset_cmd(tokens, copy_env, variables);
+		unset_cmd(tokens, variables);
 		return (ft_status(0, 0));
 	}
 	else if (ft_strlen(tokens[0]) == 3
@@ -622,12 +622,12 @@ short	builtin_commands(char **tokens, char **copy_env, t_var *variables)
 	}
 	if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
 	{
-		export_cmd(copy_env, tokens, 0, variables);
+		export_cmd(tokens, 0, variables);
 		return (ft_status(0, 0));
 	}
 	if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
-		return (env_cmd(1, copy_env, variables), ft_status(0, 0));
-	return (builtin_commands2(tokens, copy_env, variables));
+		return (env_cmd(1, variables), ft_status(0, 0));
+	return (builtin_commands2(tokens, variables));
 }
 
 void	execute_cmd_pipe(char **tokens, char **copy_env, t_var *variables)
@@ -650,7 +650,7 @@ void	execute_cmd_pipe(char **tokens, char **copy_env, t_var *variables)
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd(".\n", 2);
 	}
-	exit(1);
+	exit(ft_status(0, 0));
 }
 
 void	mange_pipes(int *pipe_fd, size_t i, size_t tokens_count)
@@ -896,7 +896,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 
 	while (1)
 	{
-		variables->environment = all_env(NULL, NULL, copy_env, 0, 0, variables);
+		variables->environment = all_env(NULL, NULL, 0, 0, variables);
 		free_list(variables, variables->environment, NULL);
 		1 && (command = ft_readline(pwd_cmd(0)), new_leak = ft_lstnew(command));
 		ft_lstadd_back(&variables->leaks, new_leak);

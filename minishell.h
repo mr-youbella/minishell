@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/24 10:34:30 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 11:36:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,15 +90,15 @@ short			check_unset_arg(char *arg);
 short			is_exist_redirect_pipe(char *cmd_line, char redirect_pipe);
 t_redirections	*list_redirections(char **tokens, t_var *variables);
 char	*ft_getenv(char *var, t_var *variables);
-t_list	*all_env(char *var_export, char *var_unset, char **copy_env, short is_export_cmd, short env_export, t_var *variables);
+t_list	*all_env(char *var_export, char *var_unset, short is_export_cmd, short env_export, t_var *variables);
 short	is_exist_var(char *var, t_var *variables, t_list *export_list);
 
 char	*is_there_cmd(char **tokens, t_var *variables);
 char	*search_cmd(char *cmd, t_var *variables);
 char			*echo_cmd(char **tokens, short is_return);
-t_list	*env_cmd(short is_print, char **copy_env, t_var *variables);
-char	*export_cmd(char **copy_env, char **tokens, short is_return, t_var *variables);
-void	unset_cmd(char **tokens, char **copy_env,t_var *variables);
+t_list	*env_cmd(short is_print, t_var *variables);
+char	*export_cmd(char **tokens, short is_return, t_var *variables);
+void	unset_cmd(char **tokens,t_var *variables);
 void	cd_cmd(char *tokens, t_var *variables);
 char			*pwd_cmd(short is_print);
 void	exit_cmd(char **copy_env, t_var *variables);
