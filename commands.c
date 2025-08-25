@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/25 00:18:12 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/25 10:50:37 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,7 +172,7 @@ t_list	*env_cmd(short is_print, t_var *variables)
 	size_t	i;
 	short	is_with_value;
 
-	all_environment = all_env(NULL, NULL, 0, 0, variables);
+	all_environment = all_env(NULL, NULL, 0, variables);
 	environment = all_environment;
 	while (all_environment)
 	{
@@ -367,7 +367,8 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables)
 	i = 1;
 	if (!tokens[i])
 	{
-		variables->environment = all_env(NULL, NULL, 1, 1, variables);
+		variables->is_export_cmd = 1;
+		variables->environment = all_env(NULL, NULL, 1, variables);
 		all_environment = variables->environment;
 		while (all_environment)
 		{
@@ -376,7 +377,8 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables)
 			all_environment = all_environment->next;
 		}
 		export = print_sorted_env(variables, is_return);
-		variables->environment = all_env(NULL, NULL, 1, 2, variables);
+		variables->is_export_cmd = 1;
+		variables->environment = all_env(NULL, NULL, 2, variables);
 		all_environment = variables->environment;
 		while (all_environment)
 		{
@@ -403,7 +405,7 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables)
 			j = 0;
 			if (is_exist_in_env(tmp, variables->env, -1))
 			{
-				all_env(tokens[i], NULL, 0, 0, variables);
+				all_env(tokens[i], NULL, 0, variables);
 				i++;
 				free(tmp);
 				continue;
@@ -421,7 +423,7 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables)
 					j++;
 				}
 				if (is_there_equal)
-					all_env(tokens[i], NULL, 0, 0, variables);
+					all_env(tokens[i], NULL, 0, variables);
 			}
 			else
 				ft_lstadd_back(&variables->export_list, ft_lstnew(tokens[i]));
@@ -441,7 +443,7 @@ void	unset_cmd(char **tokens, t_var *variables)
 		if (check_unset_arg(tokens[j]))
 		{
 			if (is_exist_var(tokens[j], variables, variables->export_list))
-				all_env(NULL, tokens[j], 0, 0, variables);
+				all_env(NULL, tokens[j], 0, variables);
 		}
 		j++;
 	}
@@ -463,20 +465,31 @@ void	exit_cmd(char **copy_env, t_var *variables, char **tokens, short is_print)
 {
 	int	status;
 
-	status = ft_status(0, 0);
-	free(copy_env);
-	free_leaks(variables);
+	status = -2;
 	if (is_print)
 		printf(RED "exit\n" DEF);
-	free(variables);
 	if (!tokens || !tokens[1])
-		exit(status);
-	if (tokens[1] && !tokens[2])
-		exit(ft_atoi(tokens[1]));
-	else
+		status = ft_status(0, 0);
+	else if (tokens[1])
 	{
-		if (is_print)
-			printf(RED "exit\n" DEF);
-		ft_putstr_fd("\033[34mminishell: exit: \033[31mtoo many arguments.\033[0m", 2);
+		status = ft_atoi(tokens[1]);
+		if (status == -3)
+		{
+			ft_putstr_fd("\033[34minishell: \033[0mexit: \033[31mnumeric argument required.\033[0m\n", 2);
+			status = ft_status(255, 1);
+		}
+		else if (tokens[2])
+		{
+			status = -2;
+			ft_putstr_fd("\033[34mminishell:\033[0m exit: \033[31mtoo many arguments.\033[0m\n", 2);
+			ft_status(1, 1);
+		}
+	}
+	if (status != -2)
+	{
+		free(copy_env);
+		free_leaks(variables);
+		free(variables);
+		exit(status);
 	}
 }

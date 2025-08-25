@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/24 21:48:58 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/25 13:13:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,38 +23,48 @@ int	ft_status(int status, short is_change)
 	return (new_status);
 }
 
-void	handle_signal(int sig_num)
+void	handle_sigint(pid_t	pid)
 {
-	pid_t	pid;
-	int		status;
-
-	pid = wait(&status);
-	if (sig_num == SIGQUIT)
+	if (pid > 0)
 	{
-		if (pid > 0)
-		{
-			printf("Quit: 3\n");
+		printf("^\\Quit: 3\n");
+		if (g_signal_flag)
 			ft_status(131, 1);
-		}
-		else
-		{
-			rl_on_new_line();
-			rl_redisplay();
-		}
 	}
-	else if (sig_num == SIGINT && g_signal_flag)
+	else
 	{
-		if (pid > 0)
-			ft_status(130, 1);
-	}
-	else if (!g_signal_flag && sig_num == SIGINT)
-	{
-		ft_status(1, 1);
-		printf("\n");
 		rl_on_new_line();
 		rl_replace_line("", 0);
 		rl_redisplay();
 	}
+}
+
+void	handle_signal(int sig_num)
+{
+	pid_t	pid;
+
+	pid = wait(NULL);
+	if (sig_num == SIGINT)
+	{
+		if (pid > 0)
+		{
+			if (g_signal_flag)
+			{
+				printf("^C\n");
+				ft_status(130, 1);
+			}
+		}
+		else
+		{
+			printf("\n");
+			rl_on_new_line();
+			rl_replace_line("", 0);
+			rl_redisplay();
+			ft_status(1, 1);
+		}
+	}
+	else if (sig_num == SIGQUIT)
+		handle_sigint(pid);
 }
 
 short	is_buitin_cmd(char *token)
@@ -313,7 +323,8 @@ short	redirect_input(char *type_redirection, char *file_name,
 	return (1);
 }
 
-short	setup_redirections(char **tokens_redirections, t_var_redirect *var_redirection)
+short	setup_redirections(char **tokens_redirections,
+							t_var_redirect *var_redirection)
 {
 	t_redirections	*redirc;
 
@@ -420,7 +431,8 @@ char	*close_pipe(pid_t pid, t_var_redirect *var_redirection,
 	{
 		g_signal_flag = pid;
 		waitpid(pid, &status, 0);
-		ft_status(WEXITSTATUS(status), 1);
+		if (!WIFSIGNALED(status))
+			ft_status(WEXITSTATUS(status), 1);
 		free(var_redirection->join_herdoc);
 		free(var_redirection->path_cmd);
 		free(pipe_output);
@@ -490,6 +502,7 @@ short	final_setup_pipe(t_var_redirect *var_redirection,
 	pid_t			pid;
 	char			*output_cmd;
 
+	close(fd[1]);
 	pid = create_process_redirection(var_redirection, variables,
 			var_redirection->tokens, fd);
 	output_cmd = close_pipe(pid, var_redirection, fd,
@@ -509,7 +522,6 @@ short	final_setup_pipe(t_var_redirect *var_redirection,
 char	*redirections(char *cmd_line, int fd_pipe, t_var *variables)
 {
 	t_var_redirect	*var_redirection;
-	char			*output_cmd;
 	int				fd[2];
 
 	var_redirection = malloc(sizeof(t_var_redirect));
@@ -526,16 +538,13 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables)
 		else
 			write(fd[1], "", 0);
 	}
-	close(fd[1]);
 	if (!final_setup_pipe(var_redirection, variables, fd))
 		return (NULL);
 	if (var_redirection->fd_file_output > 0)
 		close(var_redirection->fd_file_output);
 	if (!var_redirection->output_cmd)
-		output_cmd = NULL;
-	else
-		output_cmd = ft_strdup(var_redirection->output_cmd);
-	return (free(var_redirection), output_cmd);
+		return (free(var_redirection), NULL);
+	return (free(var_redirection), ft_strdup(var_redirection->output_cmd));
 }
 
 short	is_empty_token(char *token)
@@ -673,19 +682,20 @@ void	mange_pipes(int *pipe_fd, size_t i, size_t tokens_count)
 		close(pipe_fd[j++]);
 }
 
-void    end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid, t_var *variables)
+void	end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid, t_var *variables)
 {
 	size_t	i;
-	int	status;
+	int		status;
 
 	i = 0;
 	while (i < 2 * (tokens_count - 1))
 		close(pipe_fd[i++]);
-	i = 0;
 	1 && (g_signal_flag = pid, waitpid(pid, &status, 0));
-	ft_status(WEXITSTATUS(status), 1);
+	if (wait(NULL) < 0 && !WIFSIGNALED(status))
+		ft_status(WEXITSTATUS(status), 1);
 	g_signal_flag = 0;
 	tcsetattr(0, 0, variables->ctr);
+	i = 0;
 	while (i < tokens_count)
 	{
 		wait(NULL);
@@ -812,11 +822,6 @@ void	free_leaks(t_var *variables)
 	}
 }
 
-void	f(void)
-{
-	system("leaks minishell");
-}
-
 void	exec_commands(char **tokens, char **copy_env,
 						struct termios *ctr, char *path_cmd)
 {
@@ -867,19 +872,17 @@ short	redirections_pipe(char **tokens, char *cmd_line, t_var *variables)
 	return (0);
 }
 
-char	*ft_readline(char *pwd)
+char	*ft_readline(char *pwd, size_t i, char *cmd_line)
 {
 	char	**path;
 	char	*last_dir;
 	char	*last_dir_tmp;
-	char	*cmd_line;
-	size_t	i;
 
 	if (ft_strlen(pwd) == 1 && !ft_strncmp(pwd, "/", 1))
 		last_dir = ft_strdup("/");
 	else
 	{
-		1 && (i = 0, path = ft_split(pwd, '/'));
+		path = ft_split(pwd, '/');
 		while (path && path[i])
 			last_dir = path[i++];
 		last_dir = ft_strdup(last_dir);
@@ -890,6 +893,8 @@ char	*ft_readline(char *pwd)
 	last_dir = ft_strjoin(last_dir_tmp, "\033[0m");
 	free(last_dir_tmp);
 	last_dir_tmp = ft_strjoin("\033[32m➥\033[0m ", last_dir);
+	if (ft_status(0, 0))
+		last_dir_tmp = ft_strjoin("\033[31m➥\033[0m ", last_dir);
 	free(last_dir);
 	last_dir = ft_strjoin(last_dir_tmp, " ");
 	free(last_dir_tmp);
@@ -904,9 +909,10 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 
 	while (1)
 	{
-		variables->environment = all_env(NULL, NULL, 0, 0, variables);
+		variables->environment = all_env(NULL, NULL, 0, variables);
 		free_list(variables, variables->environment, NULL);
-		1 && (command = ft_readline(pwd_cmd(0)), new_leak = ft_lstnew(command));
+		command = ft_readline(pwd_cmd(0), 0, NULL);
+		new_leak = ft_lstnew(command);
 		ft_lstadd_back(&variables->leaks, new_leak);
 		if (!command)
 			exit_cmd(copy_env, variables, NULL, 1);
@@ -951,6 +957,11 @@ char	**copy_environment(char	**env)
 	}
 	copy_env[i] = NULL;
 	return (copy_env);
+}
+
+void	f(void)
+{
+	system("leaks minishell");
 }
 
 int	main(int argc, char **argv, char **env)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/24 21:49:53 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/25 13:21:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ typedef struct s_env
 
 typedef struct s_var
 {
+	struct termios	*ctr;
 	t_list			*export_list;
 	t_list			*environment;
 	t_list 			*leaks;
@@ -51,7 +52,7 @@ typedef struct s_var
 	short			cd_flag;
 	char			*old_pwd;
 	short			is_return;
-	struct termios	*ctr;
+	short			is_export_cmd;
 }	t_var;
 
 typedef struct s_var_pipe
@@ -86,12 +87,19 @@ typedef struct s_redirections
 	struct s_redirections	*next;
 }	t_redirections;
 
+typedef struct s_dollar
+{
+	char	*str;
+	size_t	len;
+	int		status;
+}	t_dollar;
+
 short			check_export_arg(char *arg);
 short			check_unset_arg(char *arg);
 short			is_exist_redirect_pipe(char *cmd_line, char redirect_pipe);
 t_redirections	*list_redirections(char **tokens, t_var *variables);
 char	*ft_getenv(char *var, t_var *variables);
-t_list	*all_env(char *var_export, char *var_unset, short is_export_cmd, short env_export, t_var *variables);
+t_list	*all_env(char *var_export, char *var_unset, short env_export, t_var *variables);
 short	is_exist_var(char *var, t_var *variables, t_list *export_list);
 
 char	*is_there_cmd(char **tokens, t_var *variables);
