@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/24 13:34:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 21:48:58 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,17 +25,29 @@ int	ft_status(int status, short is_change)
 
 void	handle_signal(int sig_num)
 {
+	pid_t	pid;
+	int		status;
+
+	pid = wait(&status);
 	if (sig_num == SIGQUIT)
 	{
-		if (g_signal_flag > 0)
-			g_signal_flag = SIGQUIT;
+		if (pid > 0)
+		{
+			printf("Quit: 3\n");
+			ft_status(131, 1);
+		}
 		else
 		{
 			rl_on_new_line();
 			rl_redisplay();
 		}
 	}
-	else if (g_signal_flag == 0 && sig_num == SIGINT)
+	else if (sig_num == SIGINT && g_signal_flag)
+	{
+		if (pid > 0)
+			ft_status(130, 1);
+	}
+	else if (!g_signal_flag && sig_num == SIGINT)
 	{
 		ft_status(1, 1);
 		printf("\n");
@@ -301,16 +313,13 @@ short	redirect_input(char *type_redirection, char *file_name,
 	return (1);
 }
 
-short	setup_redirections(char *cmd_line, t_var_redirect *var_redirection)
+short	setup_redirections(char **tokens_redirections, t_var_redirect *var_redirection)
 {
 	t_redirections	*redirc;
-	char			**tokens_redirections;
 
 	var_redirection->fd_file_input = 0;
 	var_redirection->fd_file_output = 0;
 	var_redirection->join_herdoc = NULL;
-	tokens_redirections = get_tokens_with_redirection(cmd_line);
-	free_array(tokens_redirections, 1, var_redirection->variables);
 	redirc = list_redirections(tokens_redirections, var_redirection->variables);
 	free_list(var_redirection->variables, NULL, redirc);
 	if (!redirc)
@@ -333,13 +342,10 @@ short	setup_redirections(char *cmd_line, t_var_redirect *var_redirection)
 char	*builtin_cmd_redirections(char **tokens, int fd_pipe,
 						t_var *variables, t_var_redirect *var_redirection)
 {
-	if ((ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], ">>", 2))
-		|| (ft_strlen(tokens[0]) == 2 && !ft_strncmp(tokens[0], "<<", 2))
-		|| (ft_strlen(tokens[0]) == 1 && !ft_strncmp(tokens[0], ">", 1))
-		|| (ft_strlen(tokens[0]) == 1 && !ft_strncmp(tokens[0], "<", 1)))
+	if (!tokens)
 		return (var_redirection->return_val = 0, NULL);
-	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
-		exit_cmd(variables->copy_env, variables, 1);
+	if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
+		exit_cmd(variables->copy_env, variables, tokens, 1);
 	else if (ft_strlen(tokens[0]) == 6
 		&& !ft_strncmp(tokens[0], "export", 6))
 		return (export_cmd(tokens, 1, variables));
@@ -435,13 +441,11 @@ short	handle_pipe(char *cmd_line, char **tokens,
 {
 	char	**tokens_redirections;
 
-	if (!tokens)
-		return (0);
 	tokens_redirections = get_tokens_with_redirection(cmd_line);
-	free_array(tokens_redirections, 1, var_redirection->variables);
 	if (!tokens_redirections)
 		return (0);
-	if (!setup_redirections(cmd_line, var_redirection))
+	free_array(tokens_redirections, 1, var_redirection->variables);
+	if (!setup_redirections(tokens_redirections, var_redirection))
 		return (0);
 	var_redirection->cmd_result = builtin_cmd_redirections(tokens,
 			var_redirection->fd_pipe,
@@ -613,7 +617,7 @@ short	builtin_commands(char **tokens, char **copy_env, t_var *variables)
 		return (free(tokens), 1);
 	if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 	{
-		exit_cmd(copy_env, variables, 1);
+		exit_cmd(copy_env, variables, tokens, 1);
 		return (ft_status(0, 0));
 	}
 	if (stat(tokens[0], &file) == 0 && S_ISDIR(file.st_mode))
@@ -621,8 +625,7 @@ short	builtin_commands(char **tokens, char **copy_env, t_var *variables)
 		ft_putstr_fd("\033[34mminishell: \033[31m", 2);
 		ft_putstr_fd(tokens[0], 2);
 		ft_putstr_fd("\033[0m is a directory.\n", 2);
-		ft_status(126, 1);
-		return (ft_status(0, 0));
+		return (ft_status(126, 1));
 	}
 	if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
 	{
@@ -681,8 +684,6 @@ void    end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid, t_var *variables)
 	i = 0;
 	1 && (g_signal_flag = pid, waitpid(pid, &status, 0));
 	ft_status(WEXITSTATUS(status), 1);
-	if (g_signal_flag == SIGQUIT)
-		1 && (printf("Quit: 3\n"), ft_status(131, 1));
 	g_signal_flag = 0;
 	tcsetattr(0, 0, variables->ctr);
 	while (i < tokens_count)
@@ -816,7 +817,7 @@ void	f(void)
 	system("leaks minishell");
 }
 
-void	path_commands(char **tokens, char **copy_env,
+void	exec_commands(char **tokens, char **copy_env,
 						struct termios *ctr, char *path_cmd)
 {
 	pid_t	pid;
@@ -838,9 +839,8 @@ void	path_commands(char **tokens, char **copy_env,
 	else
 	{
 		1 && (g_signal_flag = pid, waitpid(pid, &status, 0));
-		ft_status(WEXITSTATUS(status), 1);
-		if (g_signal_flag == SIGQUIT)
-			1 && (printf("Quit: 3\n"), ft_status(131, 1));
+		if (!WIFSIGNALED(status))
+			ft_status(WEXITSTATUS(status), 1);
 		g_signal_flag = 0;
 	}
 	return (tcsetattr(0, 0, ctr), free(path_cmd));
@@ -909,7 +909,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 		1 && (command = ft_readline(pwd_cmd(0)), new_leak = ft_lstnew(command));
 		ft_lstadd_back(&variables->leaks, new_leak);
 		if (!command)
-			exit_cmd(copy_env, variables, 1);
+			exit_cmd(copy_env, variables, NULL, 1);
 		if (!command[0])
 			continue ;
 		add_history(command);
@@ -918,7 +918,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 		if (redirections_pipe(tokens, command, variables)
 			|| builtin_commands(tokens, copy_env, variables))
 			continue ;
-		path_commands(tokens, copy_env, ctr, is_there_cmd(tokens, variables));
+		exec_commands(tokens, copy_env, ctr, is_there_cmd(tokens, variables));
 	}
 }
 

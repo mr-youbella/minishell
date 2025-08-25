@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/24 13:33:15 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/25 00:18:12 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,19 @@ char	*search_cmd(char *cmd, t_var *variables)
 
 char	*is_there_cmd(char **tokens, t_var *variables)
 {
-	char	*path_cmd;
-	int		fd;
+	char			*path_cmd;
+	int				fd;
+	struct stat		file;
 
+
+	if (stat(tokens[0], &file) == 0 && S_ISDIR(file.st_mode))
+	{
+		ft_putstr_fd("\033[34mminishell: \033[31m", 2);
+		ft_putstr_fd(tokens[0], 2);
+		ft_putstr_fd("\033[0m is a directory.\n", 2);
+		ft_status(126, 1);
+		return (NULL);
+	}
 	if (is_buitin_cmd(tokens[0]))
 		return (NULL);
 	if ((tokens[0][0] == '.' && tokens[0][1] == '/')
@@ -66,7 +76,7 @@ char	*is_there_cmd(char **tokens, t_var *variables)
 		{
 			write(2, "\033[31mminishell: \033[34m", ft_strlen("\033[31mminishell: \033[34m"));
 			write(2, tokens[0], ft_strlen(tokens[0]));
-			write(2, "\033[0m: No such file or directory.\n", ft_strlen("\033[0m: No such file or directory.\n"));
+			ft_putstr_fd("\033[0m: No such file or directory.\n", 2);
 			ft_status(127, 1);
 			return (NULL);
 		}
@@ -449,15 +459,24 @@ char	*pwd_cmd(short is_print)
 	return (pwd);
 }
 
-void	exit_cmd(char **copy_env, t_var *variables, short is_print)
+void	exit_cmd(char **copy_env, t_var *variables, char **tokens, short is_print)
 {
 	int	status;
 
+	status = ft_status(0, 0);
 	free(copy_env);
 	free_leaks(variables);
 	if (is_print)
 		printf(RED "exit\n" DEF);
 	free(variables);
-	status = ft_status(0, 0);
-	exit(status);
+	if (!tokens || !tokens[1])
+		exit(status);
+	if (tokens[1] && !tokens[2])
+		exit(ft_atoi(tokens[1]));
+	else
+	{
+		if (is_print)
+			printf(RED "exit\n" DEF);
+		ft_putstr_fd("\033[34mminishell: exit: \033[31mtoo many arguments.\033[0m", 2);
+	}
 }

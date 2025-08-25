@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/24 13:33:25 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 21:49:53 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables);
 void	unset_cmd(char **tokens,t_var *variables);
 void	cd_cmd(char *tokens, t_var *variables);
 char			*pwd_cmd(short is_print);
-void	exit_cmd(char **copy_env, t_var *variables, short is_print);
+void	exit_cmd(char **copy_env, t_var *variables, char **tokens, short is_print);
 
 char			*join_cmd_args(char *cmd_line);
 char			*extract_word(char *str, char c);

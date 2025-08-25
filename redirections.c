@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/23 18:22:03 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/24 19:47:08 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,12 +323,20 @@ char	*join_cmd_args(char *cmd_line)
 	char	**tokens;
 	char	*tmp;
 
-	i = 1;
+	i = 0;
 	cmd_arg = NULL;
 	tokens = get_tokens_with_redirection(cmd_line);
 	if (!tokens)
 		return (NULL);
-	cmd_arg = ft_strjoin(tokens[0], " ");
+	if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
+		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2))
+		|| (ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], "<", 1))
+		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], "<<", 2)))
+	{
+		i++;
+		if (tokens[i])
+			i++;
+	}
 	while (tokens[i])
 	{
 		if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
