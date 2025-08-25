@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/25 13:21:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 00:23:44 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,11 @@ typedef struct s_env
 typedef struct s_var
 {
 	struct termios	*ctr;
+	size_t			i;
 	t_list			*export_list;
 	t_list			*environment;
 	t_list 			*leaks;
+	char			*export;
 	char 			**env;
 	char 			**copy_env;
 	short			cd_flag;
@@ -91,8 +93,25 @@ typedef struct s_dollar
 {
 	char	*str;
 	size_t	len;
-	int		status;
+	size_t	i;
+	size_t	j;
 }	t_dollar;
+
+typedef struct s_ft_var
+{
+	char	*buffer;
+	char	**tokens;
+	char	**new_tokens;
+	short	is_space;
+	short	is_dollar;
+	t_var 	*variables;
+	size_t	c_single_quote;
+	size_t	c_double_quotes;
+	short	is_d_quote;
+	short	is_s_quote;
+	size_t	j;
+	short	in_token;
+}	t_ft_var;
 
 short			check_export_arg(char *arg);
 short			check_unset_arg(char *arg);
@@ -114,13 +133,13 @@ void	exit_cmd(char **copy_env, t_var *variables, char **tokens, short is_print);
 
 char			*join_cmd_args(char *cmd_line);
 char			*extract_word(char *str, char c);
-char	*ft_dollar(char *str, t_var *variables);
-char			**get_tokens_with_redirection(const char *cmd_line);
+char	*ft_dollar(char *str, t_var *variables, size_t len, char quote);
+char			**get_tokens_with_redirection(char *cmd_line);
 int				ft_status(int status, short is_change);
 short			is_exist_in_env(char *str, char **env, long position);
 
 char	**split_commmand_with_quotes(char *command, char c, short is_dollar, t_var *variables);
-char	**split_command(char *cmd_line, char c, short is_dollar, t_var *variables);
+char	**split_command(char *cmd_line, short is_dollar, t_var *variables);
 void	free_leaks(t_var *variables);
 short	is_buitin_cmd(char *token);
 #endif

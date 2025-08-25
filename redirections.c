@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/24 19:47:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/25 23:35:49 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,269 +74,297 @@ short	is_exist_redirect_pipe(char *cmd_line, char redirect_pipe)
 	return (0);
 }
 
-short	is_ambiguous_redirect(char *token, t_var *variables)
+short	check_ambiguous_dollar(char *str, t_var *variables, t_ft_var *var)
 {
-	size_t	i;
-	size_t	j;
 	size_t	start;
 	size_t	var_len;
+	size_t	j;
 	char	*var_name;
 	char	*var_value;
-	char	quot;
 
-	i = 0;
 	var_value = NULL;
-	while (token[i])
+	if (str[var->j] == '$')
 	{
-		var_len = 0;
-		j = 0;
-		if (token[i] == 39 || token[i] == '"')
+		1 && (j = 0, var_len = 0, start = var->j, var->j++);
+		while ((str[var->j]) && (ft_isalnum(str[var->j]) || str[var->j] == '_'))
+			1 && (var_len++, var->j++);
+		var_name = ft_substr(str, start, var_len + 1);
+		var_value = ft_dollar(var_name, variables, 0, 0);
+		free(var_name);
+		while (var_value[j])
 		{
-			quot = token[i];
-			i++;
-			while (token[i] && token[i] != quot)
-				i++;
-			if (token[i] == quot)
-				i++;
+			if (var_value[j] == ' ')
+				return (free(var_value), 1);
+			j++;
 		}
-		if (!token[i])
-			break ;
-		if (token[i] == '$')
-		{
-			start = i;
-			i++;
-			while ((token[i]) && (ft_isalnum(token[i]) || token[i] == '_'))
-			{
-				var_len++;
-				i++;
-			}
-			var_name = ft_substr(token, start, var_len + 1);
-			var_value = ft_dollar(var_name, variables);
-			free(var_name);
-			while (var_value[j])
-			{
-				if (var_value[j] == ' ')
-					return (free(var_value), 1);
-				j++;
-			}
-		}
-		else
-			i++;
 	}
+	else
+		var->j++;
 	return (free(var_value), 0);
+}
+
+short	is_ambiguous_redirect(char *token, t_var *variables)
+{
+	t_ft_var	*var;
+	char		quot;
+
+	var = malloc(sizeof(t_ft_var));
+	if (!var)
+		return (0);
+	var->j = 0;
+	while (token[var->j])
+	{
+		if (token[var->j] == 39 || token[var->j] == '"')
+		{
+			quot = token[var->j];
+			var->j++;
+			while (token[var->j] && token[var->j] != quot)
+				var->j++;
+			if (token[var->j] == quot)
+				var->j++;
+		}
+		if (!token[var->j])
+			break ;
+		if (check_ambiguous_dollar(token, variables, var))
+			return (1);
+	}
+	return (0);
+}
+
+short	check_syntax_redirect(char **tokens, t_ft_var *list_var)
+{
+	if ((ft_strlen(tokens[list_var->j]) == 2
+			&& ((!ft_strncmp(tokens[list_var->j], ">>", 2))
+				|| (!ft_strncmp(tokens[list_var->j], "<<", 2))))
+		|| ((ft_strlen(tokens[list_var->j]) == 1)
+			&& ((!ft_strncmp(tokens[list_var->j], ">", 1))
+				|| (!ft_strncmp(tokens[list_var->j], "<", 1)))))
+	{
+		list_var->j++;
+		if ((!tokens[list_var->j] || (ft_strlen(tokens[list_var->j]) == 2
+					&& !ft_strncmp(tokens[list_var->j], ">>", 2))
+				|| !ft_strncmp(tokens[list_var->j], "<<", 2))
+			|| (!tokens[list_var->j] || (ft_strlen(tokens[list_var->j]) == 1
+					&& (!ft_strncmp(tokens[list_var->j], ">", 1)
+						|| !ft_strncmp(tokens[list_var->j], "<", 1)))))
+		{
+			ft_putstr_fd("\033[34mminishell:\033[31m ", 2);
+			ft_putstr_fd("syntax error in redirection.\n\033[0m", 2);
+			return (ft_status(258, 1), -1);
+		}
+	}
+	else
+		return (list_var->j++, 0);
+	return (1);
+}
+
+void	add_redirections(char **tokens, t_ft_var *list_var,
+							t_redirections **new_node, t_var *variables)
+{
+	char	**file_name;
+
+	if (ft_strlen(tokens[list_var->j - 1]) == 2
+		&& !ft_strncmp(tokens[list_var->j - 1], "<<", 2))
+	{
+		file_name = split_command(tokens[list_var->j], 0, variables);
+		*new_node = craete_new_node(tokens[list_var->j - 1], file_name[0]);
+		free(file_name);
+	}
+	else if (is_ambiguous_redirect(tokens[list_var->j], variables))
+	{
+		tokens[list_var->j] = ft_strdup("");
+		*new_node = craete_new_node(tokens[list_var->j - 1],
+				tokens[list_var->j]);
+	}
+	else
+	{
+		file_name = split_command(tokens[list_var->j], 1, variables);
+		*new_node = craete_new_node(tokens[list_var->j - 1], file_name[0]);
+		free(file_name);
+	}
 }
 
 t_redirections	*list_redirections(char **tokens, t_var *variables)
 {
-	size_t			i;
 	t_redirections	*list;
 	t_redirections	*new_node;
-	char			**file_name;
+	t_ft_var		*list_var;
+	short			return_val;
 
-	i = 0;
-	list = NULL;
-	while (tokens[i])
+	list_var = malloc(sizeof(t_ft_var));
+	if (!list_var)
+		return (NULL);
+	1 && (list_var->j = 0, list = NULL);
+	while (tokens[list_var->j])
 	{
-		if ((ft_strlen(tokens[i]) == 2 && ((!ft_strncmp(tokens[i], ">>", 2)) || (!ft_strncmp(tokens[i], "<<", 2)))) || ((ft_strlen(tokens[i]) == 1) && ((!ft_strncmp(tokens[i], ">", 1)) || (!ft_strncmp(tokens[i], "<", 1)))))
-		{
-			i++;
-			if ((!tokens[i] || (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2)) || !ft_strncmp(tokens[i], "<<", 2)) || (!tokens[i] || (ft_strlen(tokens[i]) == 1 && (!ft_strncmp(tokens[i], ">", 1) || !ft_strncmp(tokens[i], "<", 1)))))
-			{
-				write(2, "\033[34mminishell:\033[31m syntax error in redirection.\n\033[0m", ft_strlen("\033[34mminishell:\033[31m syntax error in redirection.\n\033[0m"));
-				ft_status(258, 1);
-				return (NULL);
-			}
-		}
-		else
-		{
-			i++;
+		return_val = check_syntax_redirect(tokens, list_var);
+		if (!return_val)
 			continue ;
-		}
-		if (ft_strlen(tokens[i - 1]) == 2
-			&& !ft_strncmp(tokens[i - 1], "<<", 2))
-		{
-			file_name = split_command(tokens[i], ' ', 0, variables);
-			new_node = craete_new_node(tokens[i - 1], file_name[0]);
-			free(file_name);
-		}
-		else if (is_ambiguous_redirect(tokens[i], variables))
-		{
-			tokens[i] = ft_strdup("");
-			new_node = craete_new_node(tokens[i - 1], tokens[i]);
-		}
-		else
-		{
-			file_name = split_command(tokens[i], ' ', 1, variables);
-			new_node = craete_new_node(tokens[i - 1], file_name[0]);
-			free(file_name);
-		}
+		if (return_val == -1)
+			return (NULL);
+		add_redirections(tokens, list_var, &new_node, variables);
 		add_node_in_back(&list, new_node);
-		i++;
+		list_var->j++;
 	}
 	return (list);
 }
 
-size_t	count_tokens_with_redirection(const char *cmd_line)
+short	add_count_with_redirection(char *cmd_line, char c, size_t *count,
+									t_ft_var *split_var)
 {
-	size_t	i;
-	size_t	count;
-	char	c;
-	short	is_single_quote;
-	short	is_double_quote;
-	short	in_token;
-
-	i = 0;
-	count = 0;
-	is_single_quote = 0;
-	is_double_quote = 0;
-	in_token = 0;
-	while (cmd_line[i])
+	if (!split_var->is_s_quote && !split_var->is_d_quote)
 	{
-		c = cmd_line[i];
-		if (c == 39 && !is_double_quote)
+		if (c == ' ')
 		{
-			is_single_quote = !is_single_quote;
-			in_token = 1;
-			i++;
-			continue ;
+			if (split_var->in_token)
+				1 && ((*count)++, split_var->in_token = 0);
+			return (split_var->j++, 0);
 		}
-		if (c == '"' && !is_single_quote)
+		if (c == '>' || c == '<')
 		{
-			is_double_quote = !is_double_quote;
-			in_token = 1;
-			i++;
-			continue ;
-		}
-		if (!is_single_quote && !is_double_quote)
-		{
-			if (c == ' ')
+			if (split_var->in_token)
 			{
-				if (in_token)
-				{
-					count++;
-					in_token = 0;
-				}
-				i++;
-				continue ;
+				(*count)++;
+				split_var->in_token = 0;
 			}
-			if (c == '>' || c == '<')
-			{
-				if (in_token)
-				{
-					count++;
-					in_token = 0;
-				}
-				if ((c == '>' && cmd_line[i + 1] == '>')
-					|| (c == '<' && cmd_line[i + 1] == '<'))
-					i += 2;
-				else
-					i++;
-				count++;
-				continue ;
-			}
+			if ((c == '>' && cmd_line[split_var->j + 1] == '>')
+				|| (c == '<' && cmd_line[split_var->j + 1] == '<'))
+				split_var->j += 2;
+			else
+				split_var->j++;
+			return ((*count)++, 0);
 		}
-		in_token = 1;
-		i++;
 	}
-	if (in_token)
+	return (1);
+}
+
+short	check_quote(char c, t_ft_var *split_var)
+{
+	if (c == 39 && !split_var->is_d_quote)
+	{
+		split_var->is_s_quote = !split_var->is_s_quote;
+		split_var->in_token = 1;
+		split_var->j++;
+		return (0);
+	}
+	if (c == '"' && !split_var->is_s_quote)
+	{
+		split_var->is_d_quote = !split_var->is_d_quote;
+		split_var->in_token = 1;
+		split_var->j++;
+		return (0);
+	}
+	return (1);
+}
+
+size_t	count_tokens_with_redirection(char *cmd_line)
+{
+	size_t		count;
+	char		c;
+	t_ft_var	*split_var;
+
+	split_var = malloc(sizeof(t_ft_var));
+	if (!split_var)
+		return (0);
+	1 && (split_var->j = 0, count = 0, split_var->is_s_quote = 0);
+	1 && (split_var->is_s_quote = 0, split_var->is_d_quote = 0);
+	split_var->in_token = 0;
+	while (cmd_line[split_var->j])
+	{
+		c = cmd_line[split_var->j];
+		if (!check_quote(c, split_var))
+			continue ;
+		if (!add_count_with_redirection(cmd_line, c, &count, split_var))
+			continue ;
+		split_var->in_token = 1;
+		split_var->j++;
+	}
+	if (split_var->in_token)
 		count++;
 	return (count);
 }
 
-char	**get_tokens_with_redirection(const char *cmd_line)
+short	get_redirections(char *cmd_line, char c, size_t *i, t_ft_var *sv)
+{
+	char	*op;
+
+	if (!sv->is_s_quote && !sv->is_d_quote && (c == '>' || c == '<'))
+	{
+		if (sv->buffer)
+		{
+			1 && (sv->tokens[sv->j++] = sv->buffer, sv->buffer = NULL);
+		}
+		if (c == '>' && cmd_line[*i + 1] == '>')
+		{
+			sv->tokens[sv->j++] = ft_strdup(">>");
+			return ((*i) += 2, 0);
+		}
+		else if (c == '<' && cmd_line[*i + 1] == '<')
+		{
+			sv->tokens[sv->j++] = ft_strdup("<<");
+			return ((*i) += 2, 0);
+		}
+		else
+		{
+			1 && (op = extract_word(NULL, c), sv->tokens[sv->j++] = op);
+			return ((*i)++, 0);
+		}
+	}
+	return (1);
+}
+
+void	loop_tokens_wr(char *cmd_line, t_ft_var *sv)
 {
 	size_t	i;
-	size_t	k;
 	char	c;
-	char	*op;
-	short	is_single_quote;
-	short	is_double_quote;
-	char	*buffer;
-	char	**tokens;
 
+	1 && (sv->is_s_quote = 0, sv->is_d_quote = 0);
 	i = 0;
-	k = 0;
-	is_single_quote = 0;
-	is_double_quote = 0;
-	buffer = NULL;
+	while (cmd_line[i])
+	{
+		c = cmd_line[i];
+		if (c == 39 && !sv->is_d_quote)
+			sv->is_s_quote = !sv->is_s_quote;
+		else if (c == '"' && !sv->is_s_quote)
+			sv->is_d_quote = !sv->is_d_quote;
+		if (!get_redirections(cmd_line, c, &i, sv))
+			continue ;
+		if (!sv->is_s_quote && !sv->is_d_quote && c == ' ')
+		{
+			if (sv->buffer)
+				1 && (sv->tokens[sv->j++] = sv->buffer, sv->buffer = NULL);
+			i++;
+			continue ;
+		}
+		sv->buffer = extract_word(sv->buffer, c);
+		i++;
+	}
+}
+
+char	**get_tokens_with_redirection(char *cmd_line)
+{
+	char		**tokens;
+	t_ft_var	*split_var;
+
+	split_var = malloc(sizeof(t_ft_var));
+	if (!split_var)
+		return (NULL);
+	split_var->j = 0;
+	split_var->buffer = NULL;
 	tokens = malloc((count_tokens_with_redirection(cmd_line) + 1)
 			* sizeof(char *));
 	if (!tokens)
 		return (NULL);
-	while (cmd_line[i])
-	{
-		c = cmd_line[i];
-		if (c == 39 && !is_double_quote)
-			is_single_quote = !is_single_quote;
-		else if (c == '"' && !is_single_quote)
-			is_double_quote = !is_double_quote;
-		if (!is_single_quote && !is_double_quote && (c == '>' || c == '<'))
-		{
-			if (buffer)
-			{
-				tokens[k++] = buffer;
-				buffer = NULL;
-			}
-			if (c == '>' && cmd_line[i + 1] == '>')
-			{
-				tokens[k++] = ft_strdup(">>");
-				i += 2;
-				continue ;
-			}
-			else if (c == '<' && cmd_line[i + 1] == '<')
-			{
-				tokens[k++] = ft_strdup("<<");
-				i += 2;
-				continue ;
-			}
-			else
-			{
-				op = extract_word(NULL, c);
-				tokens[k++] = op;
-				i++;
-				continue ;
-			}
-		}
-		if (!is_single_quote && !is_double_quote && c == ' ')
-		{
-			if (buffer)
-			{
-				tokens[k++] = buffer;
-				buffer = NULL;
-			}
-			i++;
-			continue ;
-		}
-		buffer = extract_word(buffer, c);
-		i++;
-	}
-	if (buffer)
-		tokens[k++] = buffer;
-	tokens[k] = NULL;
+	split_var->tokens = tokens;
+	loop_tokens_wr(cmd_line, split_var);
+	if (split_var->buffer)
+		tokens[split_var->j++] = split_var->buffer;
+	tokens[split_var->j] = NULL;
 	return (tokens);
 }
 
-char	*join_cmd_args(char *cmd_line)
+char	*get_command(char **tokens, size_t i, char *tmp, char *cmd_arg)
 {
-	size_t	i;
-	char	*cmd_arg;
-	char	**tokens;
-	char	*tmp;
-
-	i = 0;
-	cmd_arg = NULL;
-	tokens = get_tokens_with_redirection(cmd_line);
-	if (!tokens)
-		return (NULL);
-	if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
-		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2))
-		|| (ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], "<", 1))
-		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], "<<", 2)))
-	{
-		i++;
-		if (tokens[i])
-			i++;
-	}
 	while (tokens[i])
 	{
 		if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
@@ -360,6 +388,29 @@ char	*join_cmd_args(char *cmd_line)
 			i++;
 		}
 	}
+	return (cmd_arg);
+}
+
+char	*join_cmd_args(char *cmd_line)
+{
+	size_t	i;
+	char	**tokens;
+	char	*cmd_arg;
+
+	i = 0;
+	tokens = get_tokens_with_redirection(cmd_line);
+	if (!tokens)
+		return (NULL);
+	if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
+		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2))
+		|| (ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], "<", 1))
+		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], "<<", 2)))
+	{
+		i++;
+		if (tokens[i])
+			i++;
+	}
+	cmd_arg = get_command(tokens, i, NULL, NULL);
 	i = 0;
 	while (tokens[i])
 		free(tokens[i++]);

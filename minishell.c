@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/25 13:13:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/25 23:37:46 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,7 +229,8 @@ void	join_herdoc(t_var_redirect *var_redirection, char *input_herdoc)
 	char	*input_herdoc_dollar;
 	char	*tmp;
 
-	input_herdoc_dollar = ft_dollar(input_herdoc, var_redirection->variables);
+	input_herdoc_dollar = ft_dollar(input_herdoc,
+			var_redirection->variables, 0, 0);
 	tmp = var_redirection->join_herdoc;
 	var_redirection->join_herdoc = ft_strjoin(var_redirection->join_herdoc,
 			input_herdoc_dollar);
@@ -485,7 +486,7 @@ short	init_pipe(char *cmd_line, t_var_redirect *var_redirection,
 	if (fd_pipe > 0)
 		var_redirection->pipe_output = read_fd(fd_pipe);
 	cmd_args = join_cmd_args(cmd_line);
-	var_redirection->tokens = split_command(cmd_args, ' ', 1,
+	var_redirection->tokens = split_command(cmd_args, 1,
 			var_redirection->variables);
 	free_array(var_redirection->tokens, 1, var_redirection->variables);
 	free(cmd_args);
@@ -519,7 +520,7 @@ short	final_setup_pipe(t_var_redirect *var_redirection,
 	return (1);
 }
 
-char	*redirections(char *cmd_line, int fd_pipe, t_var *variables)
+char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
 {
 	t_var_redirect	*var_redirection;
 	int				fd[2];
@@ -544,7 +545,8 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables)
 		close(var_redirection->fd_file_output);
 	if (!var_redirection->output_cmd)
 		return (free(var_redirection), NULL);
-	return (free(var_redirection), ft_strdup(var_redirection->output_cmd));
+	return (s = ft_strdup(var_redirection->output_cmd), free(var_redirection),
+		s);
 }
 
 short	is_empty_token(char *token)
@@ -751,10 +753,10 @@ pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 	{
 		if (i)
 			in_fd = pipe_fd[(i - 1) * 2];
-		varpipe->tokens = split_command(split_pipe[i], ' ', 1, variables);
+		varpipe->tokens = split_command(split_pipe[i], 1, variables);
 		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
 			varpipe->redirections_output = redirections(split_pipe[i],
-					in_fd, variables);
+					in_fd, variables, NULL);
 		pid = child_pipe(i, tokens_count, pipe_fd, varpipe);
 		free_array(varpipe->tokens, 0, variables);
 		i++;
@@ -864,7 +866,7 @@ short	redirections_pipe(char **tokens, char *cmd_line, t_var *variables)
 	}
 	else if (is_exist_redirect_pipe(cmd_line, 'r'))
 	{
-		redirection_output = redirections(cmd_line, -1, variables);
+		redirection_output = redirections(cmd_line, -1, variables, NULL);
 		if (redirection_output)
 			printf("%s", redirection_output);
 		return (1);
@@ -919,7 +921,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 		if (!command[0])
 			continue ;
 		add_history(command);
-		tokens = split_command(command, ' ', 1, variables);
+		tokens = split_command(command, 1, variables);
 		free_array(tokens, 1, variables);
 		if (redirections_pipe(tokens, command, variables)
 			|| builtin_commands(tokens, copy_env, variables))
