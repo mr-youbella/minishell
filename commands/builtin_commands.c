@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:50:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 06:30:35 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 16:25:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,4 +81,45 @@ short	builtin_commands(char **tokens, char **copy_env, t_var *variables)
 	if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))
 		return (env_cmd(1, variables), ft_status(0, 0));
 	return (builtin_commands2(tokens, variables));
+}
+
+static void	check_exit_args(char **tokens, int *status)
+{
+	if (*status == -3)
+	{
+		ft_putstr_fd("\033[34minishell: \033[0mexit: ", 2);
+		ft_putstr_fd("\033[31mnumeric argument required.\033[0m\n", 2);
+		*status = ft_status(255, 1);
+	}
+	else if (tokens[2])
+	{
+		*status = -2;
+		ft_putstr_fd("\033[34mminishell:\033[0m exit: ", 2);
+		ft_putstr_fd("\033[31mtoo many arguments.\033[0m\n", 2);
+		ft_status(1, 1);
+	}
+}
+
+void	exit_cmd(char **copy_env, t_var *variables,
+				char **tokens, short is_print)
+{
+	int	status;
+
+	status = -2;
+	if (is_print)
+		printf(RED "exit\n" DEF);
+	if (!tokens || !tokens[1])
+		status = ft_status(0, 0);
+	else if (tokens[1])
+	{
+		status = ft_atoi(tokens[1]);
+		check_exit_args(tokens, &status);
+	}
+	if (status != -2)
+	{
+		free(copy_env);
+		free_leaks(variables);
+		free(variables);
+		exit(status);
+	}
 }
