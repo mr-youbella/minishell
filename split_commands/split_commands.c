@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_commands.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 02:58:15 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 02:59:45 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:48:10 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ static short	check_tokens(size_t *k, size_t *i, size_t *j,
 		if (split_var->buffer)
 		{
 			split_var->new_tokens[(*k)++] = split_var->buffer;
+			free(split_var->buffer);
 			split_var->buffer = NULL;
 		}
 		while ((split_var->tokens[*i][*j] == ' '
@@ -101,14 +102,15 @@ char	**split_command(char *cmd_line, short is_dollar, t_var *variables)
 
 	split_var = malloc(sizeof(t_ft_var));
 	if (!split_var)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
+	ft_memset(split_var, 0, sizeof(t_ft_var));
 	i = 0;
 	tokens = split_commmand_with_quotes(cmd_line, ' ', is_dollar, variables);
 	if (!tokens)
-		return (NULL);
+		return (free(split_var), NULL);
 	new_tokens = ft_calloc(count_words(tokens) + 1, sizeof(char *));
 	if (!new_tokens)
-		return (NULL);
+		return (free(split_var), free(tokens), NULL);
 	split_var->tokens = tokens;
 	split_var->new_tokens = new_tokens;
 	loop_splitcmd(0, split_var);
@@ -116,5 +118,5 @@ char	**split_command(char *cmd_line, short is_dollar, t_var *variables)
 	while (tokens[i])
 		free(tokens[i++]);
 	free(tokens);
-	return (new_tokens);
+	return (free(split_var), new_tokens);
 }

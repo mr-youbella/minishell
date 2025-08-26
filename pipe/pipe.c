@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:14:59 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:30:18 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 11:28:53 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,11 @@ static int	child_pipe(size_t i, size_t tokens_count,
 			varpipe->variables->copy_env, varpipe->variables);
 	}
 	close_fdpipe(pid, i, tokens_count, pipe_fd);
+	if (varpipe->redirections_output)
+	{
+		free(varpipe->redirections_output);
+		varpipe->redirections_output = NULL;
+	}
 	return (pid);
 }
 
@@ -54,6 +59,9 @@ static pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 	t_var_pipe	*varpipe;
 
 	varpipe = malloc(sizeof(t_var_pipe));
+	if (!varpipe)
+		return (ft_status(1, 1), -3);
+	ft_memset(varpipe, 0, sizeof(t_var_pipe));
 	varpipe->split_pipe = split_pipe;
 	varpipe->variables = variables;
 	1 && (i = 0, in_fd = 0);
@@ -93,6 +101,8 @@ static void	ft_pipe_loop(char **split_pipe, t_var *variables)
 	}
 	i = 0;
 	pid = while_pipe(split_pipe, pipe_fd, tokens_count, variables);
+	if (pid == -3)
+		return ;
 	end_pipe(tokens_count, pipe_fd, pid, variables);
 	free(pipe_fd);
 	return ;

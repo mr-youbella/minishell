@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 06:48:58 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 08:13:09 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ static char	*print_sorted_env(t_var *variables, short is_return)
 		tmp = tmp->next;
 	}
 	env_array = malloc(sizeof(char *) * count);
+	if (!env_array)
+		return (ft_status(1, 1), NULL);
 	tmp = variables->environment;
 	while (variables->i < count)
 	{

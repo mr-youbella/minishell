@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 07:52:16 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 14:13:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,12 @@ static void	handle_sigquit(pid_t pid)
 	if (pid > 0)
 	{
 		printf("^\\Quit: 3\n");
-		if (g_signal_flag)
+		if (g_signal_flag > 0)
 			ft_status(131, 1);
 	}
 	else
 	{
 		rl_on_new_line();
-		rl_replace_line("", 0);
 		rl_redisplay();
 	}
 }
@@ -46,12 +45,17 @@ static void	handle_signal(int sig_num)
 	{
 		if (sig_num == SIGINT)
 			1 && (close(0), ft_status(1, 1), printf("\n"));
+		else if (sig_num == SIGQUIT)
+		{
+			rl_on_new_line();
+			rl_redisplay();
+		}
 	}
 	else if (sig_num == SIGINT)
 	{
 		if (pid > 0)
 		{
-			if (g_signal_flag)
+			if (g_signal_flag > 0)
 				1 && (printf("^C\n"), ft_status(130, 1));
 		}
 		else
@@ -72,8 +76,14 @@ static void	setup_terminal(struct termios *ctr)
 	signal(SIGQUIT, handle_signal);
 }
 
+// void	f(void)
+// {
+// 	system("leaks minishell");
+// }
+
 int	main(int argc, char **argv, char **env)
 {
+	// atexit(f);
 	t_var			*variables;
 	int				status;
 	pid_t			pid;
@@ -84,6 +94,9 @@ int	main(int argc, char **argv, char **env)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
 	status = 0;
 	variables = malloc(sizeof(t_var));
+	if (!variables)
+		return (ft_status(1, 1), 1);
+	ft_memset(variables, 0, sizeof(t_var));
 	1 && (variables->cd_flag = 0, variables->env = env);
 	1 && (variables->environment = NULL, variables->export_list = NULL);
 	1 && (variables->leaks = NULL, variables->cd_flag = 0);

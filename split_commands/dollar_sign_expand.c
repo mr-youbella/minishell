@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dollar_sign_expand.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 04:00:50 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:30:10 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ static size_t	len_str(char *str, t_var *variables)
 
 	dollar_var = malloc(sizeof(t_dollar));
 	if (!dollar_var)
-		return (0);
+		return (ft_status(1, 1), 0);
+	ft_memset(dollar_var, 0, sizeof(t_dollar));
 	1 && (i = 0, quote = 0);
 	1 && (dollar_var->len = 0, dollar_var->str = str);
 	while (str[i])
@@ -37,7 +38,8 @@ static size_t	len_str(char *str, t_var *variables)
 		i++;
 		dollar_var->len++;
 	}
-	return (dollar_var->len);
+	i = dollar_var->len;
+	return (free(dollar_var), i);
 }
 
 static void	dollar_expand(char *result, t_dollar *dollar_var, t_var *variables)
@@ -112,12 +114,13 @@ char	*ft_dollar(char *str, t_var *variables, size_t len, char quote)
 
 	dollar_var = malloc(sizeof(t_dollar));
 	if (!dollar_var)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
+	ft_memset(dollar_var, 0, sizeof(t_dollar));
 	1 && (dollar_var->i = 0, dollar_var->j = 0);
 	1 && (quote = 0, dollar_var->str = str);
 	1 && (len = len_str(str, variables), result = malloc(len + 1));
 	if (!result)
-		return (NULL);
+		return (free(dollar_var), ft_status(1, 1), NULL);
 	while (str[dollar_var->i])
 	{
 		if (str[dollar_var->i] == 39 || str[dollar_var->i] == '"')
@@ -131,5 +134,5 @@ char	*ft_dollar(char *str, t_var *variables, size_t len, char quote)
 			continue ;
 		result[dollar_var->j++] = str[dollar_var->i++];
 	}
-	return (result[dollar_var->j] = 0, result);
+	return (result[dollar_var->j] = 0, free(dollar_var), result);
 }

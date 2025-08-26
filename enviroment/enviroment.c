@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 07:04:33 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 08:13:13 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ char	**copy_environment(char	**env)
 		i++;
 	copy_env = malloc((i + 1) * sizeof(char *));
 	if (!copy_env)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
 	i = 0;
 	while (env[i])
 	{

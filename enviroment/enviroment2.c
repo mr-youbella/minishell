@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:03:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 07:02:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:27:32 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,9 @@ t_list	*all_env(char *var_export, char *var_unset,
 	t_env	*env_var;
 
 	env_var = malloc(sizeof(t_env));
+	if (!env_var)
+		return (ft_status(1, 1), NULL);
+	ft_memset(env_var, 0, sizeof(t_env));
 	env_var->var_export = var_export;
 	env_var->var_unset = var_unset;
 	env_var->is_export_cmd = variables->is_export_cmd;
@@ -134,6 +137,6 @@ t_list	*all_env(char *var_export, char *var_unset,
 	if (!env_export || env_export == 2)
 		get_export(variables, &enviroment, env_var);
 	if (is_just_changed(env_var, enviroment))
-		return (variables->is_export_cmd = 0, NULL);
-	return (variables->is_export_cmd = 0, enviroment);
+		return (free(env_var), variables->is_export_cmd = 0, NULL);
+	return (free(env_var), variables->is_export_cmd = 0, enviroment);
 }

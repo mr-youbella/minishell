@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 06:29:50 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 14:25:22 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,8 @@ short	setup_redirections(char **tokens_redirections,
 			return (0);
 		herdoc(redirc->type_redirection, redirc->file_name,
 			var_redirection);
+		if (g_signal_flag == -3)
+			return (free(var_redirection->join_herdoc), g_signal_flag = 0, 0);
 		if (!redirect_input(redirc->type_redirection,
 				redirc->file_name, var_redirection))
 			return (0);
@@ -132,5 +134,5 @@ pid_t	create_process_redirection(t_var_redirect *var_redirection,
 			execve(var_redirection->path_cmd, tokens, variables->env);
 		exit(ft_status(0, 0));
 	}
-	return (var_redirection->pid);
+	return (free(var_redirection->cmd_result), var_redirection->pid);
 }

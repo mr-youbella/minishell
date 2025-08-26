@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_tokens_with_redirect.c                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:07:57 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:27:43 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:30:56 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,17 +77,18 @@ char	**get_tokens_with_redirection(char *cmd_line)
 
 	split_var = malloc(sizeof(t_ft_var));
 	if (!split_var)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
+	ft_memset(split_var, 0, sizeof(t_ft_var));
 	split_var->j = 0;
 	split_var->buffer = NULL;
 	tokens = malloc((count_tokens_with_redirection(cmd_line) + 1)
 			* sizeof(char *));
 	if (!tokens)
-		return (NULL);
+		return (free(split_var), ft_status(1, 1), NULL);
 	split_var->tokens = tokens;
 	loop_tokens_wr(cmd_line, split_var);
 	if (split_var->buffer)
 		tokens[split_var->j++] = split_var->buffer;
 	tokens[split_var->j] = NULL;
-	return (tokens);
+	return (free(split_var), tokens);
 }

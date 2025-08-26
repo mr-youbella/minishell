@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils_split_commands.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:01:42 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:56:26 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:31:18 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,8 @@ size_t	count_tokens_with_redirection(char *cmd_line)
 
 	split_var = malloc(sizeof(t_ft_var));
 	if (!split_var)
-		return (0);
+		return (ft_status(1, 1), 0);
+	ft_memset(split_var, 0, sizeof(t_ft_var));
 	1 && (split_var->j = 0, count = 0, split_var->is_s_quote = 0);
 	1 && (split_var->is_s_quote = 0, split_var->is_d_quote = 0);
 	split_var->in_token = 0;
@@ -114,5 +115,5 @@ size_t	count_tokens_with_redirection(char *cmd_line)
 	}
 	if (split_var->in_token)
 		count++;
-	return (count);
+	return (free(split_var), count);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_command.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:29:53 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 13:48:08 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,9 @@ static void	exec_commands(char **tokens, char **copy_env,
 	if (!path_cmd)
 		return ;
 	pid = fork();
-	if (pid == 0)
+	if (pid < 0)
+		return ;
+	if (!pid)
 	{
 		execve(path_cmd, tokens, copy_env);
 		ft_putstr_fd("\033[34mminishell: \033[31m", 2);
@@ -58,7 +60,7 @@ static short	is_redirections_pipe(char **tokens,
 		redirection_output = redirections(cmd_line, -1, variables, NULL);
 		if (redirection_output)
 			printf("%s", redirection_output);
-		return (1);
+		return (free(redirection_output), 1);
 	}
 	return (0);
 }
@@ -69,6 +71,7 @@ static char	*ft_readline(char *pwd, size_t i, char *cmd_line)
 	char	*last_dir;
 	char	*last_dir_tmp;
 
+	last_dir = NULL;
 	if (ft_strlen(pwd) == 1 && !ft_strncmp(pwd, "/", 1))
 		last_dir = ft_strdup("/");
 	else
@@ -76,16 +79,18 @@ static char	*ft_readline(char *pwd, size_t i, char *cmd_line)
 		path = ft_split(pwd, '/');
 		while (path && path[i])
 			last_dir = path[i++];
-		last_dir = ft_strdup(last_dir);
+		if (last_dir)
+			last_dir = ft_strdup(last_dir);
 		free_array(path, 0, NULL);
 	}
 	last_dir_tmp = ft_strjoin("\033[1;94m", last_dir);
 	free(last_dir);
 	last_dir = ft_strjoin(last_dir_tmp, "\033[0m");
 	free(last_dir_tmp);
-	last_dir_tmp = ft_strjoin("\033[32m➥\033[0m ", last_dir);
 	if (ft_status(0, 0))
 		last_dir_tmp = ft_strjoin("\033[31m➥\033[0m ", last_dir);
+	else
+		last_dir_tmp = ft_strjoin("\033[32m➥\033[0m ", last_dir);
 	free(last_dir);
 	last_dir = ft_strjoin(last_dir_tmp, " ");
 	free(last_dir_tmp);

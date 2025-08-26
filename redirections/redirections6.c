@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections6.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:18:44 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:38:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:29:17 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ t_redirections	*craete_new_node(char *redirect_type, char *file)
 
 	node = malloc(sizeof(t_redirections));
 	if (!node)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
+	ft_memset(node, 0, sizeof(t_redirections));
 	node->type_redirection = redirect_type;
 	node->file_name = file;
 	node->next = NULL;
@@ -58,7 +59,7 @@ char	*read_fd(int fd)
 	file_content = NULL;
 	buffer = malloc(43);
 	if (!buffer)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
 	buffer[0] = 0;
 	while (1)
 	{
@@ -70,7 +71,7 @@ char	*read_fd(int fd)
 		file_content = ft_strjoin(file_content, buffer);
 		free(tmp);
 		if (!file_content)
-			return (NULL);
+			return (free(buffer), NULL);
 	}
 	return (free(buffer), file_content);
 }

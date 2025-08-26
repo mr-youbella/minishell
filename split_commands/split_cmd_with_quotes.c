@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_cmd_with_quotes.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:00:35 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:01:02 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:31:06 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,12 +125,14 @@ char	**split_commmand_with_quotes(char *command, char c,
 										short is_dollar, t_var *variables)
 {
 	t_ft_var	*split_var;
+	char		**tokens;
 
 	if (!command)
 		return (NULL);
 	split_var = malloc(sizeof(t_ft_var));
 	if (!split_var)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
+	ft_memset(split_var, 0, sizeof(t_ft_var));
 	split_var->is_space = 0;
 	if (c == ' ')
 		split_var->is_space = 1;
@@ -141,9 +143,10 @@ char	**split_commmand_with_quotes(char *command, char c,
 			sizeof(char *));
 	split_var->j = 0;
 	if (!split_var->tokens)
-		return (NULL);
+		return (free(split_var), NULL);
 	loop_split_with_quotes(command, c, 0, split_var);
 	if (!finishe_split_with_quotes(split_var, variables, is_dollar))
-		return (NULL);
-	return (split_var->tokens);
+		return (free(split_var), NULL);
+	tokens = split_var->tokens;
+	return (free(split_var), tokens);
 }

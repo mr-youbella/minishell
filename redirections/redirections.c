@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:15:39 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 11:15:41 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ static char	*close_pipe(pid_t pid, t_var_redirect *var_redirection,
 	char	*output_cmd;
 	int		status;
 
+	status = 0;
 	if (pid > 0)
 	{
 		g_signal_flag = pid;
@@ -117,10 +118,11 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
 
 	var_redirection = malloc(sizeof(t_var_redirect));
 	if (!var_redirection)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
+	ft_memset(var_redirection, 0, sizeof(t_var_redirect));
 	var_redirection->variables = variables;
 	if (!init_pipe(cmd_line, var_redirection, fd_pipe, fd))
-		return (NULL);
+		return (free(var_redirection), NULL);
 	else if (fd_pipe > 0)
 	{
 		if (var_redirection->pipe_output)
@@ -130,11 +132,11 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
 			write(fd[1], "", 0);
 	}
 	if (!final_setup_pipe(var_redirection, variables, fd))
-		return (NULL);
+		return (free(var_redirection), NULL);
 	if (var_redirection->fd_file_output > 0)
 		close(var_redirection->fd_file_output);
 	if (!var_redirection->output_cmd)
 		return (free(var_redirection), NULL);
-	return (s = ft_strdup(var_redirection->output_cmd), free(var_redirection),
-		s);
+	return (s = ft_strdup(var_redirection->output_cmd),
+			free(var_redirection->output_cmd), free(var_redirection), s);
 }

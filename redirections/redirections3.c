@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:14:53 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 07:49:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 14:22:31 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void	herdoc(char *type_redirection, char *file_name,
 				break ;
 			join_herdoc(var_redirection, input_herdoc);
 		}
-		1 && (g_signal_flag = 0, dup2(in_fd, 0), close(in_fd));
+		1 && (dup2(in_fd, 0), close(in_fd));
 	}
 }
 

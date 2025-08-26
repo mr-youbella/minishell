@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections4.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 03:39:40 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:30:38 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,8 @@ t_redirections	*list_redirections(char **tokens, t_var *variables)
 
 	list_var = malloc(sizeof(t_ft_var));
 	if (!list_var)
-		return (NULL);
+		return (ft_status(1, 1), NULL);
+	ft_memset(list_var, 0, sizeof(t_ft_var));
 	1 && (list_var->j = 0, list = NULL);
 	while (tokens[list_var->j])
 	{
@@ -55,12 +56,12 @@ t_redirections	*list_redirections(char **tokens, t_var *variables)
 		if (!return_val)
 			continue ;
 		if (return_val == -1)
-			return (NULL);
+			return (free(list_var), NULL);
 		add_redirections(tokens, list_var, &new_node, variables);
 		add_node_in_back(&list, new_node);
 		list_var->j++;
 	}
-	return (list);
+	return (free(list_var), list);
 }
 
 static char	*get_command(char **tokens, size_t i, char *tmp, char *cmd_arg)

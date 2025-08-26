@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections5.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:18:01 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:55:59 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 10:30:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,8 @@ short	is_ambiguous_redirect(char *token, t_var *variables)
 
 	var = malloc(sizeof(t_ft_var));
 	if (!var)
-		return (0);
+		return (ft_status(1, 1), 0);
+	ft_memset(var, 0, sizeof(t_ft_var));
 	var->j = 0;
 	while (token[var->j])
 	{
@@ -93,9 +94,9 @@ short	is_ambiguous_redirect(char *token, t_var *variables)
 		if (!token[var->j])
 			break ;
 		if (check_ambiguous_dollar(token, variables, var))
-			return (1);
+			return (free(var), 1);
 	}
-	return (0);
+	return (free(var), 0);
 }
 
 short	check_syntax_redirect(char **tokens, t_ft_var *list_var)
