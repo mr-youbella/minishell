@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 00:23:44 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 01:35:20 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,10 @@ typedef struct s_var
 	size_t			i;
 	t_list			*export_list;
 	t_list			*environment;
-	t_list 			*leaks;
+	t_list			*leaks;
 	char			*export;
-	char 			**env;
-	char 			**copy_env;
+	char			**env;
+	char			**copy_env;
 	short			cd_flag;
 	char			*old_pwd;
 	short			is_return;
@@ -104,7 +104,7 @@ typedef struct s_ft_var
 	char	**new_tokens;
 	short	is_space;
 	short	is_dollar;
-	t_var 	*variables;
+	t_var	*variables;
 	size_t	c_single_quote;
 	size_t	c_double_quotes;
 	short	is_d_quote;
@@ -117,29 +117,31 @@ short			check_export_arg(char *arg);
 short			check_unset_arg(char *arg);
 short			is_exist_redirect_pipe(char *cmd_line, char redirect_pipe);
 t_redirections	*list_redirections(char **tokens, t_var *variables);
-char	*ft_getenv(char *var, t_var *variables);
-t_list	*all_env(char *var_export, char *var_unset, short env_export, t_var *variables);
-short	is_exist_var(char *var, t_var *variables, t_list *export_list);
-
-char	*is_there_cmd(char **tokens, t_var *variables);
-char	*search_cmd(char *cmd, t_var *variables);
+char			*ft_getenv(char *var, t_var *variables);
+t_list			*all_env(char *var_export, char *var_unset,
+					short env_export, t_var *variables);
+short			is_exist_var(char *var, t_var *variables, t_list *export_list);
+char			*is_there_cmd(char **tokens, t_var *variables);
+char			*search_cmd(char *cmd, t_var *variables);
 char			*echo_cmd(char **tokens, short is_return);
-t_list	*env_cmd(short is_print, t_var *variables);
-char	*export_cmd(char **tokens, short is_return, t_var *variables);
-void	unset_cmd(char **tokens,t_var *variables);
-void	cd_cmd(char *tokens, t_var *variables);
+t_list			*env_cmd(short is_print, t_var *variables);
+char			*export_cmd(char **tokens, short is_return, t_var *variables);
+void			unset_cmd(char **tokens, t_var *variables);
+void			cd_cmd(char *tokens, t_var *variables);
 char			*pwd_cmd(short is_print);
-void	exit_cmd(char **copy_env, t_var *variables, char **tokens, short is_print);
-
+void			exit_cmd(char **copy_env, t_var *variables,
+					char **tokens, short is_print);
 char			*join_cmd_args(char *cmd_line);
 char			*extract_word(char *str, char c);
-char	*ft_dollar(char *str, t_var *variables, size_t len, char quote);
+char			*ft_dollar(char *str, t_var *variables, size_t len, char quote);
 char			**get_tokens_with_redirection(char *cmd_line);
 int				ft_status(int status, short is_change);
 short			is_exist_in_env(char *str, char **env, long position);
+char			**split_commmand_with_quotes(char *command, char c,
+					short is_dollar, t_var *variables);
+char			**split_command(char *cmd_line, short is_dollar,
+					t_var *variables);
+void			free_leaks(t_var *variables);
+short			is_buitin_cmd(char *token);
 
-char	**split_commmand_with_quotes(char *command, char c, short is_dollar, t_var *variables);
-char	**split_command(char *cmd_line, short is_dollar, t_var *variables);
-void	free_leaks(t_var *variables);
-short	is_buitin_cmd(char *token);
 #endif

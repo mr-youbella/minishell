@@ -6,27 +6,19 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 12:23:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 00:40:39 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 01:30:07 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char	*search_cmd(char *cmd, t_var *variables)
+char	*search_in_path(char *cmd, char **split_env_path)
 {
-	int		i;
-	char	*env_path;
-	char	**split_env_path;
+	size_t	i;
 	char	*join_cmd_to_path;
 	char	*tmp;
 
 	i = 0;
-	if (!cmd[0])
-		return (NULL);
-	if (cmd[0] == '/')
-		return (ft_strdup(cmd));
-	env_path = ft_getenv("PATH", variables);
-	split_env_path = ft_split(env_path, ':');
 	while (split_env_path && split_env_path[i])
 	{
 		join_cmd_to_path = ft_strjoin(split_env_path[i], "/");
@@ -44,6 +36,26 @@ char	*search_cmd(char *cmd, t_var *variables)
 		free(join_cmd_to_path);
 		i++;
 	}
+	return (NULL);
+}
+
+char	*search_cmd(char *cmd, t_var *variables)
+{
+	size_t	i;
+	char	*env_path;
+	char	**split_env_path;
+	char	*join_cmd_to_path;
+
+	i = 0;
+	if (!cmd[0])
+		return (NULL);
+	if (cmd[0] == '/')
+		return (ft_strdup(cmd));
+	env_path = ft_getenv("PATH", variables);
+	split_env_path = ft_split(env_path, ':');
+	join_cmd_to_path = search_in_path(cmd, split_env_path);
+	if (join_cmd_to_path)
+		return (join_cmd_to_path);
 	i = 0;
 	while (split_env_path && split_env_path[i])
 		free(split_env_path[i++]);
@@ -51,45 +63,53 @@ char	*search_cmd(char *cmd, t_var *variables)
 	return (NULL);
 }
 
-char	*is_there_cmd(char **tokens, t_var *variables)
+short	is_directory(char **tokens)
 {
-	char			*path_cmd;
-	int				fd;
-	struct stat		file;
+	int	fd;
 
-
-	if (stat(tokens[0], &file) == 0 && S_ISDIR(file.st_mode))
-	{
-		ft_putstr_fd("\033[34mminishell: \033[31m", 2);
-		ft_putstr_fd(tokens[0], 2);
-		ft_putstr_fd("\033[0m is a directory.\n", 2);
-		ft_status(126, 1);
-		return (NULL);
-	}
 	if (is_buitin_cmd(tokens[0]))
-		return (NULL);
+		return (-1);
 	if ((tokens[0][0] == '.' && tokens[0][1] == '/')
 		|| (tokens[0][0] == '.' && tokens[0][1] == '.' & tokens[0][2] == '/'))
 	{
 		fd = open(tokens[0], O_RDONLY);
 		if (fd < 0)
 		{
-			write(2, "\033[31mminishell: \033[34m", ft_strlen("\033[31mminishell: \033[34m"));
-			write(2, tokens[0], ft_strlen(tokens[0]));
+			ft_putstr_fd("\033[31mminishell: \033[34m", 2);
+			ft_putstr_fd(tokens[0], 2);
 			ft_putstr_fd("\033[0m: No such file or directory.\n", 2);
-			ft_status(127, 1);
-			return (NULL);
+			return (ft_status(127, 1), -1);
 		}
-		return (ft_strdup(tokens[0]));
+		return (1);
 	}
+	return (0);
+}
+
+char	*is_there_cmd(char **tokens, t_var *variables)
+{
+	char		*path_cmd;
+	short		check_return;
+	struct stat	file;
+
+	if (stat(tokens[0], &file) == 0 && S_ISDIR(file.st_mode))
+	{
+		ft_putstr_fd("\033[34mminishell: \033[31m", 2);
+		ft_putstr_fd(tokens[0], 2);
+		ft_putstr_fd("\033[0m is a directory.\n", 2);
+		return (ft_status(126, 1), NULL);
+	}
+	check_return = is_directory(tokens);
+	if (check_return == 1)
+		return (ft_strdup(tokens[0]));
+	if (check_return == -1)
+		return (NULL);
 	path_cmd = search_cmd(tokens[0], variables);
 	if (!path_cmd)
 	{
-		write(2, "\033[34mminishell: \033[31m", ft_strlen("\033[34mminishell: \033[34m"));
-		write(2, tokens[0], ft_strlen(tokens[0]));
-		write(2, "\033[0m command not found.\n", ft_strlen("\033[0m command not found.\n"));
-		ft_status(127, 1);
-		return (NULL);
+		ft_putstr_fd("\033[34mminishell: \033[31m", 2);
+		ft_putstr_fd(tokens[0], 2);
+		ft_putstr_fd("\033[0m command not found.\n", 2);
+		return (ft_status(127, 1), NULL);
 	}
 	return (path_cmd);
 }
@@ -110,27 +130,16 @@ short	check_option_echo(char *token)
 	return (1);
 }
 
-char	*echo_cmd(char **tokens, short is_return)
+void	echo_all_args(char **tokens, short is_return, char **echo, size_t j)
 {
-	int		j;
-	short	is_op_echo;
-	char	*echo;
 	char	*tmp;
 
-	j = 1;
-	is_op_echo = 0;
-	echo = NULL;
-	while (tokens[j] && check_option_echo(tokens[j]))
-	{
-		is_op_echo = 1;
-		j++;
-	}
 	while (tokens[j])
 	{
 		if (is_return)
 		{
-			tmp = echo;
-			echo = ft_strjoin(echo, tokens[j]);
+			tmp = *echo;
+			*echo = ft_strjoin(*echo, tokens[j]);
 			free(tmp);
 		}
 		else
@@ -139,8 +148,8 @@ char	*echo_cmd(char **tokens, short is_return)
 		{
 			if (is_return)
 			{
-				tmp = echo;
-				echo = ft_strjoin(echo, " ");
+				tmp = *echo;
+				*echo = ft_strjoin(*echo, " ");
 				free(tmp);
 			}
 			else
@@ -148,6 +157,22 @@ char	*echo_cmd(char **tokens, short is_return)
 		}
 		j++;
 	}
+}
+
+char	*echo_cmd(char **tokens, short is_return)
+{
+	size_t	j;
+	short	is_op_echo;
+	char	*echo;
+	char	*tmp;
+
+	1 && (j = 1, is_op_echo = 0, echo = NULL);
+	while (tokens[j] && check_option_echo(tokens[j]))
+	{
+		is_op_echo = 1;
+		j++;
+	}
+	echo_all_args(tokens, is_return, &echo, j);
 	if (!is_op_echo)
 	{
 		if (is_return)
@@ -163,28 +188,14 @@ char	*echo_cmd(char **tokens, short is_return)
 	return (echo);
 }
 
-t_list	*env_cmd(short is_print, t_var *variables)
+void	print_environment(short is_print, t_list *copy_environment)
 {
-	t_list	*environment;
-	t_list	*all_environment;
-	t_list	*copy_environment;
-	t_list	*new_leak;
-	size_t	i;
 	short	is_with_value;
+	size_t	i;
 
-	all_environment = all_env(NULL, NULL, 0, variables);
-	environment = all_environment;
-	while (all_environment)
-	{
-		new_leak = ft_lstnew(all_environment);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		all_environment = all_environment->next;
-	}
-	copy_environment = environment;
 	while (is_print && copy_environment)
 	{
-		is_with_value = 0;
-		i = 0;
+		1 && (is_with_value = 0, i = 0);
 		while (((char *)copy_environment->content)[i])
 		{
 			if (((char *)copy_environment->content)[i] == '=')
@@ -198,33 +209,52 @@ t_list	*env_cmd(short is_print, t_var *variables)
 			printf("%s\n", (char *)copy_environment->content);
 		copy_environment = copy_environment->next;
 	}
+}
+
+t_list	*env_cmd(short is_print, t_var *variables)
+{
+	t_list	*environment;
+	t_list	*all_environment;
+	t_list	*copy_environment;
+	t_list	*new_leak;
+
+	all_environment = all_env(NULL, NULL, 0, variables);
+	environment = all_environment;
+	while (all_environment)
+	{
+		new_leak = ft_lstnew(all_environment);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		all_environment = all_environment->next;
+	}
+	copy_environment = environment;
+	print_environment(is_print, copy_environment);
 	return (environment);
 }
 
 void	cd_cmd(char *tokens, t_var *variables)
 {
 	char	*home;
-	
+
 	variables->cd_flag = 1;
 	home = ft_getenv("HOME", variables);
 	if (!tokens || (ft_strlen(tokens) == 1 && !ft_strncmp(tokens, "~", 1)))
 	{
 		if (!home)
 		{
-			write(2, "\033[34mminishell: \033[0mcd: \033[31mHOME not set.\033[0m\n", ft_strlen("\033[34mminishell: \033[0mcd: \033[31mHOME not set.\033[0m\n"));
-			ft_status(1, 1);
-			variables->cd_flag = 0;
+			ft_putstr_fd("\033[34mminishell: \033[0mcd: ", 2);
+			ft_putstr_fd("\033[31mHOME not set.\033[0m\n", 2);
+			1 && (ft_status(1, 1), variables->cd_flag = 0);
 		}
 		else
 			chdir(home);
 	}
 	else if (chdir(tokens) == -1)
 	{
-		write(2, "\033[34mminishell:\033[0m cd: no such file or directory: \033[31m", ft_strlen("\033[34mminishell:\033[0m cd: no such file or directory: \033[31m"));
-		write(2, tokens, ft_strlen(tokens));
-		write(2, "\033[0m\n", ft_strlen("\033[0m\n"));
-		ft_status(1, 1);
-		variables->cd_flag = 0;
+		ft_putstr_fd("\033[34mminishell:\033[0m ", 2);
+		ft_putstr_fd("cd: no such file or directory: \033[31m", 2);
+		ft_putstr_fd(tokens, 2);
+		ft_putstr_fd("\033[0m\n", 2);
+		1 && (ft_status(1, 1), variables->cd_flag = 0);
 	}
 }
 

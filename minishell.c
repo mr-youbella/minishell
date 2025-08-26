@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/25 23:37:46 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 01:30:25 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -961,11 +961,6 @@ char	**copy_environment(char	**env)
 	return (copy_env);
 }
 
-void	f(void)
-{
-	system("leaks minishell");
-}
-
 int	main(int argc, char **argv, char **env)
 {
 	t_var			*variables;
@@ -974,7 +969,6 @@ int	main(int argc, char **argv, char **env)
 	char			**copy_env;
 	struct termios	ctr;
 
-	// atexit(f);
 	if (argc != 1 && argv)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
 	status = 0;
