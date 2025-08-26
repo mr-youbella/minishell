@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 21:34:44 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 22:44:25 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,7 @@ static void	handle_signal(int sig_num)
 	if (g_signal_flag == -3)
 	{
 		if (sig_num == SIGINT)
-		{
-			g_signal_flag = -5;
-			1 && (close(0), ft_status(1, 1), printf("\n"));
-		}
+			1 && (g_signal_flag = -5, close(0), ft_status(1, 1), printf("\n"));
 	}
 	else if (sig_num == SIGINT)
 	{
@@ -115,7 +112,6 @@ int	main(int argc, char **argv, char **env)
 	char			**copy_env;
 	char			**new_env;
 	struct termios	ctr;
-\
 
 	if (argc != 1 && argv)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);

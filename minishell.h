@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 20:51:15 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 23:50:39 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,7 @@ typedef struct s_dollar
 	size_t	len;
 	size_t	i;
 	size_t	j;
+	char	quote;
 }	t_dollar;
 
 typedef struct s_ft_var
@@ -127,7 +128,7 @@ char			*extract_word(char *str, char c);
 short			is_unclose_quotes(size_t single_quote, size_t double_quotes);
 char			**get_tokens_with_redirection(char *cmd_line);
 size_t			count_tokens_with_redirection(char *cmd_line);
-char			*ft_dollar(char *str, t_var *variables, size_t len, char quote);
+char			*ft_dollar(char *str, t_var *variables, size_t len);
 short			len_dollar(size_t *i, char quote,
 					t_var *variables, t_dollar *dollar_var);
 // Redirections

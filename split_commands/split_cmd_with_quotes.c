@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   split_cmd_with_quotes.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:00:35 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 10:31:06 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 23:51:01 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ static void	split_word_with_quotes(char c, short *is_c, t_ft_var *split_var)
 		else
 		{
 			split_var->tokens[split_var->j] = ft_dollar(split_var->buffer,
-					split_var->variables, 0, is_space);
+					split_var->variables, is_space);
 			free(split_var->buffer);
 		}
 		split_var->buffer = NULL;
@@ -105,7 +105,7 @@ static short	finishe_split_with_quotes(t_ft_var *split_var,
 		else
 		{
 			split_var->tokens[split_var->j] = ft_dollar(split_var->buffer,
-					variables, 0, 0);
+					variables, 0);
 			free(split_var->buffer);
 		}
 	}

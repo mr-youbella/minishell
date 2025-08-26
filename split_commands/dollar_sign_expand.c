@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dollar_sign_expand.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 15:47:00 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 23:50:08 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,19 +85,19 @@ static void	change_val(char *result, t_dollar *dollar_var,
 }
 
 static short	dollar_sign(t_dollar *dollar_var, t_var *variables,
-						char quote, char *result)
+						char *result)
 {
 	if (dollar_var->str[dollar_var->i] == 39
 		|| dollar_var->str[dollar_var->i] == '"')
 	{
-		if (quote == 0)
-			quote = dollar_var->str[dollar_var->i];
-		else if (quote == dollar_var->str[dollar_var->i])
-			quote = 0;
+		if (dollar_var->quote == 0)
+			dollar_var->quote = dollar_var->str[dollar_var->i];
+		else if (dollar_var->quote == dollar_var->str[dollar_var->i])
+			dollar_var->quote = 0;
 	}
 	if (dollar_var->str[dollar_var->i] == '$')
 	{
-		if (dollar_var->str[dollar_var->i + 1] == '?' && quote != 39)
+		if (dollar_var->str[dollar_var->i + 1] == '?' && dollar_var->quote != 39)
 			return (dollar_expand(result, dollar_var, variables), 0);
 		else if (!ft_isalpha(dollar_var->str[dollar_var->i + 1])
 			&& dollar_var->str[dollar_var->i + 1] != '_')
@@ -105,7 +105,7 @@ static short	dollar_sign(t_dollar *dollar_var, t_var *variables,
 			result[dollar_var->j++] = dollar_var->str[dollar_var->i++];
 			return (0);
 		}
-		else if (quote != 39)
+		else if (dollar_var->quote != 39)
 		{
 			change_val(result, dollar_var, variables, 0);
 			return (0);
@@ -114,7 +114,7 @@ static short	dollar_sign(t_dollar *dollar_var, t_var *variables,
 	return (1);
 }
 
-char	*ft_dollar(char *str, t_var *variables, size_t len, char quote)
+char	*ft_dollar(char *str, t_var *variables, size_t len)
 {
 	char		*result;
 	t_dollar	*dollar_var;
@@ -124,13 +124,13 @@ char	*ft_dollar(char *str, t_var *variables, size_t len, char quote)
 		return (ft_status(1, 1), NULL);
 	ft_memset(dollar_var, 0, sizeof(t_dollar));
 	1 && (dollar_var->i = 0, dollar_var->j = 0);
-	1 && (quote = 0, dollar_var->str = str);
+	1 && (dollar_var->quote = 0, dollar_var->str = str);
 	1 && (len = len_str(str, variables), result = malloc(len + 1));
 	if (!result)
 		return (free(dollar_var), ft_status(1, 1), NULL);
 	while (str[dollar_var->i])
 	{
-		if (!dollar_sign(dollar_var, variables, quote, result))
+		if (!dollar_sign(dollar_var, variables, result))
 			continue ;
 		result[dollar_var->j++] = str[dollar_var->i++];
 	}

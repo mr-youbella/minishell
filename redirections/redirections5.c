@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections5.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:18:01 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 10:30:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 23:51:18 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ static short	check_ambiguous_dollar(char *str, t_var *variables,
 		while ((str[var->j]) && (ft_isalnum(str[var->j]) || str[var->j] == '_'))
 			1 && (var_len++, var->j++);
 		var_name = ft_substr(str, start, var_len + 1);
-		var_value = ft_dollar(var_name, variables, 0, 0);
+		var_value = ft_dollar(var_name, variables, 0);
 		free(var_name);
 		while (var_value[j])
 		{

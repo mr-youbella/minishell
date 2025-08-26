@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections3.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:14:53 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 18:11:58 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 23:51:11 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ static void	join_herdoc(t_var_redirect *var_redirection, char *input_herdoc)
 	char	*tmp;
 
 	input_herdoc_dollar = ft_dollar(input_herdoc,
-			var_redirection->variables, 0, 0);
+			var_redirection->variables, 0);
 	tmp = var_redirection->join_herdoc;
 	var_redirection->join_herdoc = ft_strjoin(var_redirection->join_herdoc,
 			input_herdoc_dollar);
