@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:21:02 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 07:52:16 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int	ft_status(int status, short is_change)
 	return (new_status);
 }
 
-void	handle_sigint(pid_t	pid)
+static void	handle_sigquit(pid_t pid)
 {
 	if (pid > 0)
 	{
@@ -37,35 +37,34 @@ void	handle_sigint(pid_t	pid)
 	}
 }
 
-void	handle_signal(int sig_num)
+static void	handle_signal(int sig_num)
 {
 	pid_t	pid;
 
 	pid = wait(NULL);
-	if (sig_num == SIGINT)
+	if (g_signal_flag == -3)
+	{
+		if (sig_num == SIGINT)
+			1 && (close(0), ft_status(1, 1), printf("\n"));
+	}
+	else if (sig_num == SIGINT)
 	{
 		if (pid > 0)
 		{
 			if (g_signal_flag)
-			{
-				printf("^C\n");
-				ft_status(130, 1);
-			}
+				1 && (printf("^C\n"), ft_status(130, 1));
 		}
 		else
 		{
-			printf("\n");
-			rl_on_new_line();
-			rl_replace_line("", 0);
-			rl_redisplay();
-			ft_status(1, 1);
+			1 && (printf("\n"), rl_on_new_line());
+			1 && (rl_replace_line("", 0), rl_redisplay(), ft_status(1, 1));
 		}
 	}
 	else if (sig_num == SIGQUIT)
-		handle_sigint(pid);
+		handle_sigquit(pid);
 }
 
-void	setup_terminal(struct termios *ctr)
+static void	setup_terminal(struct termios *ctr)
 {
 	tcgetattr(0, ctr);
 	ctr->c_lflag &= ~ECHOCTL;

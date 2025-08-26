@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:16:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:30:28 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 05:57:02 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,14 +99,14 @@ void	end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid, t_var *variables)
 	while (i < 2 * (tokens_count - 1))
 		close(pipe_fd[i++]);
 	1 && (g_signal_flag = pid, waitpid(pid, &status, 0));
-	if (wait(NULL) < 0 && !WIFSIGNALED(status))
-		ft_status(WEXITSTATUS(status), 1);
-	g_signal_flag = 0;
-	tcsetattr(0, 0, variables->ctr);
 	i = 0;
 	while (i < tokens_count)
 	{
 		wait(NULL);
 		i++;
 	}
+	if (wait(NULL) < 0 && !WIFSIGNALED(status))
+		ft_status(WEXITSTATUS(status), 1);
+	tcsetattr(0, 0, variables->ctr);
+	g_signal_flag = 0;
 }

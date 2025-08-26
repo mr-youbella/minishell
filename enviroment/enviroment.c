@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   enviroment.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 21:18:19 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 04:30:51 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 07:04:33 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,4 +100,18 @@ char	**copy_environment(char	**env)
 	}
 	copy_env[i] = NULL;
 	return (copy_env);
+}
+
+short	is_with_value(t_env *env_var)
+{
+	size_t	i;
+
+	i = 0;
+	while (env_var->var_export[i])
+	{
+		if (env_var->var_export[i] == '=')
+			return (1);
+		i++;
+	}
+	return (0);
 }

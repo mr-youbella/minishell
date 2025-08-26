@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtin_commands.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:50:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:17:57 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 06:30:35 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ short	builtin_commands2(char **tokens, t_var *variables)
 		pwd = pwd_cmd(0);
 		printf("%s\n", pwd);
 		free(pwd);
-		return (ft_status(0, 0));
+		return (ft_status(0, 1), ft_status(0, 0));
 	}
 	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))
 		return (echo_cmd(tokens, 0), ft_status(0, 0));

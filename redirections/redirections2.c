@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:36:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 06:29:50 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ char	*builtin_cmd_redirections(char **tokens, int fd_pipe,
 		return (echo_cmd(tokens, 1));
 	else if (ft_strlen(tokens[0]) == 3 && (!ft_strncmp(tokens[0], "pwd", 3)
 			|| !ft_strncmp(tokens[0], "PWD", 3)))
-		return (pwd_cmd(0));
+		return (ft_status(0, 1), pwd_cmd(0));
 	else if (ft_strlen(tokens[0]) == 2
 		&& !ft_strncmp(tokens[0], "cd", 2) && fd_pipe < 0)
 	{

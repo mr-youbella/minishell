@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: youbella <youbella@student.42.fr>          +#+  +:+       +#+         #
+#    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/08/26 04:31:11 by youbella         ###   ########.fr        #
+#    Updated: 2025/08/26 07:25:03 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -53,7 +53,7 @@ $(NAME): $(OBJS)
 
 %.o: %.c minishell.h
 	@echo "$(YELLOW)⚙️  Compiling $<...$(DEF)"
-	@printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
+# 	@printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
 	@$(CC) $(CFLAGS) $(READLINE_INCLUDE) -c $< -o $@
 
 clean:

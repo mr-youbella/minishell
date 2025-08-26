@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:33:17 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:46:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 06:21:37 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ void	cd_cmd(char *tokens, t_var *variables)
 {
 	char	*home;
 
+	ft_status(0, 1);
 	variables->cd_flag = 1;
 	home = ft_getenv("HOME", variables);
 	if (!tokens || (ft_strlen(tokens) == 1 && !ft_strncmp(tokens, "~", 1)))
@@ -43,6 +44,7 @@ void	unset_cmd(char **tokens, t_var *variables)
 {
 	int	j;
 
+	ft_status(0, 1);
 	j = 0;
 	while (tokens[j])
 	{

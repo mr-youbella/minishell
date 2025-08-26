@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export_cmd.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:55:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 06:48:58 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,7 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables)
 	size_t	j;
 	short	is_there_equal;
 
+	ft_status(0, 1);
 	i = 1;
 	if (!tokens[i])
 		return (print_export(variables, is_return, NULL, NULL));

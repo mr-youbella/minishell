@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections3.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:14:53 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:37:03 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 07:49:11 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,13 @@ void	herdoc(char *type_redirection, char *file_name,
 				t_var_redirect *var_redirection)
 {
 	char	*input_herdoc;
+	int		in_fd;
 
 	if (ft_strlen(type_redirection) == 2
 		&& !ft_strncmp(type_redirection, "<<", 2))
 	{
+		ft_status(0, 1);
+		1 && (g_signal_flag = -3, in_fd = dup(0));
 		free(var_redirection->join_herdoc);
 		var_redirection->join_herdoc = NULL;
 		while (1)
@@ -68,6 +71,7 @@ void	herdoc(char *type_redirection, char *file_name,
 				break ;
 			join_herdoc(var_redirection, input_herdoc);
 		}
+		1 && (g_signal_flag = 0, dup2(in_fd, 0), close(in_fd));
 	}
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   enviroment2.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:03:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:07:37 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 07:02:47 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ static void	check_varenv(t_env *env_var, t_var *variables, size_t i)
 	new_leak = ft_lstnew(name_var_env);
 	ft_lstadd_back(&variables->leaks, new_leak);
 	if (env_var->name_var_export && j == ft_strlen(env_var->name_var_export)
-		&& !ft_strncmp(variables->copy_env[i], env_var->name_var_export, j))
+		&& !ft_strncmp(variables->copy_env[i], env_var->name_var_export, j)
+		&& is_with_value(env_var))
 		variables->copy_env[i] = env_var->var_export;
 	else if (!variables->cd_flag && !oldpwd_flag && !is_chaneg_oldpwd)
 		is_chaneg_oldpwd = check_oldpwd(i, j, variables, name_var_env);

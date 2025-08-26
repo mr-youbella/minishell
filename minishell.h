@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 04:28:39 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 07:03:27 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,6 +185,7 @@ short			check_export_arg(char *arg);
 short			check_unset_arg(char *arg);
 char			*ft_getenv(char *var, t_var *variables);
 short			is_exist_in_env(char *str, char **env, long position);
+short			is_with_value(t_env *env_var);
 // pipe
 void			ft_pipe(char *cmd_line, t_var *variables);
 void			mange_pipes(int *pipe_fd, size_t i, size_t tokens_count);

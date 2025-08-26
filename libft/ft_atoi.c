@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_atoi.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 17:44:20 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/25 10:22:51 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 05:10:58 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 
 static short	overflow(size_t result, size_t b_result, short sign)
 {
-	if ((result / 10 != b_result && sign == 1) || \
-	(result >= LONG_MAX && sign == 1))
+	if ((result / 10 != b_result && sign == 1)
+		|| (result >= LONG_MAX && sign == 1))
 		return (-1);
-	if ((result / 10 != b_result && sign == -1) || \
-	(result > LONG_MAX && sign == -1))
+	if ((result / 10 != b_result && sign == -1)
+		|| (result > LONG_MAX && sign == -1))
 		return (0);
 	return (1);
 }

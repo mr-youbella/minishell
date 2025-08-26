@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   echo_env_cmd.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:44:46 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 03:47:44 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 06:12:50 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ char	*echo_cmd(char **tokens, short is_return)
 	char	*echo;
 	char	*tmp;
 
+	ft_status(0, 1);
 	1 && (j = 1, is_op_echo = 0, echo = NULL);
 	while (tokens[j] && check_option_echo(tokens[j]))
 	{
@@ -82,7 +83,6 @@ char	*echo_cmd(char **tokens, short is_return)
 		else
 			printf("\n");
 	}
-	ft_status(0, 1);
 	return (echo);
 }
 
@@ -116,6 +116,7 @@ t_list	*env_cmd(short is_print, t_var *variables)
 	t_list	*copy_environment;
 	t_list	*new_leak;
 
+	ft_status(0, 1);
 	all_environment = all_env(NULL, NULL, 0, variables);
 	environment = all_environment;
 	while (all_environment)
