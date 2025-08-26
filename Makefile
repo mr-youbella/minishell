@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
+#    By: youbella <youbella@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/08/23 16:41:48 by youbella         ###   ########.fr        #
+#    Updated: 2025/08/26 04:31:11 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,12 @@ CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address
 READLINE_INCLUDE = -I$(shell brew --prefix readline)/include
 READLINE_LIBRARY = -L$(shell brew --prefix readline)/lib -lreadline
 
-SRC = minishell.c dollar_sign.c search.c redirections.c commands.c split_command.c
+SRC = minishell.c split_commands/split_commands.c split_commands/split_cmd_with_quotes.c split_commands/utils_split_commands.c \
+	split_commands/get_tokens_with_redirect.c redirections/redirections.c redirections/redirections2.c redirections/redirections3.c redirections/redirections4.c redirections/redirections5.c redirections/redirections6.c \
+	free_leaks/free.c commands/commands.c commands/builtin_commands.c  commands/echo_env_cmd.c commands/export_cmd.c commands/export_cmd2.c commands/search_cmd.c \
+	split_commands/dollar_sign_expand.c split_commands/dollar_sign_expand2.c enviroment/enviroment.c enviroment/enviroment2.c enviroment/enviroment3.c enviroment/enviroment4.c commands/exec_command.c \
+	pipe/pipe.c pipe/pipe2.c
+	
 OBJS = $(SRC:.c=.o)
 NAME = minishell
 
@@ -48,7 +53,7 @@ $(NAME): $(OBJS)
 
 %.o: %.c minishell.h
 	@echo "$(YELLOW)⚙️  Compiling $<...$(DEF)"
-#	@printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
+	@printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
 	@$(CC) $(CFLAGS) $(READLINE_INCLUDE) -c $< -o $@
 
 clean:

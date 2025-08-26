@@ -1,0 +1,119 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   redirections4.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
+/*   Updated: 2025/08/26 03:39:40 by youbella         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../minishell.h"
+
+static void	add_redirections(char **tokens, t_ft_var *list_var,
+							t_redirections **new_node, t_var *variables)
+{
+	char	**file_name;
+
+	if (ft_strlen(tokens[list_var->j - 1]) == 2
+		&& !ft_strncmp(tokens[list_var->j - 1], "<<", 2))
+	{
+		file_name = split_command(tokens[list_var->j], 0, variables);
+		*new_node = craete_new_node(tokens[list_var->j - 1], file_name[0]);
+		free(file_name);
+	}
+	else if (is_ambiguous_redirect(tokens[list_var->j], variables))
+	{
+		tokens[list_var->j] = ft_strdup("");
+		*new_node = craete_new_node(tokens[list_var->j - 1],
+				tokens[list_var->j]);
+	}
+	else
+	{
+		file_name = split_command(tokens[list_var->j], 1, variables);
+		*new_node = craete_new_node(tokens[list_var->j - 1], file_name[0]);
+		free(file_name);
+	}
+}
+
+t_redirections	*list_redirections(char **tokens, t_var *variables)
+{
+	t_redirections	*list;
+	t_redirections	*new_node;
+	t_ft_var		*list_var;
+	short			return_val;
+
+	list_var = malloc(sizeof(t_ft_var));
+	if (!list_var)
+		return (NULL);
+	1 && (list_var->j = 0, list = NULL);
+	while (tokens[list_var->j])
+	{
+		return_val = check_syntax_redirect(tokens, list_var);
+		if (!return_val)
+			continue ;
+		if (return_val == -1)
+			return (NULL);
+		add_redirections(tokens, list_var, &new_node, variables);
+		add_node_in_back(&list, new_node);
+		list_var->j++;
+	}
+	return (list);
+}
+
+static char	*get_command(char **tokens, size_t i, char *tmp, char *cmd_arg)
+{
+	while (tokens[i])
+	{
+		if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
+			|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2))
+			|| (ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], "<", 1))
+			|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], "<<", 2)))
+		{
+			if (tokens[i + 1])
+				i += 2;
+			else
+				i++;
+		}
+		else
+		{
+			tmp = cmd_arg;
+			cmd_arg = ft_strjoin(cmd_arg, tokens[i]);
+			free(tmp);
+			tmp = cmd_arg;
+			cmd_arg = ft_strjoin(cmd_arg, " ");
+			free(tmp);
+			i++;
+		}
+	}
+	return (cmd_arg);
+}
+
+char	*join_cmd_args(char *cmd_line)
+{
+	size_t	i;
+	char	**tokens;
+	char	*cmd_arg;
+
+	i = 0;
+	tokens = get_tokens_with_redirection(cmd_line);
+	if (!tokens)
+		return (NULL);
+	if ((ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], ">", 1))
+		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], ">>", 2))
+		|| (ft_strlen(tokens[i]) == 1 && !ft_strncmp(tokens[i], "<", 1))
+		|| (ft_strlen(tokens[i]) == 2 && !ft_strncmp(tokens[i], "<<", 2)))
+	{
+		i++;
+		if (tokens[i])
+			i++;
+	}
+	cmd_arg = get_command(tokens, i, NULL, NULL);
+	i = 0;
+	while (tokens[i])
+		free(tokens[i++]);
+	free(tokens);
+	return (cmd_arg);
+}
