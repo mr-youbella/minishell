@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:14:59 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 15:34:59 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 19:44:31 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,11 @@ static int	child_pipe(size_t i, size_t tokens_count,
 	pid_t	pid;
 
 	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork");
+		return (-3);
+	}
 	if (pid == 0)
 	{
 		mange_pipes(pipe_fd, i, tokens_count);

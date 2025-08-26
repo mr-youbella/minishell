@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 16:27:10 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 21:34:44 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,10 @@ static void	handle_signal(int sig_num)
 	if (g_signal_flag == -3)
 	{
 		if (sig_num == SIGINT)
+		{
+			g_signal_flag = -5;
 			1 && (close(0), ft_status(1, 1), printf("\n"));
+		}
 	}
 	else if (sig_num == SIGINT)
 	{
@@ -71,30 +74,64 @@ static void	setup_terminal(struct termios *ctr)
 	signal(SIGQUIT, handle_signal);
 }
 
+char	**add_env(char **env, t_var *variables)
+{
+	char	*pwd;
+	char	**new_env;
+	t_list	*new_leak;
+
+	if (!env[0])
+	{
+		pwd = getcwd(NULL, 0);
+		new_env = malloc(6 * sizeof(char *));
+		if (!new_env)
+			return (NULL);
+		new_env[0] = ft_strdup("OLDPWD");
+		new_leak = ft_lstnew(new_env[0]);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		new_env[1] = ft_strdup
+			("PATH=/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:.");
+		new_leak = ft_lstnew(new_env[1]);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		new_env[2] = ft_strjoin("PWD=", pwd);
+		new_leak = ft_lstnew(new_env[2]);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		new_env[3] = ft_strdup("SHLVL=2");
+		new_leak = ft_lstnew(new_env[3]);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		new_env[4] = ft_strdup("_=/usr/bin/env");
+		new_leak = ft_lstnew(new_env[4]);
+		ft_lstadd_back(&variables->leaks, new_leak);
+		new_env[5] = NULL;
+		free(pwd);
+		return (new_env);
+	}
+	return (NULL);
+}
+
 int	main(int argc, char **argv, char **env)
 {
 	t_var			*variables;
-	int				status;
-	pid_t			pid;
 	char			**copy_env;
+	char			**new_env;
 	struct termios	ctr;
+\
 
 	if (argc != 1 && argv)
 		return (printf(RED "Please do not enter any arguments.\n" DEF), 1);
-	1 && (status = 0, variables = malloc(sizeof(t_var)));
+	1 && (variables = malloc(sizeof(t_var)));
 	if (!variables)
 		return (ft_status(1, 1), 1);
 	ft_memset(variables, 0, sizeof(t_var));
+	new_env = add_env(env, variables);
+	if (new_env)
+		env = new_env;
 	1 && (variables->cd_flag = 0, variables->env = env);
 	1 && (variables->environment = NULL, variables->export_list = NULL);
 	1 && (variables->leaks = NULL, variables->cd_flag = 0);
 	1 && (variables->ctr = &ctr, copy_env = copy_environment(env));
 	variables->copy_env = copy_env;
 	setup_terminal(&ctr);
-	pid = fork();
-	if (!pid)
-		execve("/usr/bin/clear", (char *[]){"clear", NULL}, env);
-	1 && (waitpid(pid, &status, 0), ft_status(WEXITSTATUS(status), 1));
 	printf(YELLOW "↪ Welcome to our MiniShell 🤪 ↩\n" DEF);
 	minishell_loop(variables, copy_env, &ctr);
 	return (0);

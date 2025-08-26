@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:45:42 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 13:56:58 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 18:47:55 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,8 @@ char	*search_cmd(char *cmd, t_var *variables)
 	if (cmd[0] == '/')
 		return (ft_strdup(cmd));
 	env_path = ft_getenv("PATH", variables);
+	if (!env_path)
+		env_path = ft_strdup(".");
 	split_env_path = ft_split(env_path, ':');
 	join_cmd_to_path = search_in_path(cmd, split_env_path);
 	if (join_cmd_to_path)

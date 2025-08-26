@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 13:05:30 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 20:51:15 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ typedef struct s_var
 	char			*old_pwd;
 	short			is_return;
 	short			is_export_cmd;
+	short			is_append_val;
 }	t_var;
 
 typedef struct s_var_pipe
@@ -82,6 +83,7 @@ typedef struct s_var_redirect
 	char	*pipe_output;
 	char	**tokens;
 	char	*output_cmd;
+	int		sigint;
 }	t_var_redirect;
 
 typedef struct s_redirections

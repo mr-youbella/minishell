@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   enviroment4.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:06:40 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:30:07 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 20:54:52 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ char	*ft_getenv(char *var, t_var *variables)
 	size_t	i;
 	t_list	*environment;
 
+	if (!var)
+		return (NULL);
 	environment = variables->environment;
 	while (environment)
 	{
@@ -82,8 +84,9 @@ short	check_export_arg(char *arg)
 	{
 		if (arg[i] == '=')
 			break ;
-		if (arg[i] == '!' || arg[i] == '&' || arg[i] == '('
-			|| arg[i] == ')' || arg[i] == ' ')
+		if (arg[i] == '+' && arg[i + 1] == '=')
+			break ;
+		if (!ft_isalnum(arg[i]) && arg[i] != '_')
 		{
 			ft_putstr_fd("\033[34mminishell: \033[31mexport: ", 2);
 			ft_putstr_fd("\033[0;36mnot valid in this context.\n\033[0m", 2);

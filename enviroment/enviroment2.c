@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:03:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 15:48:30 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 21:37:02 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,14 @@ t_list	*all_env(char *v_export, char *v_unset,
 	while (v_export && v_export[i] && v_export[i] != '=')
 		i++;
 	name_var_export = ft_substr(v_export, 0, i);
+	if (v_export && variables->is_append_val)
+	{
+		env_var->var_export = ft_strjoin(name_var_export, "=");
+		env_var->var_export = ft_strjoin(env_var->var_export,
+				ft_getenv(name_var_export, variables));
+		env_var->var_export = ft_strjoin(env_var->var_export,
+				ft_substr(v_export, i + 1, ft_strlen(v_export) - i));
+	}
 	env_var->name_var_export = name_var_export;
 	new_leak = ft_lstnew(name_var_export);
 	ft_lstadd_back(&variables->leaks, new_leak);

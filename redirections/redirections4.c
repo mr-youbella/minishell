@@ -6,13 +6,13 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 10:30:38 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 21:36:11 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-static void	add_redirections(char **tokens, t_ft_var *list_var,
+static short	add_redirections(char **tokens, t_ft_var *list_var,
 							t_redirections **new_node, t_var *variables)
 {
 	char	**file_name;
@@ -23,6 +23,7 @@ static void	add_redirections(char **tokens, t_ft_var *list_var,
 		file_name = split_command(tokens[list_var->j], 0, variables);
 		*new_node = craete_new_node(tokens[list_var->j - 1], file_name[0]);
 		free(file_name);
+		return (1);
 	}
 	else if (is_ambiguous_redirect(tokens[list_var->j], variables))
 	{
@@ -36,6 +37,7 @@ static void	add_redirections(char **tokens, t_ft_var *list_var,
 		*new_node = craete_new_node(tokens[list_var->j - 1], file_name[0]);
 		free(file_name);
 	}
+	return (0);
 }
 
 t_redirections	*list_redirections(char **tokens, t_var *variables)
@@ -43,8 +45,10 @@ t_redirections	*list_redirections(char **tokens, t_var *variables)
 	t_redirections	*list;
 	t_redirections	*new_node;
 	t_ft_var		*list_var;
+	size_t			count_herdoc;
 	short			return_val;
 
+	count_herdoc = 0;
 	list_var = malloc(sizeof(t_ft_var));
 	if (!list_var)
 		return (ft_status(1, 1), NULL);
@@ -57,7 +61,16 @@ t_redirections	*list_redirections(char **tokens, t_var *variables)
 			continue ;
 		if (return_val == -1)
 			return (free(list_var), NULL);
-		add_redirections(tokens, list_var, &new_node, variables);
+		count_herdoc += add_redirections
+			(tokens, list_var, &new_node, variables);
+		if (count_herdoc >= 17)
+		{
+			ft_putstr_fd("\033[34minishell: ", 2);
+			ft_putstr_fd
+				("\033[31mmaximum here-document count exceeded.\033[0m\n", 2);
+			ft_status(2, 1);
+			return (free(list_var), NULL);
+		}
 		add_node_in_back(&list, new_node);
 		list_var->j++;
 	}

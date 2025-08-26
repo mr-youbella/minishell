@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 15:49:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 21:37:23 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,17 +71,17 @@ static char	*print_export(t_var *variables, short is_return,
 	return (export = ft_strjoin(export, tmp2), free(tmp), free(tmp2), export);
 }
 
-static void	add_export_in_list(char **tokens, size_t i,
+static void	add_export_in_list(char *token,
 							short is_there_equal, t_var *variables)
 {
 	size_t	j;
 
 	j = 0;
-	if (is_exist_var(tokens[i], variables, variables->export_list))
+	if (is_exist_var(token, variables, variables->export_list))
 	{
-		while (tokens[i][j])
+		while (token[j])
 		{
-			if (tokens[i][j] == '=')
+			if (token[j] == '=')
 			{
 				is_there_equal = 1;
 				break ;
@@ -89,21 +89,21 @@ static void	add_export_in_list(char **tokens, size_t i,
 			j++;
 		}
 		if (is_there_equal)
-			all_env(tokens[i], NULL, 0, variables);
+			all_env(token, NULL, 0, variables);
 	}
 	else
-		ft_lstadd_back(&variables->export_list, ft_lstnew(tokens[i]));
+		ft_lstadd_back(&variables->export_list, ft_lstnew(token));
 }
 
-static short	add_again_env(char **tokens, size_t *i,
+static short	add_again_env(char *token, size_t *i,
 								size_t j, t_var *variables)
 {
 	char	*tmp;
 
-	tmp = ft_substr(tokens[*i], 0, j);
+	tmp = ft_substr(token, 0, j);
 	if (is_exist_in_env(tmp, variables->env, -1))
 	{
-		1 && (all_env(tokens[*i], NULL, 0, variables), (*i)++);
+		1 && (all_env(token, NULL, 0, variables), (*i)++);
 		free(tmp);
 		return (0);
 	}
@@ -111,11 +111,49 @@ static short	add_again_env(char **tokens, size_t *i,
 	return (1);
 }
 
+char	*var_export_without_plus(char *token, t_var *variables)
+{
+	char	*new_token;
+	size_t	i;
+	size_t	j;
+
+	i = 0;
+	variables->is_append_val = 0;
+	while (token[i])
+	{
+		if (token[i] == '+' && token[i + 1] == '=')
+			variables->is_append_val = 1;
+		if (token[i] == '=')
+			break ;
+		i++;
+	}
+	new_token = malloc(ft_strlen(token) - variables->is_append_val + 1);
+	if (!new_token)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (token[i])
+	{
+		if (token[i] == '+')
+		{
+			i++;
+			break ;
+		}
+		new_token[j++] = token[i++];
+	}
+	while (token[i])
+		new_token[j++] = token[i++];
+	new_token[j] = 0;
+	return (new_token);
+}
+
 char	*export_cmd(char **tokens, short is_return, t_var *variables)
 {
 	size_t	i;
 	size_t	j;
+	t_list	*new_leak;
 	short	is_there_equal;
+	char	*new_token;
 
 	ft_status(0, 1);
 	i = 1;
@@ -126,11 +164,14 @@ char	*export_cmd(char **tokens, short is_return, t_var *variables)
 		1 && (j = 0, is_there_equal = 0);
 		if (check_export_arg(tokens[i]))
 		{
-			while (tokens[i][j] && tokens[i][j] != '=')
+			new_token = var_export_without_plus(tokens[i], variables);
+			while (new_token[j] && new_token[j] != '=')
 				j++;
-			if (!add_again_env(tokens, &i, j, variables))
+			if (!add_again_env(new_token, &i, j, variables))
 				continue ;
-			add_export_in_list(tokens, i, is_there_equal, variables);
+			add_export_in_list(new_token, is_there_equal, variables);
+			new_leak = ft_lstnew(new_token);
+			ft_lstadd_back(&variables->leaks, new_leak);
 		}
 		i++;
 	}

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 15:58:56 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 19:46:45 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ static void	exec_commands(char **tokens, char **copy_env,
 	if (!path_cmd)
 		return ;
 	pid = fork();
+	if (pid < 0)
+		perror("fork");
 	if (!pid)
 	{
 		execve(path_cmd, tokens, copy_env);
