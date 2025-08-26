@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_command.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 19:46:45 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 00:16:03 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 	t_list	*new_leak;
 	char	*command;
 	char	**tokens;
-
+\
 	while (1)
 	{
 		variables->environment = all_env(NULL, NULL, 0, variables);
@@ -118,6 +118,8 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 			continue ;
 		add_history(command);
 		tokens = split_command(command, 1, variables);
+		if (!tokens)
+			continue ;
 		free_array(tokens, 1, variables);
 		if (is_redirections_pipe(tokens, command, variables)
 			|| builtin_commands(tokens, copy_env, variables))

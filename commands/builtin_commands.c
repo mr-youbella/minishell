@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtin_commands.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:50:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 16:25:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 00:14:20 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ short	builtin_commands(char **tokens, char **copy_env, t_var *variables)
 {
 	struct stat		file;
 
-	if (!tokens || !tokens[0])
+	if (!tokens[0])
 		return (free(tokens), 1);
 	if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "exit", 4))
 	{

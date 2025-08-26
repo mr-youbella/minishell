@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 02:58:15 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 23:28:40 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 00:23:55 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ static short	check_tokens(size_t *k, size_t *i, size_t *j,
 		if (split_var->buffer)
 		{
 			split_var->new_tokens[(*k)++] = split_var->buffer;
-			free(split_var->buffer);
 			split_var->buffer = NULL;
 		}
 		while ((split_var->tokens[*i][*j] == ' '
