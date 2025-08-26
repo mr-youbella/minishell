@@ -6,12 +6,12 @@
 #    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/08/26 12:31:24 by youbella         ###   ########.fr        #
+#    Updated: 2025/08/26 15:59:30 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror #-g -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address
 READLINE_INCLUDE = -I$(shell brew --prefix readline)/include
 READLINE_LIBRARY = -L$(shell brew --prefix readline)/lib -lreadline
 
@@ -53,7 +53,7 @@ $(NAME): $(OBJS)
 
 %.o: %.c minishell.h
 	@echo "$(YELLOW)⚙️  Compiling $<...$(DEF)"
-# 	@printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
+	@printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
 	@$(CC) $(CFLAGS) $(READLINE_INCLUDE) -c $< -o $@
 
 clean:

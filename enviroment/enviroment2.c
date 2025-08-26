@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:03:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 10:27:32 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 15:48:30 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ static short	is_just_changed(t_env *env_var, t_list *enviroment)
 	return (0);
 }
 
-t_list	*all_env(char *var_export, char *var_unset,
+t_list	*all_env(char *v_export, char *v_unset,
 					short env_export, t_var *variables)
 {
 	t_list	*enviroment;
@@ -121,14 +121,11 @@ t_list	*all_env(char *var_export, char *var_unset,
 	if (!env_var)
 		return (ft_status(1, 1), NULL);
 	ft_memset(env_var, 0, sizeof(t_env));
-	env_var->var_export = var_export;
-	env_var->var_unset = var_unset;
-	env_var->is_export_cmd = variables->is_export_cmd;
-	enviroment = NULL;
-	i = 0;
-	while (var_export && var_export[i] && var_export[i] != '=')
+	1 && (env_var->var_export = v_export, env_var->var_unset = v_unset, i = 0);
+	1 && (env_var->is_export_cmd = variables->is_export_cmd, enviroment = NULL);
+	while (v_export && v_export[i] && v_export[i] != '=')
 		i++;
-	name_var_export = ft_substr(var_export, 0, i);
+	name_var_export = ft_substr(v_export, 0, i);
 	env_var->name_var_export = name_var_export;
 	new_leak = ft_lstnew(name_var_export);
 	ft_lstadd_back(&variables->leaks, new_leak);

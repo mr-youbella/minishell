@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 10:30:10 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 15:47:00 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,7 @@ static size_t	len_str(char *str, t_var *variables)
 		}
 		if (!len_dollar(&i, quote, variables, dollar_var))
 			continue ;
-		i++;
-		dollar_var->len++;
+		1 && (i++, dollar_var->len++);
 	}
 	i = dollar_var->len;
 	return (free(dollar_var), i);
@@ -88,6 +87,14 @@ static void	change_val(char *result, t_dollar *dollar_var,
 static short	dollar_sign(t_dollar *dollar_var, t_var *variables,
 						char quote, char *result)
 {
+	if (dollar_var->str[dollar_var->i] == 39
+		|| dollar_var->str[dollar_var->i] == '"')
+	{
+		if (quote == 0)
+			quote = dollar_var->str[dollar_var->i];
+		else if (quote == dollar_var->str[dollar_var->i])
+			quote = 0;
+	}
 	if (dollar_var->str[dollar_var->i] == '$')
 	{
 		if (dollar_var->str[dollar_var->i + 1] == '?' && quote != 39)
@@ -123,13 +130,6 @@ char	*ft_dollar(char *str, t_var *variables, size_t len, char quote)
 		return (free(dollar_var), ft_status(1, 1), NULL);
 	while (str[dollar_var->i])
 	{
-		if (str[dollar_var->i] == 39 || str[dollar_var->i] == '"')
-		{
-			if (quote == 0)
-				quote = str[dollar_var->i];
-			else if (quote == str[dollar_var->i])
-				quote = 0;
-		}
 		if (!dollar_sign(dollar_var, variables, quote, result))
 			continue ;
 		result[dollar_var->j++] = str[dollar_var->i++];

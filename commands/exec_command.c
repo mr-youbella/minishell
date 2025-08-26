@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 13:48:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 15:58:56 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,6 @@ static void	exec_commands(char **tokens, char **copy_env,
 	if (!path_cmd)
 		return ;
 	pid = fork();
-	if (pid < 0)
-		return ;
 	if (!pid)
 	{
 		execve(path_cmd, tokens, copy_env);
@@ -33,7 +31,7 @@ static void	exec_commands(char **tokens, char **copy_env,
 		ft_putstr_fd(".\n", 2);
 		exit(1);
 	}
-	else
+	else if (pid > 0)
 	{
 		1 && (g_signal_flag = pid, waitpid(pid, &status, 0));
 		if (!WIFSIGNALED(status))
@@ -65,13 +63,18 @@ static short	is_redirections_pipe(char **tokens,
 	return (0);
 }
 
-static char	*ft_readline(char *pwd, size_t i, char *cmd_line)
+static char	*color_arrow(char *last_dir)
+{
+	if (ft_status(0, 0))
+		return (ft_strjoin("\033[31m➥\033[0m ", last_dir));
+	return (ft_strjoin("\033[32m➥\033[0m ", last_dir));
+}
+
+static char	*ft_readline(char *pwd, size_t i, char *cmd_line, char *last_dir)
 {
 	char	**path;
-	char	*last_dir;
 	char	*last_dir_tmp;
 
-	last_dir = NULL;
 	if (ft_strlen(pwd) == 1 && !ft_strncmp(pwd, "/", 1))
 		last_dir = ft_strdup("/");
 	else
@@ -87,10 +90,7 @@ static char	*ft_readline(char *pwd, size_t i, char *cmd_line)
 	free(last_dir);
 	last_dir = ft_strjoin(last_dir_tmp, "\033[0m");
 	free(last_dir_tmp);
-	if (ft_status(0, 0))
-		last_dir_tmp = ft_strjoin("\033[31m➥\033[0m ", last_dir);
-	else
-		last_dir_tmp = ft_strjoin("\033[32m➥\033[0m ", last_dir);
+	last_dir_tmp = color_arrow(last_dir);
 	free(last_dir);
 	last_dir = ft_strjoin(last_dir_tmp, " ");
 	free(last_dir_tmp);
@@ -107,7 +107,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 	{
 		variables->environment = all_env(NULL, NULL, 0, variables);
 		free_list(variables, variables->environment, NULL);
-		command = ft_readline(pwd_cmd(0), 0, NULL);
+		command = ft_readline(pwd_cmd(0), 0, NULL, NULL);
 		new_leak = ft_lstnew(command);
 		ft_lstadd_back(&variables->leaks, new_leak);
 		if (!command)

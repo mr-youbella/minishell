@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 08:13:09 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 15:49:11 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,8 @@ static char	*print_sorted_env(t_var *variables, short is_return)
 	t_list	*tmp;
 	char	**env_array;
 
-	count = 0;
-	variables->i = 0;
-	variables->export = NULL;
-	tmp = variables->environment;
+	1 && (count = 0, variables->i = 0);
+	1 && (variables->export = NULL, tmp = variables->environment);
 	while (tmp)
 	{
 		count++;

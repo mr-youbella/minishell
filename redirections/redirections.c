@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 11:15:41 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/26 15:42:45 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,8 @@ static short	final_setup_pipe(t_var_redirect *var_redirection,
 		return (0);
 	}
 	var_redirection->output_cmd = output_cmd;
+	if (var_redirection->fd_file_output > 0)
+		close(var_redirection->fd_file_output);
 	return (1);
 }
 
@@ -133,10 +135,8 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
 	}
 	if (!final_setup_pipe(var_redirection, variables, fd))
 		return (free(var_redirection), NULL);
-	if (var_redirection->fd_file_output > 0)
-		close(var_redirection->fd_file_output);
 	if (!var_redirection->output_cmd)
 		return (free(var_redirection), NULL);
 	return (s = ft_strdup(var_redirection->output_cmd),
-			free(var_redirection->output_cmd), free(var_redirection), s);
+		free(var_redirection->output_cmd), free(var_redirection), s);
 }
