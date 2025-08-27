@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 13:01:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 20:27:06 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,8 @@ static void	add_export_in_list(char *token,
 							short is_there_equal, t_var *variables)
 {
 	size_t	j;
+	t_list	*copy_environment;
+	t_list	*new_leak;
 
 	j = 0;
 	if (is_exist_var(token, variables, variables->export_list))
@@ -95,6 +97,7 @@ static void	add_export_in_list(char *token,
 	{
 		ft_lstadd_back(&variables->export_list, ft_lstnew(token));
 		variables->environment = all_env(NULL, NULL, 0, variables);
+		free_list(variables, variables->environment, NULL);
 	}
 }
 

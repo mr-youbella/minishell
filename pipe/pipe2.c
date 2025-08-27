@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:16:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:23:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 20:19:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ char	**get_tokens_pipe(char *cmd_line, t_var *variables)
 	{
 		if (is_empty_token(split_pipe[i]))
 		{
+			free_array(split_pipe, 0, variables);
 			ft_putstr_fd("\033[34mminishell:\033[31m ", 2);
 			ft_putstr_fd("syntax error in pipe.\n\033[0m", 2);
 			return (ft_status(258, 1), NULL);

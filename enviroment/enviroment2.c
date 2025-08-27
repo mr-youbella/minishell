@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:03:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 12:59:27 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 19:50:22 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,8 @@ static void	is_unset_varenv(size_t i, t_env *env_var,
 	else
 	{
 		variables->copy_env[i] = ft_strdup("");
-		{
-			new_leak = ft_lstnew(variables->copy_env[i]);
-			ft_lstadd_back(&variables->leaks, new_leak);
-		}
+		new_leak = ft_lstnew(variables->copy_env[i]);
+		ft_lstadd_back(&variables->leaks, new_leak);
 	}
 }
 
