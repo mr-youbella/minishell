@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_command.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 01:00:15 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:15:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,10 @@ static void	exec_commands(char **tokens, char **copy_env,
 		return ;
 	pid = fork();
 	if (pid < 0)
+	{
 		perror("fork");
+		ft_status(1, 1);
+	}
 	if (!pid)
 	{
 		execve(path_cmd, tokens, copy_env);
