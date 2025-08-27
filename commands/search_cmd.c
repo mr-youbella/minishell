@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:45:42 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 18:47:55 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 18:07:44 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,11 +77,13 @@ static short	is_directory(char **tokens)
 		fd = open(tokens[0], O_RDONLY);
 		if (fd < 0)
 		{
+			close(fd);
 			ft_putstr_fd("\033[31mminishell: \033[34m", 2);
 			ft_putstr_fd(tokens[0], 2);
 			ft_putstr_fd("\033[0m: No such file or directory.\n", 2);
 			return (ft_status(127, 1), -1);
 		}
+		close(fd);
 		return (1);
 	}
 	return (0);
