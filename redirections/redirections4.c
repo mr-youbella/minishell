@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/27 22:30:43 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 23:01:02 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ static short	loop_redirections(char **tokens, t_ft_var *list_var,
 		if (!return_val)
 			continue ;
 		if (return_val == -1)
-			return (free(list_var), 0);
+			return (free_list(variables, NULL, *list), free(list_var), 0);
 		count_herdoc += add_redirections
 			(tokens, list_var, &new_node, variables);
 		if (count_herdoc >= 17)

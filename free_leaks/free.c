@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:30:29 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:32:31 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 22:39:33 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,9 @@ void	vr_free_close(t_var_redirect *var_redirection)
 	if (var_redirection->fd_file_output > 0)
 		close(var_redirection->fd_file_output);
 	free(var_redirection->pipe_output);
+	var_redirection->pipe_output = NULL;
 	free(var_redirection->join_herdoc);
+	var_redirection->join_herdoc = NULL;
 	free(var_redirection->cmd_result);
+	var_redirection->cmd_result = NULL;
 }
