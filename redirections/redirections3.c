@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections3.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:14:53 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 23:51:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 19:11:09 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,32 +75,39 @@ void	herdoc(char *type_redirection, char *file_name,
 	}
 }
 
+static short	check_is_ambiguous(t_var_redirect *var_redirection)
+{
+	if (var_redirection->fd_file_output < 0)
+	{
+		ft_putstr_fd("\033[31mambiguous redirect.\033[0m\n", 2);
+		ft_putstr_fd("\033[34mminishell: ", 2);
+		return (ft_status(1, 1), 0);
+	}
+	return (1);
+}
+
 short	redirect_output(char *type_redirection, char *file_name,
 							t_var_redirect *var_redirection)
 {
 	if (ft_strlen(type_redirection) == 1
 		&& !ft_strncmp(type_redirection, ">", 1))
 	{
+		if (var_redirection->fd_file_output > 0)
+			close(var_redirection->fd_file_output);
 		var_redirection->fd_file_output = open(file_name,
 				O_CREAT | O_TRUNC | O_WRONLY, 0644);
-		if (var_redirection->fd_file_output < 0)
-		{
-			ft_putstr_fd("\033[34mminishell: ", 2);
-			ft_putstr_fd("\033[31mambiguous redirect.\033[0m\n", 2);
-			return (ft_status(1, 1), 0);
-		}
+		if (!check_is_ambiguous(var_redirection))
+			return (0);
 	}
 	else if (ft_strlen(type_redirection) == 2
 		&& !ft_strncmp(type_redirection, ">>", 2))
 	{
+		if (var_redirection->fd_file_output > 0)
+			close(var_redirection->fd_file_output);
 		var_redirection->fd_file_output = open(file_name,
 				O_CREAT | O_APPEND | O_WRONLY, 0644);
-		if (var_redirection->fd_file_output < 0)
-		{
-			ft_putstr_fd("\033[34mminishell: ", 2);
-			ft_putstr_fd("\033[31mambiguous redirect.\033[0m\n", 2);
-			return (ft_status(1, 1), 0);
-		}
+		if (!check_is_ambiguous(var_redirection))
+			return (0);
 	}
 	return (1);
 }

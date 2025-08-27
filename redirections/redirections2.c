@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 15:45:28 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 19:07:24 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ static short	redirect_input(char *type_redirection, char *file_name,
 	if (ft_strlen(type_redirection) == 1
 		&& !ft_strncmp(type_redirection, "<", 1))
 	{
+		if (var_redirection->fd_file_input > 0)
+			close(var_redirection->fd_file_input);
 		var_redirection->join_herdoc = NULL;
 		if (!ft_strlen(file_name))
 		{
