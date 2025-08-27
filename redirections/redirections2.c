@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 21:35:37 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 01:07:55 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ char	*builtin_cmd_redirections(char **tokens, int fd_pipe,
 		exit_cmd(variables->copy_env, variables, tokens, 1);
 	else if (ft_strlen(tokens[0]) == 6
 		&& !ft_strncmp(tokens[0], "export", 6))
-		return (export_cmd(tokens, 1, variables));
+		return (export_cmd(tokens, 1, variables, 0));
 	else if (ft_strlen(tokens[0]) == 5 && !ft_strncmp(tokens[0], "unset", 5))
 		unset_cmd(tokens, variables);
 	else if (ft_strlen(tokens[0]) == 4 && !ft_strncmp(tokens[0], "echo", 4))

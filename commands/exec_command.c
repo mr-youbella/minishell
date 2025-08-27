@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 00:16:03 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 01:00:15 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,8 @@ static void	exec_commands(char **tokens, char **copy_env,
 		1 && (g_signal_flag = pid, waitpid(pid, &status, 0));
 		if (!WIFSIGNALED(status))
 			ft_status(WEXITSTATUS(status), 1);
-		g_signal_flag = 0;
 	}
-	return (tcsetattr(0, 0, ctr), free(path_cmd));
+	return (g_signal_flag = 0, tcsetattr(0, 0, ctr), free(path_cmd));
 }
 
 static short	is_redirections_pipe(char **tokens,
@@ -104,7 +103,7 @@ void	minishell_loop(t_var *variables, char **copy_env, struct termios *ctr)
 	t_list	*new_leak;
 	char	*command;
 	char	**tokens;
-\
+
 	while (1)
 	{
 		variables->environment = all_env(NULL, NULL, 0, variables);

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 23:50:39 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 01:10:30 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,7 +162,8 @@ void			exit_cmd(char **copy_env, t_var *variables,
 					char **tokens, short is_print);
 char			*echo_cmd(char **tokens, short is_return);
 t_list			*env_cmd(short is_print, t_var *variables);
-char			*export_cmd(char **tokens, short is_return, t_var *variables);
+char			*export_cmd(char **tokens, short is_return,
+					t_var *variables, short is_there_equal);
 void			unset_cmd(char **tokens, t_var *variables);
 void			cd_cmd(char *tokens, t_var *variables);
 char			*pwd_cmd(short is_print);

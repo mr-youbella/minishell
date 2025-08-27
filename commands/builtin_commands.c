@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:50:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 00:14:20 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 01:08:04 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ short	builtin_commands(char **tokens, char **copy_env, t_var *variables)
 	}
 	if (ft_strlen(tokens[0]) == 6 && !ft_strncmp(tokens[0], "export", 6))
 	{
-		export_cmd(tokens, 0, variables);
+		export_cmd(tokens, 0, variables, 0);
 		return (ft_status(0, 0));
 	}
 	if (ft_strlen(tokens[0]) == 3 && !ft_strncmp(tokens[0], "env", 3))

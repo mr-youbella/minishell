@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 22:44:25 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 00:58:42 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,11 +71,21 @@ static void	setup_terminal(struct termios *ctr)
 	signal(SIGQUIT, handle_signal);
 }
 
+char	*defualt_env(char *str, t_var *variables)
+{
+	t_list	*new_leak;
+	char	*new_env;
+
+	new_env = ft_strdup(str);
+	new_leak = ft_lstnew(new_env);
+	ft_lstadd_back(&variables->leaks, new_leak);
+	return (new_env);
+}
+
 char	**add_env(char **env, t_var *variables)
 {
 	char	*pwd;
 	char	**new_env;
-	t_list	*new_leak;
 
 	if (!env[0])
 	{
@@ -83,22 +93,12 @@ char	**add_env(char **env, t_var *variables)
 		new_env = malloc(6 * sizeof(char *));
 		if (!new_env)
 			return (NULL);
-		new_env[0] = ft_strdup("OLDPWD");
-		new_leak = ft_lstnew(new_env[0]);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		new_env[1] = ft_strdup
-			("PATH=/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:.");
-		new_leak = ft_lstnew(new_env[1]);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		new_env[2] = ft_strjoin("PWD=", pwd);
-		new_leak = ft_lstnew(new_env[2]);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		new_env[3] = ft_strdup("SHLVL=2");
-		new_leak = ft_lstnew(new_env[3]);
-		ft_lstadd_back(&variables->leaks, new_leak);
-		new_env[4] = ft_strdup("_=/usr/bin/env");
-		new_leak = ft_lstnew(new_env[4]);
-		ft_lstadd_back(&variables->leaks, new_leak);
+		new_env[0] = defualt_env("OLDPWD", variables);
+		new_env[1] = defualt_env
+			("PATH=/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:.", variables);
+		new_env[2] = defualt_env(ft_strjoin("PWD=", pwd), variables);
+		new_env[3] = defualt_env("SHLVL=2", variables);
+		new_env[4] = defualt_env("_=/usr/bin/env", variables);
 		new_env[5] = NULL;
 		free(pwd);
 		return (new_env);

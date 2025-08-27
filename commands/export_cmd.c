@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export_cmd.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 21:37:23 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 01:09:34 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,25 +111,11 @@ static short	add_again_env(char *token, size_t *i,
 	return (1);
 }
 
-char	*var_export_without_plus(char *token, t_var *variables)
+void	take_var_export_without_plus(char *token, char *new_token)
 {
-	char	*new_token;
 	size_t	i;
 	size_t	j;
 
-	i = 0;
-	variables->is_append_val = 0;
-	while (token[i])
-	{
-		if (token[i] == '+' && token[i + 1] == '=')
-			variables->is_append_val = 1;
-		if (token[i] == '=')
-			break ;
-		i++;
-	}
-	new_token = malloc(ft_strlen(token) - variables->is_append_val + 1);
-	if (!new_token)
-		return (NULL);
 	i = 0;
 	j = 0;
 	while (token[i])
@@ -144,19 +130,39 @@ char	*var_export_without_plus(char *token, t_var *variables)
 	while (token[i])
 		new_token[j++] = token[i++];
 	new_token[j] = 0;
+}
+
+char	*var_export_without_plus(char *token, t_var *variables)
+{
+	char	*new_token;
+	size_t	i;
+
+	i = 0;
+	variables->is_append_val = 0;
+	while (token[i])
+	{
+		if (token[i] == '+' && token[i + 1] == '=')
+			variables->is_append_val = 1;
+		if (token[i] == '=')
+			break ;
+		i++;
+	}
+	new_token = malloc(ft_strlen(token) - variables->is_append_val + 1);
+	if (!new_token)
+		return (NULL);
+	take_var_export_without_plus(token, new_token);
 	return (new_token);
 }
 
-char	*export_cmd(char **tokens, short is_return, t_var *variables)
+char	*export_cmd(char **tokens, short is_return,
+					t_var *variables, short is_there_equal)
 {
 	size_t	i;
 	size_t	j;
 	t_list	*new_leak;
-	short	is_there_equal;
 	char	*new_token;
 
-	ft_status(0, 1);
-	i = 1;
+	1 && (ft_status(0, 1), i = 1);
 	if (!tokens[i])
 		return (print_export(variables, is_return, NULL, NULL));
 	while (tokens[i])
