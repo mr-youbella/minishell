@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_command.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:15:26 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:29:20 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,7 @@ static void	exec_commands(char **tokens, char **copy_env,
 	if (!pid)
 	{
 		execve(path_cmd, tokens, copy_env);
-		ft_putstr_fd("\033[34mminishell: \033[31m", 2);
-		ft_putstr_fd(tokens[0], 2);
-		ft_putstr_fd("\033[0m: ", 2);
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd(".\n", 2);
+		print_errno(tokens);
 		exit(1);
 	}
 	else if (pid > 0)

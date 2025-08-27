@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 13:42:02 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:20:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,14 +72,8 @@ static void	setup_terminal(struct termios *ctr)
 	signal(SIGQUIT, handle_signal);
 }
 
-void	f()
-{
-	system("leaks minishell");
-}
-
 int	main(int argc, char **argv, char **env)
 {
-	atexit(f);
 	t_var			*variables;
 	char			**copy_env;
 	char			**new_env;

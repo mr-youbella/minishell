@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:16:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 16:57:34 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:23:08 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,4 +110,5 @@ void	end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid, t_var *variables)
 		ft_status(WEXITSTATUS(status), 1);
 	tcsetattr(0, 0, variables->ctr);
 	g_signal_flag = 0;
+	free(pipe_fd);
 }

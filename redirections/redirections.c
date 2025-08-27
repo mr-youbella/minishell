@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 16:46:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:32:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,18 +40,6 @@ static char	*close_pipe(pid_t pid, t_var_redirect *var_redirection,
 	if (var_redirection->fd_file_input > 0)
 		close(var_redirection->fd_file_input);
 	return (output_cmd);
-}
-
-static void	vr_free_close(t_var_redirect *var_redirection)
-{
-	if (var_redirection->fd_file_input > 0)
-		close(var_redirection->fd_file_input);
-	if (var_redirection->fd_file_output > 0)
-		close(var_redirection->fd_file_output);
-	free(var_redirection->pipe_output);
-	free(var_redirection->join_herdoc);
-	free(var_redirection->cmd_result);
-	
 }
 
 static short	handle_pipe(char *cmd_line, char **tokens,

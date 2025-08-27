@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/27 13:02:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:32:43 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,6 +175,7 @@ char			*search_cmd(char *cmd, t_var *variables);
 short			is_buitin_cmd(char *token);
 void			minishell_loop(t_var *variables,
 					char **copy_env, struct termios *ctr);
+void			print_errno(char **tokens);
 // Enviroment
 char			**copy_environment(char	**env);
 t_list			*all_env(char *var_export, char *var_unset,
@@ -203,9 +204,11 @@ void			execute_cmd_pipe(char **tokens, char **copy_env,
 void			end_pipe(size_t tokens_count, int *pipe_fd,
 					pid_t pid, t_var *variables);
 char			**get_tokens_pipe(char *cmd_line, t_var *variables);
+short			create_pipes(size_t tokens_count, int *pipe_fd);
 // Free
 void			free_array(char **arr, short is_stock, t_var *variables);
 void			free_list(t_var *variables, t_list *list,
 					t_redirections *redirections);
 void			free_leaks(t_var *variables);
+void			vr_free_close(t_var_redirect *var_redirection);
 #endif

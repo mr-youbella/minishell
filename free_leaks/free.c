@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:30:29 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 04:13:23 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:32:31 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,4 +77,15 @@ void	free_array(char **arr, short is_stock, t_var *variables)
 			free(arr[i++]);
 		free(arr);
 	}
+}
+
+void	vr_free_close(t_var_redirect *var_redirection)
+{
+	if (var_redirection->fd_file_input > 0)
+		close(var_redirection->fd_file_input);
+	if (var_redirection->fd_file_output > 0)
+		close(var_redirection->fd_file_output);
+	free(var_redirection->pipe_output);
+	free(var_redirection->join_herdoc);
+	free(var_redirection->cmd_result);
 }

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+         #
+#    By: youbella <youbella@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/08/27 13:42:12 by youbella         ###   ########.fr        #
+#    Updated: 2025/08/27 17:31:56 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ SRC = minishell.c split_commands/split_commands.c split_commands/split_cmd_with_
 	split_commands/get_tokens_with_redirect.c redirections/redirections.c redirections/redirections2.c redirections/redirections3.c redirections/redirections4.c redirections/redirections5.c redirections/redirections6.c \
 	free_leaks/free.c commands/commands.c commands/builtin_commands.c  commands/echo_env_cmd.c commands/export_cmd.c commands/export_cmd2.c commands/search_cmd.c \
 	split_commands/dollar_sign_expand.c split_commands/dollar_sign_expand2.c enviroment/enviroment.c enviroment/enviroment2.c enviroment/enviroment3.c enviroment/enviroment4.c commands/exec_command.c \
-	pipe/pipe.c pipe/pipe2.c enviroment/enviroment5.c commands/export_cmd3.c
+	pipe/pipe.c pipe/pipe2.c enviroment/enviroment5.c commands/export_cmd3.c commands/utils_cmd.c pipe/pipe3.c
 	
 OBJS = $(SRC:.c=.o)
 NAME = minishell

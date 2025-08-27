@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:14:59 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:15:49 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 17:31:00 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,6 @@ static pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 
 static void	ft_pipe_loop(char **split_pipe, t_var *variables)
 {
-	size_t	i;
-	size_t	j;
 	pid_t	pid;
 	size_t	tokens_count;
 	int		*pipe_fd;
@@ -96,26 +94,12 @@ static void	ft_pipe_loop(char **split_pipe, t_var *variables)
 	pipe_fd = malloc(sizeof(int) * 2 * (tokens_count - 1));
 	if (!pipe_fd)
 		return ;
-	1 && (i = 0, j = 0);
-	while (i < tokens_count - 1)
-	{
-		if (pipe(pipe_fd + i * 2) < 0)
-		{
-			perror("pipe");
-			while (j < i * 2)
-            	close(pipe_fd[j++]);
-			free(pipe_fd);
-			ft_status(1, 1);
-			return ;
-		}
-		i++;
-	}
-	i = 0;
+	if (!create_pipes(tokens_count, pipe_fd))
+		return ;
 	pid = while_pipe(split_pipe, pipe_fd, tokens_count, variables);
 	if (pid == -3)
 		return (free(pipe_fd));
 	end_pipe(tokens_count, pipe_fd, pid, variables);
-	free(pipe_fd);
 	return ;
 }
 
