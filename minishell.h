@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/27 17:32:43 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 21:19:39 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,12 +60,19 @@ typedef struct s_var
 	short			is_append_val;
 }	t_var;
 
+typedef struct s_pids
+{
+	int				pid;
+	struct s_pids	*next;
+}	t_pids;
+
 typedef struct s_var_pipe
 {
 	char	*redirections_output;
 	char	**split_pipe;
 	char	**tokens;
 	t_var	*variables;
+	t_pids	*pids;
 }	t_var_pipe;
 
 typedef struct s_var_redirect

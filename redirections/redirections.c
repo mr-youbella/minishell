@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:32:19 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 22:03:37 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ static short	init_pipe(char *cmd_line, t_var_redirect *var_redirection,
 	free_array(var_redirection->tokens, 1, var_redirection->variables);
 	free(cmd_args);
 	if (!handle_pipe(cmd_line, var_redirection->tokens, fd, var_redirection))
-		return (0);
+		return (free(var_redirection->pipe_output), free(var_redirection->join_herdoc), 0);
 	if (var_redirection->join_herdoc)
 		ft_putstr_fd(var_redirection->join_herdoc, fd[1]);
 	return (1);

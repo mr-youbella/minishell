@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:14:59 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:31:00 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 21:56:41 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,56 @@ static void	close_fdpipe(pid_t pid, size_t i, size_t tokens_count, int *pipe_fd)
 	}
 }
 
+t_pids	*new_node_pid(int pid)
+{
+	t_pids	*new_pid;
+
+	new_pid = malloc(sizeof(t_pids));
+	if (!new_pid)
+		return (NULL);
+	new_pid->pid = pid;
+	new_pid->next = NULL;
+	return (new_pid);
+}
+
+t_pids	*last_node_pid(t_pids *lst)
+{
+	if (!lst)
+		return (NULL);
+	while (lst->next)
+		lst = lst->next;
+	return (lst);
+}
+
+void	add_back_pids(t_pids **lst, t_pids *new)
+{
+	if (!new)
+		return ;
+	if (!*lst)
+	{
+		*lst = new;
+		return ;
+	}
+	last_node_pid(*lst)->next = new;
+}
+
 static int	child_pipe(size_t i, size_t tokens_count,
 						int *pipe_fd, t_var_pipe *varpipe)
 {
 	pid_t	pid;
+	t_pids	*new_pid;
 
 	pid = fork();
 	if (pid < 0)
+	{
+		while (varpipe->pids)
+		{
+			kill(varpipe->pids->pid, SIGKILL);
+			waitpid(varpipe->pids->pid, NULL, 0);
+			varpipe->pids = varpipe->pids->next;
+		}
 		return (ft_status(1, 1), perror("fork"), -3);
+	}
 	if (pid == 0)
 	{
 		mange_pipes(pipe_fd, i, tokens_count);
@@ -43,6 +85,8 @@ static int	child_pipe(size_t i, size_t tokens_count,
 		execute_cmd_pipe(varpipe->tokens,
 			varpipe->variables->copy_env, varpipe->variables);
 	}
+	new_pid = new_node_pid(pid);
+	add_back_pids(&varpipe->pids, new_pid);
 	close_fdpipe(pid, i, tokens_count, pipe_fd);
 	if (varpipe->redirections_output)
 	{
@@ -59,13 +103,14 @@ static pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 	pid_t		pid;
 	int			in_fd;
 	t_var_pipe	*varpipe;
+	t_pids		*tmp;
 
 	varpipe = malloc(sizeof(t_var_pipe));
 	if (!varpipe)
 		return (ft_status(1, 1), -3);
 	ft_memset(varpipe, 0, sizeof(t_var_pipe));
 	varpipe->split_pipe = split_pipe;
-	varpipe->variables = variables;
+	1 && (varpipe->variables = variables, varpipe->pids = NULL);
 	1 && (i = 0, in_fd = 0);
 	while (i < tokens_count)
 	{
@@ -78,6 +123,11 @@ static pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 		pid = child_pipe(i, tokens_count, pipe_fd, varpipe);
 		free_array(varpipe->tokens, 0, variables);
 		i++;
+	}
+	while (varpipe->pids)
+	{
+		1 && (tmp = varpipe->pids, varpipe->pids = varpipe->pids->next);
+		free(tmp);
 	}
 	return (free(varpipe), pid);
 }
