@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:45:42 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 18:07:44 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 18:39:44 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,25 +43,28 @@ char	*search_cmd(char *cmd, t_var *variables)
 {
 	size_t	i;
 	char	*env_path;
-	char	**split_env_path;
+	char	**split_path;
 	char	*join_cmd_to_path;
 
-	i = 0;
 	if (!cmd[0])
 		return (NULL);
 	if (cmd[0] == '/')
 		return (ft_strdup(cmd));
-	env_path = ft_getenv("PATH", variables);
+	1 && (i = 0, env_path = ft_getenv("PATH", variables));
 	if (!env_path)
-		env_path = ft_strdup(".");
-	split_env_path = ft_split(env_path, ':');
-	join_cmd_to_path = search_in_path(cmd, split_env_path);
+	{
+		1 && (env_path = ft_strdup("."), split_path = ft_split(env_path, ':'));
+		free(env_path);
+	}
+	else
+		split_path = ft_split(env_path, ':');
+	join_cmd_to_path = search_in_path(cmd, split_path);
 	if (join_cmd_to_path)
 		return (join_cmd_to_path);
 	i = 0;
-	while (split_env_path && split_env_path[i])
-		free(split_env_path[i++]);
-	free(split_env_path);
+	while (split_path && split_path[i])
+		free(split_path[i++]);
+	free(split_path);
 	return (NULL);
 }
 
