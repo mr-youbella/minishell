@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   enviroment4.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:06:40 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 09:57:43 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 14:50:59 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,20 +74,18 @@ short	check_export_arg(char *arg)
 		return (0);
 	if (!ft_isalpha(arg[i]) && arg[i] != '_')
 	{
-		ft_putstr_fd("\033[34mminishell: \033[31mexport: ", 2);
-		ft_putstr_fd("\033[0;36mvariable not an identifier.\n\033[0m", 2);
+		ft_putstr_fd("\033[34mminishell: \033[0mexport: ", 2);
+		ft_putstr_fd("\033[31mvariable not an identifier.\n\033[0m", 2);
 		return (ft_status(1, 1), 0);
 	}
 	while (arg[i])
 	{
-		if (arg[i] == '=')
-			break ;
-		if (arg[i] == '+' && arg[i + 1] == '=')
+		if (arg[i] == '=' || (arg[i] == '+' && arg[i + 1] == '='))
 			break ;
 		if (!ft_isalnum(arg[i]) && arg[i] != '_')
 		{
-			ft_putstr_fd("\033[34mminishell: \033[31mexport: ", 2);
-			ft_putstr_fd("\033[0;36mnot valid in this context.\n\033[0m", 2);
+			ft_putstr_fd("\033[34mminishell: \033[0mexport: ", 2);
+			ft_putstr_fd("\033[31mnot valid in this context.\n\033[0m", 2);
 			return (ft_status(1, 1), 0);
 		}
 		i++;

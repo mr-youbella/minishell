@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dollar_sign_expand.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 22:44:16 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 23:50:08 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:56:10 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,8 @@ static short	dollar_sign(t_dollar *dollar_var, t_var *variables,
 	}
 	if (dollar_var->str[dollar_var->i] == '$')
 	{
-		if (dollar_var->str[dollar_var->i + 1] == '?' && dollar_var->quote != 39)
+		if (dollar_var->str[dollar_var->i + 1] == '?'
+			&& dollar_var->quote != 39)
 			return (dollar_expand(result, dollar_var, variables), 0);
 		else if (!ft_isalpha(dollar_var->str[dollar_var->i + 1])
 			&& dollar_var->str[dollar_var->i + 1] != '_')
@@ -106,10 +107,7 @@ static short	dollar_sign(t_dollar *dollar_var, t_var *variables,
 			return (0);
 		}
 		else if (dollar_var->quote != 39)
-		{
-			change_val(result, dollar_var, variables, 0);
-			return (0);
-		}
+			return (change_val(result, dollar_var, variables, 0), 0);
 	}
 	return (1);
 }

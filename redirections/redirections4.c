@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/26 21:36:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:52:01 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,27 +40,21 @@ static short	add_redirections(char **tokens, t_ft_var *list_var,
 	return (0);
 }
 
-t_redirections	*list_redirections(char **tokens, t_var *variables)
+static short	loop_redirections(char **tokens, t_ft_var *list_var,
+							t_var *variables, t_redirections **list)
 {
-	t_redirections	*list;
-	t_redirections	*new_node;
-	t_ft_var		*list_var;
-	size_t			count_herdoc;
 	short			return_val;
+	size_t			count_herdoc;
+	t_redirections	*new_node;
 
 	count_herdoc = 0;
-	list_var = malloc(sizeof(t_ft_var));
-	if (!list_var)
-		return (ft_status(1, 1), NULL);
-	ft_memset(list_var, 0, sizeof(t_ft_var));
-	1 && (list_var->j = 0, list = NULL);
 	while (tokens[list_var->j])
 	{
 		return_val = check_syntax_redirect(tokens, list_var);
 		if (!return_val)
 			continue ;
 		if (return_val == -1)
-			return (free(list_var), NULL);
+			return (free(list_var), 0);
 		count_herdoc += add_redirections
 			(tokens, list_var, &new_node, variables);
 		if (count_herdoc >= 17)
@@ -68,12 +62,26 @@ t_redirections	*list_redirections(char **tokens, t_var *variables)
 			ft_putstr_fd("\033[34minishell: ", 2);
 			ft_putstr_fd
 				("\033[31mmaximum here-document count exceeded.\033[0m\n", 2);
-			ft_status(2, 1);
-			return (free(list_var), NULL);
+			return (ft_status(2, 1), free(list_var), 0);
 		}
-		add_node_in_back(&list, new_node);
+		add_node_in_back(list, new_node);
 		list_var->j++;
 	}
+	return (1);
+}
+
+t_redirections	*list_redirections(char **tokens, t_var *variables)
+{
+	t_redirections	*list;
+	t_ft_var		*list_var;
+
+	list_var = malloc(sizeof(t_ft_var));
+	if (!list_var)
+		return (ft_status(1, 1), NULL);
+	ft_memset(list_var, 0, sizeof(t_ft_var));
+	1 && (list_var->j = 0, list = NULL);
+	if (!loop_redirections(tokens, list_var, variables, &list))
+		return (NULL);
 	return (free(list_var), list);
 }
 

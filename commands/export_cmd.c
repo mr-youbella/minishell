@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export_cmd.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 10:29:01 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:01:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,49 +112,6 @@ static short	add_again_env(char *token, size_t *i,
 	}
 	free(tmp);
 	return (1);
-}
-
-void	take_var_export_without_plus(char *token, char *new_token)
-{
-	size_t	i;
-	size_t	j;
-
-	i = 0;
-	j = 0;
-	while (token[i])
-	{
-		if (token[i] == '+')
-		{
-			i++;
-			break ;
-		}
-		new_token[j++] = token[i++];
-	}
-	while (token[i])
-		new_token[j++] = token[i++];
-	new_token[j] = 0;
-}
-
-char	*var_export_without_plus(char *token, t_var *variables)
-{
-	char	*new_token;
-	size_t	i;
-
-	i = 0;
-	variables->is_append_val = 0;
-	while (token[i])
-	{
-		if (token[i] == '+' && token[i + 1] == '=')
-			variables->is_append_val = 1;
-		if (token[i] == '=')
-			break ;
-		i++;
-	}
-	new_token = malloc(ft_strlen(token) - variables->is_append_val + 1);
-	if (!new_token)
-		return (NULL);
-	take_var_export_without_plus(token, new_token);
-	return (new_token);
 }
 
 char	*export_cmd(char **tokens, short is_return,

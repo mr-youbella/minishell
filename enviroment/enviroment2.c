@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   enviroment2.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:03:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 10:29:26 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:59:27 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,48 +91,22 @@ static void	get_env(t_var *variables, t_list **enviroment, t_env *env_var)
 		variables->cd_flag = 0;
 }
 
-static short	is_just_changed(t_env *env_var, t_list *enviroment)
+static short	is_just_changed(t_env *env_var,
+								t_list *environment, t_var *variables)
 {
-	t_list	*tmp;
-
 	if (env_var->var_export || env_var->var_unset)
 	{
-		while (enviroment)
-		{
-			tmp = enviroment;
-			enviroment = enviroment->next;
-			free(tmp);
-		}
+		variables->environment = environment;
+		free_list(variables, environment, NULL);
 		return (1);
 	}
 	return (0);
 }
 
-void	change_v_export(char *v_export, char *name_var_export, t_var *variables, t_env *env_var)
-{
-	size_t	i;
-	t_list	*new_leak;
-
-	i = 0;
-	while (v_export && v_export[i] && v_export[i] != '=')
-		i++;
-	if (v_export && variables->is_append_val)
-	{
-		env_var->var_export = ft_strjoin(name_var_export, "=");
-		env_var->var_export = ft_strjoin(env_var->var_export,
-				ft_getenv(name_var_export, variables));
-		env_var->var_export = ft_strjoin(env_var->var_export,
-				ft_substr(v_export, i + 1, ft_strlen(v_export) - i));
-	}
-	variables->is_append_val = 0;
-	new_leak = ft_lstnew(name_var_export);
-	ft_lstadd_back(&variables->leaks, new_leak);
-}
-
 t_list	*all_env(char *v_export, char *v_unset,
 					short env_export, t_var *variables)
 {
-	t_list	*enviroment;
+	t_list	*environment;
 	size_t	i;
 	char	*name_var_export;
 	t_env	*env_var;
@@ -142,17 +116,19 @@ t_list	*all_env(char *v_export, char *v_unset,
 		return (ft_status(1, 1), NULL);
 	ft_memset(env_var, 0, sizeof(t_env));
 	1 && (env_var->var_export = v_export, env_var->var_unset = v_unset, i = 0);
-	1 && (env_var->is_export_cmd = variables->is_export_cmd, enviroment = NULL);
+	env_var->is_export_cmd = variables->is_export_cmd;
+	environment = NULL;
 	while (v_export && v_export[i] && v_export[i] != '=')
 		i++;
 	name_var_export = ft_substr(v_export, 0, i);
 	env_var->name_var_export = name_var_export;
 	change_v_export(v_export, name_var_export, variables, env_var);
 	if (!env_export || env_export == 1)
-		get_env(variables, &enviroment, env_var);
+		get_env(variables, &environment, env_var);
 	if (!env_export || env_export == 2)
-		get_export(variables, &enviroment, env_var);
-	if (is_just_changed(env_var, enviroment))
+		get_export(variables, &environment, env_var);
+	if (is_just_changed(env_var, environment, variables))
 		return (free(env_var), variables->is_export_cmd = 0, NULL);
-	return (free(env_var), variables->is_export_cmd = 0, enviroment);
+	variables->environment = environment;
+	return (free(env_var), variables->is_export_cmd = 0, environment);
 }

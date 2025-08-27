@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 15:42:45 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 15:09:12 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ static char	*close_pipe(pid_t pid, t_var_redirect *var_redirection,
 	int		status;
 
 	status = 0;
+	if (pid < 0)
+		perror("fork");
 	if (pid > 0)
 	{
 		g_signal_flag = pid;
@@ -133,6 +135,7 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
 		else
 			write(fd[1], "", 0);
 	}
+	free(var_redirection->pipe_output);
 	if (!final_setup_pipe(var_redirection, variables, fd))
 		return (free(var_redirection), NULL);
 	if (!var_redirection->output_cmd)

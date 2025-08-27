@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/27 01:10:30 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:02:08 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,6 +164,7 @@ char			*echo_cmd(char **tokens, short is_return);
 t_list			*env_cmd(short is_print, t_var *variables);
 char			*export_cmd(char **tokens, short is_return,
 					t_var *variables, short is_there_equal);
+char			*var_export_without_plus(char *token, t_var *variables);
 void			unset_cmd(char **tokens, t_var *variables);
 void			cd_cmd(char *tokens, t_var *variables);
 char			*pwd_cmd(short is_print);
@@ -190,6 +191,9 @@ short			check_unset_arg(char *arg);
 char			*ft_getenv(char *var, t_var *variables);
 short			is_exist_in_env(char *str, char **env, long position);
 short			is_with_value(t_env *env_var);
+char			**add_env(char **env, t_var *variables);
+void			change_v_export(char *v_export, char *name_var_export,
+					t_var *variables, t_env *env_var);
 // pipe
 void			ft_pipe(char *cmd_line, t_var *variables);
 void			mange_pipes(int *pipe_fd, size_t i, size_t tokens_count);

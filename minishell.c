@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 00:58:42 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:42:02 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,47 +67,19 @@ static void	setup_terminal(struct termios *ctr)
 {
 	tcgetattr(0, ctr);
 	ctr->c_lflag &= ~ECHOCTL;
+	tcsetattr(0, 0, ctr);
 	signal(SIGINT, handle_signal);
 	signal(SIGQUIT, handle_signal);
 }
 
-char	*defualt_env(char *str, t_var *variables)
+void	f()
 {
-	t_list	*new_leak;
-	char	*new_env;
-
-	new_env = ft_strdup(str);
-	new_leak = ft_lstnew(new_env);
-	ft_lstadd_back(&variables->leaks, new_leak);
-	return (new_env);
-}
-
-char	**add_env(char **env, t_var *variables)
-{
-	char	*pwd;
-	char	**new_env;
-
-	if (!env[0])
-	{
-		pwd = getcwd(NULL, 0);
-		new_env = malloc(6 * sizeof(char *));
-		if (!new_env)
-			return (NULL);
-		new_env[0] = defualt_env("OLDPWD", variables);
-		new_env[1] = defualt_env
-			("PATH=/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:.", variables);
-		new_env[2] = defualt_env(ft_strjoin("PWD=", pwd), variables);
-		new_env[3] = defualt_env("SHLVL=2", variables);
-		new_env[4] = defualt_env("_=/usr/bin/env", variables);
-		new_env[5] = NULL;
-		free(pwd);
-		return (new_env);
-	}
-	return (NULL);
+	system("leaks minishell");
 }
 
 int	main(int argc, char **argv, char **env)
 {
+	atexit(f);
 	t_var			*variables;
 	char			**copy_env;
 	char			**new_env;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 01:07:55 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:48:11 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,6 @@ pid_t	create_process_redirection(t_var_redirect *var_redirection,
 					t_var *variables, char **tokens, int *fd)
 {
 	var_redirection->pid = fork();
-	if (var_redirection->pid < 0)
-		perror("fork");
 	if (!var_redirection->pid)
 	{
 		mange_fd_redirect(var_redirection, fd);
