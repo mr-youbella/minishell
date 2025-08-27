@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:16:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 05:57:02 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 16:57:34 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ void	execute_cmd_pipe(char **tokens, char **copy_env, t_var *variables)
 	if (path && !is_buitin_cmd(tokens[0]))
 	{
 		execve(path, tokens, variables->env);
+		free(path);
 		ft_putstr_fd("\033[31mminishell: \033[34m", 2);
 		ft_putstr_fd(tokens[0], 2);
 		ft_putstr_fd("\033[0m: ", 2);

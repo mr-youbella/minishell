@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:14:59 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 14:07:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 16:36:56 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ static pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 static void	ft_pipe_loop(char **split_pipe, t_var *variables)
 {
 	size_t	i;
+	size_t	j;
 	pid_t	pid;
 	size_t	tokens_count;
 	int		*pipe_fd;
@@ -95,10 +96,18 @@ static void	ft_pipe_loop(char **split_pipe, t_var *variables)
 	pipe_fd = malloc(sizeof(int) * 2 * (tokens_count - 1));
 	if (!pipe_fd)
 		return ;
-	i = 0;
+	1 && (i = 0, j = 0);
 	while (i < tokens_count - 1)
 	{
-		pipe(pipe_fd + i * 2);
+		if (pipe(pipe_fd + i * 2) < 0)
+		{
+			perror("pipe");
+			while (j < i * 2)
+            	close(pipe_fd[j++]);
+			free(pipe_fd);
+			ft_status(1, 1);
+			return ;
+		}
 		i++;
 	}
 	i = 0;

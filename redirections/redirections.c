@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 15:09:12 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 16:46:19 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,18 @@ static char	*close_pipe(pid_t pid, t_var_redirect *var_redirection,
 	return (output_cmd);
 }
 
+static void	vr_free_close(t_var_redirect *var_redirection)
+{
+	if (var_redirection->fd_file_input > 0)
+		close(var_redirection->fd_file_input);
+	if (var_redirection->fd_file_output > 0)
+		close(var_redirection->fd_file_output);
+	free(var_redirection->pipe_output);
+	free(var_redirection->join_herdoc);
+	free(var_redirection->cmd_result);
+	
+}
+
 static short	handle_pipe(char *cmd_line, char **tokens,
 						int *fd, t_var_redirect *var_redirection)
 {
@@ -57,14 +69,17 @@ static short	handle_pipe(char *cmd_line, char **tokens,
 			var_redirection->fd_pipe,
 			var_redirection->variables, var_redirection);
 	if (!var_redirection->return_val)
-		return (0);
+		return (vr_free_close(var_redirection), 0);
 	var_redirection->path_cmd = is_there_cmd(tokens,
 			var_redirection->variables);
 	if (!var_redirection->path_cmd && !is_buitin_cmd(tokens[0]))
-		return (0);
-	var_redirection->path_cmd = var_redirection->path_cmd;
-	pipe(fd);
-	pipe(var_redirection->fd_output);
+		return (vr_free_close(var_redirection), 0);
+	if (pipe(fd) < 0 || pipe(var_redirection->fd_output) < 0)
+	{
+		perror("pipe");
+		free(var_redirection->path_cmd);
+		return (vr_free_close(var_redirection), 0);
+	}
 	return (1);
 }
 
@@ -135,7 +150,6 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
 		else
 			write(fd[1], "", 0);
 	}
-	free(var_redirection->pipe_output);
 	if (!final_setup_pipe(var_redirection, variables, fd))
 		return (free(var_redirection), NULL);
 	if (!var_redirection->output_cmd)

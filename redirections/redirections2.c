@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 12:48:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 15:45:28 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,21 +46,21 @@ short	setup_redirections(char **tokens_redirections,
 	var_redirection->fd_file_output = 0;
 	var_redirection->join_herdoc = NULL;
 	redirc = list_redirections(tokens_redirections, var_redirection->variables);
-	free_list(var_redirection->variables, NULL, redirc);
 	if (!redirc)
 		return (0);
+	free_list(var_redirection->variables, NULL, redirc);
 	while (redirc)
 	{
 		if (!redirect_output(redirc->type_redirection,
 				redirc->file_name, var_redirection))
-			return (0);
+			return (free(var_redirection->join_herdoc), 0);
 		herdoc(redirc->type_redirection, redirc->file_name,
 			var_redirection);
 		if (g_signal_flag == -5)
 			return (free(var_redirection->join_herdoc), g_signal_flag = 0, 0);
 		if (!redirect_input(redirc->type_redirection,
 				redirc->file_name, var_redirection))
-			return (0);
+			return (free(var_redirection->join_herdoc), 0);
 		redirc = redirc->next;
 	}
 	return (1);
