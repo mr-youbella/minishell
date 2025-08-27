@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 12:57:09 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 12:59:31 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 23:28:14 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,8 @@ void	change_v_export(char *v_export, char *name_var_export,
 {
 	size_t	i;
 	t_list	*new_leak;
+	char	*value;
+	char	*tmp;
 
 	i = 0;
 	while (v_export && v_export[i] && v_export[i] != '=')
@@ -59,12 +61,19 @@ void	change_v_export(char *v_export, char *name_var_export,
 	if (v_export && variables->is_append_val)
 	{
 		env_var->var_export = ft_strjoin(name_var_export, "=");
+		tmp = env_var->var_export;
 		env_var->var_export = ft_strjoin(env_var->var_export,
 				ft_getenv(name_var_export, variables));
-		env_var->var_export = ft_strjoin(env_var->var_export,
-				ft_substr(v_export, i + 1, ft_strlen(v_export) - i));
+		free(tmp);
+		tmp = env_var->var_export;
+		value = ft_substr(v_export, i + 1, ft_strlen(v_export) - i);
+		env_var->var_export = ft_strjoin(env_var->var_export, value);
+		free(tmp);
+		free(value);
 	}
 	variables->is_append_val = 0;
 	new_leak = ft_lstnew(name_var_export);
+	ft_lstadd_back(&variables->leaks, new_leak);
+	new_leak = ft_lstnew(env_var->var_export);
 	ft_lstadd_back(&variables->leaks, new_leak);
 }
