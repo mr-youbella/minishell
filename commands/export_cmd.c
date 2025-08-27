@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 20:29:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 23:20:21 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,13 +132,13 @@ char	*export_cmd(char **tokens, short is_return,
 		if (check_export_arg(tokens[i]))
 		{
 			new_token = var_export_without_plus(tokens[i], variables);
+			new_leak = ft_lstnew(new_token);
+			ft_lstadd_back(&variables->leaks, new_leak);
 			while (new_token[j] && new_token[j] != '=')
 				j++;
 			if (!add_again_env(new_token, &i, j, variables))
 				continue ;
 			add_export_in_list(new_token, is_there_equal, variables);
-			new_leak = ft_lstnew(new_token);
-			ft_lstadd_back(&variables->leaks, new_leak);
 		}
 		i++;
 	}

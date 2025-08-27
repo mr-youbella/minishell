@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/27 23:01:02 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 23:11:03 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ static short	loop_redirections(char **tokens, t_ft_var *list_var,
 			return (free_list(variables, NULL, *list), free(list_var), 0);
 		count_herdoc += add_redirections
 			(tokens, list_var, &new_node, variables);
+			add_node_in_back(list, new_node);
 		if (count_herdoc >= 17)
 		{
 			ft_putstr_fd("\033[34minishell: ", 2);
@@ -65,7 +66,6 @@ static short	loop_redirections(char **tokens, t_ft_var *list_var,
 			free_list(variables, NULL, *list);
 			return (ft_status(2, 1), free(list_var), 0);
 		}
-		add_node_in_back(list, new_node);
 		list_var->j++;
 	}
 	return (1);
