@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   enviroment4.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:06:40 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 20:54:52 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 09:57:43 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,12 @@ static char	*check_env(char *var, t_list *environment,
 	t_list	*new_leak;
 	char	*env;
 
+	while (((char *)environment->content)[i])
+	{
+		if (((char *)environment->content)[i] == '=')
+			break ;
+		i++;
+	}
 	var_env = ft_substr((char *)environment->content, 0, i);
 	new_leak = ft_lstnew(var_env);
 	ft_lstadd_back(&variables->leaks, new_leak);
@@ -39,7 +45,6 @@ static char	*check_env(char *var, t_list *environment,
 char	*ft_getenv(char *var, t_var *variables)
 {
 	char	*var_env;
-	size_t	i;
 	t_list	*environment;
 
 	if (!var)
@@ -47,19 +52,12 @@ char	*ft_getenv(char *var, t_var *variables)
 	environment = variables->environment;
 	while (environment)
 	{
-		i = 0;
 		if (!environment->content)
 		{
 			environment = environment->next;
 			continue ;
 		}
-		while (((char *)environment->content)[i])
-		{
-			if (((char *)environment->content)[i] == '=')
-				break ;
-			i++;
-		}
-		var_env = check_env(var, environment, i, variables);
+		var_env = check_env(var, environment, 0, variables);
 		if (var_env && variables->is_return == 1)
 			return (var_env);
 		environment = environment->next;

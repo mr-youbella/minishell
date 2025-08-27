@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:03:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 01:11:04 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 10:29:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,11 +108,31 @@ static short	is_just_changed(t_env *env_var, t_list *enviroment)
 	return (0);
 }
 
+void	change_v_export(char *v_export, char *name_var_export, t_var *variables, t_env *env_var)
+{
+	size_t	i;
+	t_list	*new_leak;
+
+	i = 0;
+	while (v_export && v_export[i] && v_export[i] != '=')
+		i++;
+	if (v_export && variables->is_append_val)
+	{
+		env_var->var_export = ft_strjoin(name_var_export, "=");
+		env_var->var_export = ft_strjoin(env_var->var_export,
+				ft_getenv(name_var_export, variables));
+		env_var->var_export = ft_strjoin(env_var->var_export,
+				ft_substr(v_export, i + 1, ft_strlen(v_export) - i));
+	}
+	variables->is_append_val = 0;
+	new_leak = ft_lstnew(name_var_export);
+	ft_lstadd_back(&variables->leaks, new_leak);
+}
+
 t_list	*all_env(char *v_export, char *v_unset,
 					short env_export, t_var *variables)
 {
 	t_list	*enviroment;
-	t_list	*new_leak;
 	size_t	i;
 	char	*name_var_export;
 	t_env	*env_var;
@@ -126,17 +146,8 @@ t_list	*all_env(char *v_export, char *v_unset,
 	while (v_export && v_export[i] && v_export[i] != '=')
 		i++;
 	name_var_export = ft_substr(v_export, 0, i);
-	if (v_export && variables->is_append_val)
-	{
-		env_var->var_export = ft_strjoin(name_var_export, "=");
-		env_var->var_export = ft_strjoin(env_var->var_export,
-				ft_getenv(name_var_export, variables));
-		env_var->var_export = ft_strjoin(env_var->var_export,
-				ft_substr(v_export, i + 1, ft_strlen(v_export) - i));
-	}
 	env_var->name_var_export = name_var_export;
-	new_leak = ft_lstnew(name_var_export);
-	ft_lstadd_back(&variables->leaks, new_leak);
+	change_v_export(v_export, name_var_export, variables, env_var);
 	if (!env_export || env_export == 1)
 		get_env(variables, &enviroment, env_var);
 	if (!env_export || env_export == 2)

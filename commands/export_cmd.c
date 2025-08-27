@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 01:09:34 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/27 10:29:01 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,10 @@ static void	add_export_in_list(char *token,
 			all_env(token, NULL, 0, variables);
 	}
 	else
+	{
 		ft_lstadd_back(&variables->export_list, ft_lstnew(token));
+		variables->environment = all_env(NULL, NULL, 0, variables);
+	}
 }
 
 static short	add_again_env(char *token, size_t *i,
