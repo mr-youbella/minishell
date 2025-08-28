@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 05:53:11 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 09:58:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,17 +97,14 @@ char	*builtin_cmd_redirections(char **tokens, int fd_pipe,
 
 static void	mange_fd_redirect(t_var_redirect *var_redirection, int *fd)
 {
-	if (var_redirection->fd_file_output > 0)
-		dup2(var_redirection->fd_file_output, 1);
 	if (var_redirection->join_herdoc)
 		dup2(fd[0], 0);
 	else if (var_redirection->fd_file_input > 0)
-	{
 		dup2(var_redirection->fd_file_input, 0);
-		close(var_redirection->fd_file_input);
-	}
 	else if (var_redirection->fd_pipe > 0)
 		dup2(fd[0], 0);
+	if (var_redirection->fd_file_output > 0)
+		dup2(var_redirection->fd_output[1], 1);
 	close(fd[0]);
 	close(var_redirection->fd_output[0]);
 	close(fd[1]);

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:14:59 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 07:12:29 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 00:20:30 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ static pid_t	while_pipe(char **split_pipe, int *pipe_fd,
 	ft_memset(varpipe, 0, sizeof(t_var_pipe));
 	varpipe->split_pipe = split_pipe;
 	1 && (varpipe->variables = var, varpipe->pids = NULL);
-	pid = while_pipe2(tokens_count, pipe_fd, varpipe);
+	pid = while_pipe2(split_pipe, tokens_count, pipe_fd, varpipe);
 	while (varpipe->pids)
 	{
 		1 && (tmp = varpipe->pids, varpipe->pids = varpipe->pids->next);
