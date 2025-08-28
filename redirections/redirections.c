@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 10:01:43 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 13:04:04 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ static short	handle_pipe(char *cmd_line, char **tokens,
 	var_redirection->path_cmd = is_there_cmd(tokens,
 			var_redirection->variables);
 	if (!var_redirection->path_cmd && !is_buitin_cmd(tokens[0]))
-		return (vr_free_close(var_redirection), 0);
+		return (vr_free_close(var_redirection), ft_status(0, 1), 0);
 	if (pipe(fd) < 0 || pipe(var_redirection->fd_output) < 0)
 	{
 		perror("pipe");
@@ -82,6 +82,8 @@ static short	init_pipe(char *cmd_line, t_var_redirect *var_redirection,
 	if (fd_pipe > 0)
 		var_redirection->pipe_output = read_fd(fd_pipe);
 	cmd_args = join_cmd_args(cmd_line);
+	if (!cmd_args)
+		ft_status(0, 1);
 	var_redirection->tokens = split_command(cmd_args, 1,
 			var_redirection->variables);
 	free_array(var_redirection->tokens, 1, var_redirection->variables);

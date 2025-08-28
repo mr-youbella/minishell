@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 00:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 00:18:27 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 12:57:10 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,8 @@ pid_t	while_pipe2(char **split_pipe, size_t tokens_count,
 	{
 		if (i)
 			in_fd = pipe_fd[(i - 1) * 2];
+		else
+			in_fd = -3;
 		varpipe->tokens = split_command(split_pipe[i], 1, varpipe->variables);
 		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
 			varpipe->redirections_output = redirections(split_pipe[i],

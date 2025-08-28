@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:13:43 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 09:58:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 13:00:40 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,9 @@ static void	mange_fd_redirect(t_var_redirect *var_redirection, int *fd)
 		dup2(var_redirection->fd_file_input, 0);
 	else if (var_redirection->fd_pipe > 0)
 		dup2(fd[0], 0);
-	if (var_redirection->fd_file_output > 0)
+	if (var_redirection->fd_file_output > 0
+		|| var_redirection->fd_pipe > 0
+		|| var_redirection->fd_pipe == -3)
 		dup2(var_redirection->fd_output[1], 1);
 	close(fd[0]);
 	close(var_redirection->fd_output[0]);
