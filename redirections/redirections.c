@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:11:00 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 04:14:35 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 06:40:56 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 static char	*close_pipe(pid_t pid, t_var_redirect *var_redirection,
 						int *fd, char *pipe_output)
 {
-	char	*output_cmd;
 	int		status;
 
 	status = 0;
@@ -34,12 +33,11 @@ static char	*close_pipe(pid_t pid, t_var_redirect *var_redirection,
 		close(var_redirection->fd_output[1]);
 		g_signal_flag = 0;
 	}
-	output_cmd = read_fd(var_redirection->fd_output[0]);
 	close(fd[0]);
 	close(var_redirection->fd_output[0]);
 	if (var_redirection->fd_file_input > 0)
 		close(var_redirection->fd_file_input);
-	return (output_cmd);
+	return (NULL);
 }
 
 static short	handle_pipe(char *cmd_line, char **tokens,
@@ -98,39 +96,32 @@ static short	final_setup_pipe(t_var_redirect *var_redirection,
 								t_var *variables, int *fd)
 {
 	pid_t			pid;
-	char			*output_cmd;
 
 	close(fd[1]);
 	pid = create_process_redirection(var_redirection, variables,
 			var_redirection->tokens, fd);
-	output_cmd = close_pipe(pid, var_redirection, fd,
-			var_redirection->pipe_output);
-	if (var_redirection->fd_file_output > 0 && output_cmd)
-	{
-		write(var_redirection->fd_file_output,
-			output_cmd, ft_strlen(output_cmd));
-		free(output_cmd);
-		close(var_redirection->fd_file_output);
-		return (0);
-	}
-	var_redirection->output_cmd = output_cmd;
+	close_pipe(pid, var_redirection, fd,
+		var_redirection->pipe_output);
 	if (var_redirection->fd_file_output > 0)
 		close(var_redirection->fd_file_output);
 	return (1);
 }
 
-char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
+void	redirections(char *cmd_line, int fd_pipe, t_var *variables)
 {
 	t_var_redirect	*var_redirection;
 	int				fd[2];
 
 	var_redirection = malloc(sizeof(t_var_redirect));
 	if (!var_redirection)
-		return (ft_status(1, 1), NULL);
+	{
+		ft_status(1, 1);
+		return ;
+	}
 	ft_memset(var_redirection, 0, sizeof(t_var_redirect));
 	var_redirection->variables = variables;
 	if (!init_pipe(cmd_line, var_redirection, fd_pipe, fd))
-		return (free(var_redirection), NULL);
+		return (free(var_redirection));
 	else if (fd_pipe > 0)
 	{
 		if (var_redirection->pipe_output)
@@ -140,9 +131,6 @@ char	*redirections(char *cmd_line, int fd_pipe, t_var *variables, char *s)
 			write(fd[1], "", 0);
 	}
 	if (!final_setup_pipe(var_redirection, variables, fd))
-		return (free(var_redirection), NULL);
-	if (!var_redirection->output_cmd)
-		return (free(var_redirection), NULL);
-	return (s = ft_strdup(var_redirection->output_cmd),
-		free(var_redirection->output_cmd), free(var_redirection), s);
+		return (free(var_redirection));
+	return (free(var_redirection));
 }

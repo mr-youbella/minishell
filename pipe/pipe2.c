@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:16:14 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 20:19:36 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 06:59:21 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,15 +81,12 @@ void	execute_cmd_pipe(char **tokens, char **copy_env, t_var *variables)
 
 void	mange_pipes(int *pipe_fd, size_t i, size_t tokens_count)
 {
-	size_t	j;
-
 	if (i)
 		dup2(pipe_fd[(i - 1) * 2], 0);
 	if (i != tokens_count - 1)
+	{
 		dup2(pipe_fd[i * 2 + 1], 1);
-	j = 0;
-	while (j < 2 * (tokens_count - 1))
-		close(pipe_fd[j++]);
+	}
 }
 
 void	end_pipe(size_t tokens_count, int *pipe_fd, pid_t pid, t_var *variables)

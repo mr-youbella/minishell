@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 00:15:34 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 00:18:27 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 07:16:30 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,64 +27,51 @@ static short	check_pids(pid_t pid, t_var_pipe *varpipe)
 	return (1);
 }
 
-static void	child_process(size_t i, t_var_pipe *varpipe)
+int	start_process(size_t i, int *pipe_fd, size_t tokens_count, t_var_pipe *p)
 {
-	if (is_exist_redirect_pipe(varpipe->split_pipe[i], 'r'))
-	{
-		if (varpipe->redirections_output)
-			printf("%s", varpipe->redirections_output);
-		exit(0);
-	}
-	execute_cmd_pipe(varpipe->tokens,
-		varpipe->variables->copy_env, varpipe->variables);
-}
+	size_t		j;
+	pid_t		pid;
+	int			in_fd;
 
-static int	child_pipe(size_t i, size_t tokens_count,
-						int *pipe_fd, t_var_pipe *varpipe)
-{
-	pid_t	pid;
-	t_pids	*new_pid;
-
-	pid = fork();
-	if (check_pids(pid, varpipe) == -3)
-		return (-3);
+	1 && (in_fd = 0, pid = fork());
 	if (pid == 0)
 	{
+		j = 0;
+		if (i)
+			in_fd = pipe_fd[(i - 1) * 2];
 		mange_pipes(pipe_fd, i, tokens_count);
-		child_process(i, varpipe);
-		execute_cmd_pipe(varpipe->tokens,
-			varpipe->variables->copy_env, varpipe->variables);
-	}
-	new_pid = new_node_pid(pid);
-	add_back_pids(&varpipe->pids, new_pid);
-	close_fdpipe(pid, i, tokens_count, pipe_fd);
-	if (varpipe->redirections_output)
-	{
-		free(varpipe->redirections_output);
-		varpipe->redirections_output = NULL;
+		if (is_exist_redirect_pipe(p->split_pipe[i], 'r'))
+		{
+			redirections(p->split_pipe[i], in_fd, p->variables);
+			while (j < 2 * (tokens_count - 1))
+				close(pipe_fd[j++]);
+			exit(0);
+		}
+		while (j < 2 * (tokens_count - 1))
+			close(pipe_fd[j++]);
+		execute_cmd_pipe(p->tokens,
+			p->variables->copy_env, p->variables);
+		execute_cmd_pipe(p->tokens, p->variables->copy_env, p->variables);
 	}
 	return (pid);
 }
 
-pid_t	while_pipe2(char **split_pipe, size_t tokens_count,
-							int *pipe_fd, t_var_pipe *varpipe)
+pid_t	while_pipe2(size_t tokens_count,
+							int *pipe_fd, t_var_pipe *p)
 {
 	size_t		i;
-	int			in_fd;
 	pid_t		pid;
 
 	i = 0;
-	in_fd = 0;
 	while (i < tokens_count)
 	{
-		if (i)
-			in_fd = pipe_fd[(i - 1) * 2];
-		varpipe->tokens = split_command(split_pipe[i], 1, varpipe->variables);
-		if (is_exist_redirect_pipe(split_pipe[i], 'r'))
-			varpipe->redirections_output = redirections(split_pipe[i],
-					in_fd, varpipe->variables, NULL);
-		pid = child_pipe(i, tokens_count, pipe_fd, varpipe);
-		free_array(varpipe->tokens, 0, varpipe->variables);
+		p->tokens = split_command(p->split_pipe[i], 1, p->variables);
+		pid = start_process(i, pipe_fd, tokens_count, p);
+		if (check_pids(pid, p) == -3)
+			return (-3);
+		add_back_pids(&p->pids, new_node_pid(pid));
+		close_fdpipe(pid, i, tokens_count, pipe_fd);
+		free_array(p->tokens, 0, p->variables);
 		i++;
 	}
 	return (pid);

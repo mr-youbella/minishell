@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_command.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 04:20:41 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:29:20 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 06:04:24 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,6 @@ static void	exec_commands(char **tokens, char **copy_env,
 static short	is_redirections_pipe(char **tokens,
 									char *cmd_line, t_var *variables)
 {
-	char	*redirection_output;
-
 	if (!tokens || !tokens[0])
 		return (free(tokens), 1);
 	if (is_exist_redirect_pipe(cmd_line, '|'))
@@ -55,10 +53,8 @@ static short	is_redirections_pipe(char **tokens,
 	}
 	else if (is_exist_redirect_pipe(cmd_line, 'r'))
 	{
-		redirection_output = redirections(cmd_line, -1, variables, NULL);
-		if (redirection_output)
-			printf("%s", redirection_output);
-		return (free(redirection_output), 1);
+		redirections(cmd_line, -1, variables);
+		return (1);
 	}
 	return (0);
 }

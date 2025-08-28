@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/28 00:21:54 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 07:14:00 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,6 @@ typedef struct s_pids
 
 typedef struct s_var_pipe
 {
-	char	*redirections_output;
 	char	**split_pipe;
 	char	**tokens;
 	t_var	*variables;
@@ -89,7 +88,6 @@ typedef struct s_var_redirect
 	char	*path_cmd;
 	char	*pipe_output;
 	char	**tokens;
-	char	*output_cmd;
 	int		sigint;
 }	t_var_redirect;
 
@@ -141,8 +139,7 @@ short			len_dollar(size_t *i, char quote,
 // Redirections
 t_redirections	*list_redirections(char **tokens, t_var *variables);
 t_redirections	*craete_new_node(char *redirect_type, char *file);
-char			*redirections(char *cmd_line, int fd_pipe,
-					t_var *variables, char *s);
+void			redirections(char *cmd_line, int fd_pipe, t_var *variables);
 pid_t			create_process_redirection(t_var_redirect *var_redirection,
 					t_var *variables, char **tokens, int *fd);
 short			redirect_output(char *type_redirection, char *file_name,
@@ -205,15 +202,13 @@ void			change_v_export(char *v_export, char *name_var_export,
 // pipe
 void			ft_pipe(char *cmd_line, t_var *variables);
 void			mange_pipes(int *pipe_fd, size_t i, size_t tokens_count);
-void			mange_pipes(int *pipe_fd, size_t i, size_t tokens_count);
 void			execute_cmd_pipe(char **tokens, char **copy_env,
 					t_var *variables);
 void			end_pipe(size_t tokens_count, int *pipe_fd,
 					pid_t pid, t_var *variables);
 char			**get_tokens_pipe(char *cmd_line, t_var *variables);
 short			create_pipes(size_t tokens_count, int *pipe_fd);
-pid_t			while_pipe2(char **split_pipe, size_t tokens_count,
-					int *pipe_fd, t_var_pipe *varpipe);
+pid_t			while_pipe2(size_t tokens_count, int *pipe_fd, t_var_pipe *p);
 t_pids			*new_node_pid(int pid);
 void			add_back_pids(t_pids **lst, t_pids *new);	
 void			close_fdpipe(pid_t pid, size_t i,
