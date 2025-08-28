@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 04:45:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 17:20:26 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 15:39:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,11 @@ static void	handle_signal(int sig_num)
 			if (g_signal_flag > 0)
 				1 && (printf("^C\n"), ft_status(130, 1));
 		}
-		else
+		else if (!g_signal_flag)
 		{
-			1 && (printf("\n"), rl_on_new_line());
-			1 && (rl_replace_line("", 0), rl_redisplay(), ft_status(1, 1));
+			printf("\n");
+			rl_replace_line("", 0);
+			1 && (rl_on_new_line(), rl_redisplay(), ft_status(1, 1));
 		}
 	}
 	if (sig_num == SIGQUIT)

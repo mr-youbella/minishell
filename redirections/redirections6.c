@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections6.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:18:44 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 03:46:47 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 15:18:53 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,4 +74,27 @@ char	*read_fd(int fd)
 			return (free(buffer), NULL);
 	}
 	return (free(buffer), file_content);
+}
+
+void	check_is_exits_quotes(char *token, t_var *variables)
+{
+	size_t	i;
+	char	**str;
+
+	i = 0;
+	str = split_commmand_with_quotes(token, ' ', 0, variables);
+	while (str[0][i])
+	{
+		if (str[0][i] == 39 || str[0][i] == '"')
+		{
+			free(str[0]);
+			free(str);
+			variables->is_quotes_herdoc = 1;
+			return ;
+		}
+		i++;
+	}
+	free(str[0]);
+	free(str);
+	variables->is_quotes_herdoc = 0;
 }

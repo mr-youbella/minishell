@@ -6,7 +6,7 @@
 #    By: youbella <youbella@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/11 23:47:48 by youbella          #+#    #+#              #
-#    Updated: 2025/08/28 14:51:31 by youbella         ###   ########.fr        #
+#    Updated: 2025/08/28 15:16:11 by youbella         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -53,7 +53,7 @@ $(NAME): $(OBJS)
 
 %.o: %.c minishell.h
 	@echo "$(YELLOW)⚙️  Compiling $<...$(DEF)"
-	@printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
+#	 @printf "$(BLUE)⚙️  Norminette:$(DEF)$(GREEN) " && norminette $< && echo "$(DEF)"
 	@$(CC) $(CFLAGS) $(READLINE_INCLUDE) -c $< -o $@
 
 clean:

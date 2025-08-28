@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirections4.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/28 12:31:44 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 15:18:36 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ static short	add_redirections(char **tokens, t_ft_var *list_var,
 		&& !ft_strncmp(tokens[list_var->j - 1], "<<", 2))
 	{
 		file_name = split_command(tokens[list_var->j], 0, variables);
+		check_is_exits_quotes(tokens[list_var->j], variables);
 		*new_node = craete_new_node(tokens[list_var->j - 1], file_name[0]);
 		free(file_name);
 		return (1);

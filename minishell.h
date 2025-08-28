@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/28 14:00:27 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 15:23:12 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ typedef struct s_var
 	short			is_return;
 	short			is_export_cmd;
 	short			is_append_val;
+	short			is_quotes_herdoc;
 }	t_var;
 
 typedef struct s_pids
@@ -160,6 +161,7 @@ short			is_ambiguous_redirect(char *token, t_var *variables);
 void			add_node_in_back(t_redirections **lst, t_redirections *new);
 short			is_exist_redirect_pipe(char *cmd_line, char redirect_pipe);
 char			*join_cmd_args(char *cmd_line);
+void			check_is_exits_quotes(char *token, t_var *variables);
 // Commands
 short			builtin_commands2(char **tokens, t_var *variables);
 short			builtin_commands(char **tokens, char **copy_env,

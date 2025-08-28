@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtin_commands.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: youbella <youbella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:50:56 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/28 12:45:55 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 14:59:38 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,8 +108,13 @@ void	exit_cmd(char **copy_env, t_var *variables,
 	status = -2;
 	if (is_print)
 		printf(RED "exit\n" DEF);
-	if (!tokens || !tokens[1])
+	if (!tokens)
 		status = ft_status(0, 0);
+	else if (!tokens[1][0])
+	{
+		status = -3;
+		check_exit_args(tokens, &status);
+	}
 	else if (tokens[1])
 	{
 		status = ft_atoi(tokens[1]);
