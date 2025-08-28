@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:42:32 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 23:20:21 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 01:53:26 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,12 +71,9 @@ static char	*print_export(t_var *variables, short is_return,
 	return (export = ft_strjoin(export, tmp2), free(tmp), free(tmp2), export);
 }
 
-static void	add_export_in_list(char *token,
-							short is_there_equal, t_var *variables)
+static void	add_export_in_list(char *token, short is_there_equal,
+								t_var *variables, size_t j)
 {
-	size_t	j;
-
-	j = 0;
 	if (is_exist_var(token, variables, variables->export_list))
 	{
 		while (token[j])
@@ -90,9 +87,12 @@ static void	add_export_in_list(char *token,
 		}
 		if (is_there_equal)
 			all_env(token, NULL, 0, variables);
+		else
+			ft_lstadd_back(&variables->leaks, ft_lstnew(token));
 	}
 	else
 	{
+		ft_lstadd_back(&variables->leaks, ft_lstnew(token));
 		ft_lstadd_back(&variables->export_list, ft_lstnew(token));
 		variables->environment = all_env(NULL, NULL, 0, variables);
 		free_list(variables, variables->environment, NULL);
@@ -104,6 +104,8 @@ static short	add_again_env(char *token, size_t *i,
 {
 	char	*tmp;
 
+	if (!token)
+		return (0);
 	tmp = ft_substr(token, 0, j);
 	if (is_exist_in_env(tmp, variables->env, -1))
 	{
@@ -120,7 +122,6 @@ char	*export_cmd(char **tokens, short is_return,
 {
 	size_t	i;
 	size_t	j;
-	t_list	*new_leak;
 	char	*new_token;
 
 	1 && (ft_status(0, 1), i = 1);
@@ -132,13 +133,11 @@ char	*export_cmd(char **tokens, short is_return,
 		if (check_export_arg(tokens[i]))
 		{
 			new_token = var_export_without_plus(tokens[i], variables);
-			new_leak = ft_lstnew(new_token);
-			ft_lstadd_back(&variables->leaks, new_leak);
 			while (new_token[j] && new_token[j] != '=')
 				j++;
 			if (!add_again_env(new_token, &i, j, variables))
 				continue ;
-			add_export_in_list(new_token, is_there_equal, variables);
+			add_export_in_list(new_token, is_there_equal, variables, 0);
 		}
 		i++;
 	}

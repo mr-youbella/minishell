@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 06:03:27 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/27 21:19:39 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 00:21:54 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,12 @@ void			end_pipe(size_t tokens_count, int *pipe_fd,
 					pid_t pid, t_var *variables);
 char			**get_tokens_pipe(char *cmd_line, t_var *variables);
 short			create_pipes(size_t tokens_count, int *pipe_fd);
+pid_t			while_pipe2(char **split_pipe, size_t tokens_count,
+					int *pipe_fd, t_var_pipe *varpipe);
+t_pids			*new_node_pid(int pid);
+void			add_back_pids(t_pids **lst, t_pids *new);	
+void			close_fdpipe(pid_t pid, size_t i,
+					size_t tokens_count, int *pipe_fd);
 // Free
 void			free_array(char **arr, short is_stock, t_var *variables);
 void			free_list(t_var *variables, t_list *list,

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 15:23:33 by wkannouf          #+#    #+#             */
-/*   Updated: 2025/08/27 23:11:03 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 00:13:07 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,33 +40,32 @@ static short	add_redirections(char **tokens, t_ft_var *list_var,
 	return (0);
 }
 
-static short	loop_redirections(char **tokens, t_ft_var *list_var,
-							t_var *variables, t_redirections **list)
+static short	loop_redirections(char **tokens, t_ft_var *lst,
+							t_var *var, t_redirections **list)
 {
 	short			return_val;
 	size_t			count_herdoc;
 	t_redirections	*new_node;
 
 	count_herdoc = 0;
-	while (tokens[list_var->j])
+	while (tokens[lst->j])
 	{
-		return_val = check_syntax_redirect(tokens, list_var);
+		return_val = check_syntax_redirect(tokens, lst);
 		if (!return_val)
 			continue ;
 		if (return_val == -1)
-			return (free_list(variables, NULL, *list), free(list_var), 0);
+			return (free_list(var, NULL, *list), free(lst), 0);
 		count_herdoc += add_redirections
-			(tokens, list_var, &new_node, variables);
-			add_node_in_back(list, new_node);
+			(tokens, lst, &new_node, var);
+		add_node_in_back(list, new_node);
 		if (count_herdoc >= 17)
 		{
 			ft_putstr_fd("\033[34minishell: ", 2);
 			ft_putstr_fd
 				("\033[31mmaximum here-document count exceeded.\033[0m\n", 2);
-			free_list(variables, NULL, *list);
-			return (ft_status(2, 1), free(list_var), 0);
+			return (free_list(var, NULL, *list), ft_status(2, 1), free(lst), 0);
 		}
-		list_var->j++;
+		lst->j++;
 	}
 	return (1);
 }

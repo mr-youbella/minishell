@@ -6,16 +6,24 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:33:17 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/26 16:26:37 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 02:22:12 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-static void	check_cd(void)
+static void	check_cd(char *tokens, t_var *variables)
 {
 	char	*pwd;
 
+	if (chdir(tokens) == -1)
+	{
+		ft_putstr_fd("\033[34mminishell:\033[0m ", 2);
+		ft_putstr_fd("cd: no such file or directory: \033[31m", 2);
+		ft_putstr_fd(tokens, 2);
+		ft_putstr_fd("\033[0m\n", 2);
+		1 && (ft_status(1, 1), variables->cd_flag = 0);
+	}
 	pwd = getcwd(NULL, 0);
 	if (!pwd)
 	{
@@ -23,6 +31,26 @@ static void	check_cd(void)
 		ft_putstr_fd("\033[31mcannot access parent directories.\033[0m\n", 2);
 	}
 	free(pwd);
+}
+
+short	cd_oldpwd(char *tokens, t_var *variables)
+{
+	char	*oldpwd;
+
+	oldpwd = ft_getenv("OLDPWD", variables);
+	if (tokens && ft_strlen(tokens) == 1 && !ft_strncmp(tokens, "-", 1))
+	{
+		if (!oldpwd)
+		{
+			ft_putstr_fd("\033[34mminishell: \033[0mcd: ", 2);
+			ft_putstr_fd("\033[31mOLDPWD not set.\033[0m\n", 2);
+			1 && (ft_status(1, 1), variables->cd_flag = 0);
+		}
+		else
+			chdir(oldpwd);
+		return (1);
+	}
+	return (0);
 }
 
 void	cd_cmd(char *tokens, t_var *variables)
@@ -41,16 +69,11 @@ void	cd_cmd(char *tokens, t_var *variables)
 		}
 		else
 			chdir(home);
+		return ;
 	}
-	else if (chdir(tokens) == -1)
-	{
-		ft_putstr_fd("\033[34mminishell:\033[0m ", 2);
-		ft_putstr_fd("cd: no such file or directory: \033[31m", 2);
-		ft_putstr_fd(tokens, 2);
-		ft_putstr_fd("\033[0m\n", 2);
-		1 && (ft_status(1, 1), variables->cd_flag = 0);
-	}
-	check_cd();
+	if (cd_oldpwd(tokens, variables))
+		return ;
+	check_cd(tokens, variables);
 }
 
 void	unset_cmd(char **tokens, t_var *variables)

@@ -6,7 +6,7 @@
 /*   By: youbella <youbella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 03:14:53 by youbella          #+#    #+#             */
-/*   Updated: 2025/08/27 19:11:09 by youbella         ###   ########.fr       */
+/*   Updated: 2025/08/28 00:40:52 by youbella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,8 @@ static short	check_is_ambiguous(t_var_redirect *var_redirection)
 {
 	if (var_redirection->fd_file_output < 0)
 	{
-		ft_putstr_fd("\033[31mambiguous redirect.\033[0m\n", 2);
 		ft_putstr_fd("\033[34mminishell: ", 2);
+		ft_putstr_fd("\033[31mambiguous redirect.\033[0m\n", 2);
 		return (ft_status(1, 1), 0);
 	}
 	return (1);
